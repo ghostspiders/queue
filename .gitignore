@@ -13,7 +13,6 @@
 .DS_Store
 
 # Maven
-**/log/
 **/target
 **/*.log
 **/tmp
@@ -22,6 +21,5 @@
 
 **.retry
 .git-credentials
-/logs/
 gui-extension/
 
