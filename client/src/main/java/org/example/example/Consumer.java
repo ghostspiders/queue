@@ -27,6 +27,7 @@ import kafka.javaapi.consumer.ConsumerConnector;
 
 public class Consumer extends Thread
 {
+
     private final ConsumerConnector consumer;
     private final String topic;
 
