@@ -16,6 +16,8 @@
 
 package org.queue.producer
 
+import org.queue.utils.Utils
+
 import java.util.Properties
 
 class SyncProducerConfig(val props: Properties) extends SyncProducerConfigShared {

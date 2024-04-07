@@ -16,6 +16,10 @@
 
 package org.queue.javaapi.consumer
 
+import org.queue.api.{FetchRequest, MultiFetchResponse}
+import org.queue.message.ByteBufferMessageSet
+import org.queue.utils.threadsafe
+
 /**
  * A consumer of kafka messages
  */
@@ -24,7 +28,7 @@ class SimpleConsumer(val host: String,
                      val port: Int,
                      val soTimeout: Int,
                      val bufferSize: Int) {
-  val underlying = new kafka.consumer.SimpleConsumer(host, port, soTimeout, bufferSize)
+  val underlying = new org.queue.consumer.SimpleConsumer(host, port, soTimeout, bufferSize)
 
   /**
    *  Fetch a set of messages from a topic.

@@ -16,6 +16,8 @@
 
 package org.queue.javaapi.message
 
+import org.queue.message.{InvalidMessageException, MessageAndOffset}
+
 /**
  * A set of messages. A message set has a fixed serialized form, though the container
  * for the bytes could be either in-memory or on disk. A The format of each message is

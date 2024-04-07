@@ -16,7 +16,7 @@
 
 package org.queue.javaapi.consumer;
 
-import kafka.consumer.KafkaMessageStream;
+import org.queue.consumer.KafkaMessageStream;
 
 import java.util.List;
 import java.util.Map;

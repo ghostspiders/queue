@@ -16,7 +16,13 @@
 
 package org.queue.producer.async
 
+import org.apache.logging.log4j.LogManager
+import org.queue.producer.SyncProducer
+import org.queue.serializer.Encoder
+import org.queue.utils.SystemTime
+
 import java.util.concurrent.{BlockingQueue, CountDownLatch, TimeUnit}
+import scala.collection.mutable.ListBuffer
 
 private[async] class ProducerSendThread[T](val threadName: String,
                                            val queue: BlockingQueue[QueueItem[T]],
@@ -28,7 +34,7 @@ private[async] class ProducerSendThread[T](val threadName: String,
                                            val batchSize: Int,
                                            val shutdownCommand: Any) extends Thread(threadName) {
 
-  private val logger = Logger.getLogger(classOf[ProducerSendThread[T]])
+  private val logger = LogManager.getLogger(classOf[ProducerSendThread[T]])
   private val shutdownLatch = new CountDownLatch(1)
 
   override def run {

@@ -1,12 +1,23 @@
 package org.queue.tools
 
+import jdk.internal.joptsimple.OptionParser
+import org.I0Itec.zkclient.ZkClient
+import org.apache.logging.log4j.LogManager
+import org.queue.api.OffsetRequest
+import org.queue.consumer.{Consumer, ConsumerConfig, ConsumerConnector, ConsumerTimeoutException, KafkaMessageStream}
+import org.queue.message.{CompressionCodec, Message}
+import org.queue.producer.async.DefaultEventHandler
+import org.queue.producer.{DefaultPartitioner, Producer, ProducerConfig, ProducerData}
+import org.queue.serializer.DefaultEncoder
+import org.queue.utils.StringSerializer
+
 import java.util.Properties
 import java.util.concurrent.{CountDownLatch, Executors}
 
 object ReplayLogProducer {
 
   private val GROUPID: String = "replay-log-producer"
-  private val logger = Logger.getLogger(getClass)
+  private val logger = LogManager.getLogger(getClass)
 
   def main(args: Array[String]) {
     var isNoPrint = false;
@@ -130,7 +141,7 @@ object ReplayLogProducer {
 
   class ZKConsumerThread(config: Config, stream: KafkaMessageStream) extends Thread {
     val shutdownLatch = new CountDownLatch(1)
-    val logger = Logger.getLogger(getClass)
+    val logger = LogManager.getLogger(getClass)
     val props = new Properties()
     val brokerInfoList = config.brokerInfo.split("=")
     if (brokerInfoList(0) == "zk.connect")

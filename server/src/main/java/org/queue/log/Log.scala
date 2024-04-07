@@ -16,16 +16,16 @@
 
 package kafka.log
 
-import java.util.concurrent.CopyOnWriteArrayList
+import org.apache.logging.log4j.LogManager
+
 import java.util.concurrent.atomic._
 import java.text.NumberFormat
 import java.io._
-import java.nio.channels.FileChannel
-import org.apache.log4j._
-import kafka.message._
-import kafka.utils._
-import kafka.common._
-import kafka.api.OffsetRequest
+import org.queue.message._
+import org.queue.utils._
+import org.queue.common._
+import org.queue.api.OffsetRequest
+
 import java.util._
 
 private[log] object Log {
@@ -97,7 +97,7 @@ private[log] class LogSegment(val file: File, val messageSet: FileMessageSet, va
 @threadsafe
 private[log] class Log(val dir: File, val maxSize: Long, val flushInterval: Int, val needRecovery: Boolean) {
 
-  private val logger = Logger.getLogger(classOf[Log])
+  private val logger = LogManager.getLogger(classOf[Log])
 
   /* A lock that guards all modifications to the log */
   private val lock = new Object

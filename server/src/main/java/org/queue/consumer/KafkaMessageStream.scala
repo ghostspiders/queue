@@ -16,6 +16,9 @@
 
 package org.queue.consumer
 
+import org.apache.logging.log4j.LogManager
+import org.queue.message.Message
+
 import java.util.concurrent.BlockingQueue
 
 
@@ -26,7 +29,7 @@ import java.util.concurrent.BlockingQueue
 class KafkaMessageStream(private val queue: BlockingQueue[FetchedDataChunk], consumerTimeoutMs: Int)
    extends Iterable[Message] with java.lang.Iterable[Message]{
 
-  private val logger = Logger.getLogger(getClass())
+  private val logger = LogManager.getLogger(getClass())
   private val iter: ConsumerIterator = new ConsumerIterator(queue, consumerTimeoutMs)
     
   /**

@@ -16,6 +16,13 @@
 
 package org.queue.producer.async
 
+import org.apache.logging.log4j.LogManager
+import org.queue.api.ProducerRequest
+import org.queue.producer.{ProducerConfig, SyncProducer}
+import org.queue.serializer.Encoder
+import org.queue.utils.Utils
+import org.slf4j.event.Level
+
 import java.lang.management.ManagementFactory
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.atomic.AtomicBoolean
@@ -35,7 +42,7 @@ private[kafka] class AsyncProducer[T](config: AsyncProducerConfig,
                                       eventHandlerProps: Properties = null,
                                       cbkHandler: CallbackHandler[T] = null,
                                       cbkHandlerProps: Properties = null) {
-  private val logger = Logger.getLogger(classOf[AsyncProducer[T]])
+  private val logger = LogManager.getLogger(classOf[AsyncProducer[T]])
   private val closed = new AtomicBoolean(false)
   private val queue = new LinkedBlockingQueue[QueueItem[T]](config.queueSize)
   // initialize the callback handlers

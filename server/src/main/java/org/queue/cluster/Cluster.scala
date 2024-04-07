@@ -16,6 +16,8 @@
 
 package org.queue.cluster
 
+import scala.collection.mutable
+
 /**
  * The set of active brokers in the cluster
  */

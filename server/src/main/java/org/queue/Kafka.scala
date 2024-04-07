@@ -16,13 +16,15 @@
 
 package org.queue
 
+import org.apache.logging.log4j.LogManager
+
 import java.util.logging.Logger
 import org.queue.consumer.ConsumerConfig
 import org.queue.server.{KafkaConfig, KafkaServer, KafkaServerStartable}
 import org.queue.utils.Utils
 
 object Kafka {
-  private val logger = Logger.getLogger(Kafka.getClass.getName)
+  private val logger = LogManager.getLogger(Kafka.getClass)
 
   def main(args: Array[String]): Unit = {
     val kafkaLog4jMBeanName = "kafka:type=kafka.KafkaLog4j"

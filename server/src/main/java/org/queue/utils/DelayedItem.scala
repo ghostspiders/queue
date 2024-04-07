@@ -17,6 +17,7 @@
 package org.queue.utils
 
 import java.util.concurrent._
+import scala.math
 
 class DelayedItem[T](val item: T, delay: Long, unit: TimeUnit) extends Delayed {
   
@@ -31,7 +32,7 @@ class DelayedItem[T](val item: T, delay: Long, unit: TimeUnit) extends Delayed {
    */
   def getDelay(unit: TimeUnit): Long = {
     val ellapsedMs = (System.currentTimeMillis - createdMs)
-    unit.convert(max(delayMs - ellapsedMs, 0), unit)
+    unit.convert(math.max(delayMs - ellapsedMs, 0), unit)
   }
     
   def compareTo(d: Delayed): Int = {

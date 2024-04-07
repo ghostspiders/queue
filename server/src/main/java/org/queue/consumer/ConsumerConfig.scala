@@ -16,6 +16,9 @@
 
 package org.queue.consumer
 
+import org.queue.api.OffsetRequest
+import org.queue.utils.{Utils, ZKConfig}
+
 import java.util.Properties
 
 object ConsumerConfig {

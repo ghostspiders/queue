@@ -16,6 +16,12 @@
 
 package org.queue.server
 
+import org.apache.logging.log4j.LogManager
+import org.queue.api.RequestKeys
+import org.queue.consumer.{Consumer, ConsumerConfig, ConsumerConnector}
+import org.queue.message.{ByteBufferMessageSet, NoCompressionCodec}
+import org.queue.utils.{SystemTime, Utils}
+
 class KafkaServerStartable(val serverConfig: KafkaConfig, val consumerConfig: ConsumerConfig) {
   private var server : KafkaServer = null
   private var embeddedConsumer : EmbeddedConsumer = null
@@ -49,7 +55,7 @@ class KafkaServerStartable(val serverConfig: KafkaConfig, val consumerConfig: Co
 
 class EmbeddedConsumer(private val consumerConfig: ConsumerConfig,
                        private val kafkaServer: KafkaServer) {
-  private val logger = Logger.getLogger(getClass())
+  private val logger = LogManager.getLogger(getClass())
   private val consumerConnector: ConsumerConnector = Consumer.create(consumerConfig)
   private val topicMessageStreams = consumerConnector.createMessageStreams(consumerConfig.embeddedConsumerTopicMap)
 

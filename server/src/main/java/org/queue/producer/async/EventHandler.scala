@@ -15,6 +15,9 @@
 */
 package org.queue.producer.async
 
+import org.queue.producer.SyncProducer
+import org.queue.serializer.Encoder
+
 import java.util.Properties
 
 /**

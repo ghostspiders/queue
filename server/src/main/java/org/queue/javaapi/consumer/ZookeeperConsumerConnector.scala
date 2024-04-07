@@ -15,6 +15,8 @@
  */
 package org.queue.javaapi.consumer
 
+import org.queue.consumer.{ConsumerConfig, KafkaMessageStream}
+
 /**
  * This class handles the consumers interaction with zookeeper
  *
@@ -55,7 +57,7 @@ private[kafka] class ZookeeperConsumerConnector(val config: ConsumerConfig,
                                  val enableFetcher: Boolean) // for testing only
     extends ConsumerConnector {
 
-  val underlying = new kafka.consumer.ZookeeperConsumerConnector(config, enableFetcher)
+  val underlying = new org.queue.consumer.ZookeeperConsumerConnector(config, enableFetcher)
 
   def this(config: ConsumerConfig) = this(config, true)
 

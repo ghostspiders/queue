@@ -15,13 +15,17 @@
 */
 package org.queue.javaapi.message
 
+import org.apache.logging.log4j.LogManager
+import org.queue.common.ErrorMapping
+import org.queue.message.{CompressionCodec, CompressionUtils, Message, MessageAndOffset, MessageSet, NoCompressionCodec}
+
 import java.nio.ByteBuffer
 
 class ByteBufferMessageSet(private val buffer: ByteBuffer,
                            private val initialOffset: Long = 0L,
                            private val errorCode: Int = ErrorMapping.NoError) extends MessageSet {
-  private val logger = Logger.getLogger(getClass())
-  val underlying: kafka.message.ByteBufferMessageSet = new kafka.message.ByteBufferMessageSet(buffer,
+  private val logger = LogManager.getLogger(getClass())
+  val underlying: org.queue.message.ByteBufferMessageSet = new org.queue.message.ByteBufferMessageSet(buffer,
                                                                                               initialOffset,
                                                                                               errorCode)
   def this(buffer: ByteBuffer) = this(buffer, 0L, ErrorMapping.NoError)

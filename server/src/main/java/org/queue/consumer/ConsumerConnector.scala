@@ -16,6 +16,9 @@
 
 package org.queue.consumer
 
+import org.apache.logging.log4j.LogManager
+import org.queue.utils.Utils
+
 /**
  *  Main interface for consumer
  */
@@ -41,7 +44,7 @@ trait ConsumerConnector {
 }
 
 object Consumer {
-  private val logger = Logger.getLogger(getClass())  
+  private val logger = LogManager.getLogger(getClass())
   private val consumerStatsMBeanName = "kafka:type=kafka.ConsumerStats"
 
   /**

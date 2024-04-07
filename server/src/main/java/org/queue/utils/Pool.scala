@@ -18,6 +18,7 @@ package org.queue.utils
 
 import java.util.ArrayList
 import java.util.concurrent._
+import scala.concurrent.JavaConversions
 
 class Pool[K,V] extends Iterable[(K, V)] {
 

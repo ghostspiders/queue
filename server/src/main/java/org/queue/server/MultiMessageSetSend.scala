@@ -16,6 +16,9 @@
 
 package org.queue.server
 
+import org.queue.network.{ByteBufferSend, MultiSend}
+import org.queue.utils.nonthreadsafe
+
 /**
  * A set of message sets prefixed by size
  */

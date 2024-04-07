@@ -16,6 +16,10 @@
 
 package org.queue.message
 
+import org.queue.common.UnknownMagicByteException
+import org.queue.message.Message.{AttributeOffset, CompressionCodeMask, CurrentMagicValue, MagicOffset, crcOffset, headerSize, payloadOffset}
+import org.queue.utils.Utils
+
 import java.nio._
 
 /**

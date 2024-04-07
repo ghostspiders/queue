@@ -17,6 +17,12 @@
 package org.queue.server
 
 import kafka.log._
+import org.apache.logging.log4j.LogManager
+import org.queue.api.{FetchRequest, MultiFetchRequest, MultiProducerRequest, OffsetArraySend, OffsetRequest, ProducerRequest, RequestKeys}
+import org.queue.common.ErrorMapping
+import org.queue.message.MessageSet
+import org.queue.network.{Handler, Receive, Send}
+import org.queue.utils.SystemTime
 
 import java.io.IOException
 
@@ -25,8 +31,8 @@ import java.io.IOException
  */
 private[kafka] class KafkaRequestHandlers(val logManager: LogManager) {
   
-  private val logger = Logger.getLogger(classOf[KafkaRequestHandlers])
-  private val requestLogger = Logger.getLogger("kafka.request.logger")
+  private val logger = LogManager.getLogger(classOf[KafkaRequestHandlers])
+  private val requestLogger = LogManager.getLogger("kafka.request.logger")
 
   def handlerFor(requestTypeId: Short, request: Receive): Handler.Handler = {
     requestTypeId match {

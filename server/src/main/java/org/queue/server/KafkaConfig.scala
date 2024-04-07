@@ -16,6 +16,9 @@
 
 package org.queue.server
 
+import org.queue.message.Message
+import org.queue.utils.{Utils, ZKConfig}
+
 import java.util.Properties
 
 /**

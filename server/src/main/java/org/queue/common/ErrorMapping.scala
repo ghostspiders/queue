@@ -16,6 +16,8 @@
 
 package org.queue.common
 
+import org.queue.message.InvalidMessageException
+
 import java.nio.ByteBuffer
 
 /**

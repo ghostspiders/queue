@@ -16,12 +16,15 @@
 
 package org.queue.message
 
+import org.apache.logging.log4j.LogManager
+import org.queue.common.UnknownCodecException
+
 import java.io.{ByteArrayOutputStream, IOException, InputStream}
 import java.nio.ByteBuffer
 import java.util.zip.{GZIPInputStream, GZIPOutputStream}
 
 object CompressionUtils {
-  private val logger = Logger.getLogger(getClass)
+  private val logger = LogManager.getLogger(getClass)
 
   def compress(messages: Iterable[Message]): Message = compress(messages, DefaultCompressionCodec)
 
@@ -79,7 +82,7 @@ object CompressionUtils {
       val oneCompressedMessage:Message = new Message(outputStream.toByteArray, compressionCodec)
       oneCompressedMessage
     case _ =>
-      throw new kafka.common.UnknownCodecException("Unknown Codec: " + compressionCodec)
+      throw new UnknownCodecException("Unknown Codec: " + compressionCodec)
   }
 
   def decompress(message: Message): ByteBufferMessageSet = message.compressionCodec match {
@@ -134,6 +137,6 @@ object CompressionUtils {
       val outputByteArray = outputStream.toByteArray
       new ByteBufferMessageSet(outputBuffer)
     case _ =>
-      throw new kafka.common.UnknownCodecException("Unknown Codec: " + message.compressionCodec)
+      throw new UnknownCodecException("Unknown Codec: " + message.compressionCodec)
   }
 }

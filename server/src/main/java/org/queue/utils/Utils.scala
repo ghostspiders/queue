@@ -18,7 +18,8 @@ package org.queue.utils
 
 
 
-import org.apache.logging.log4j.core.Logger
+import org.apache.logging.log4j.LogManager
+import org.queue.message.{CompressionCodec, NoCompressionCodec}
 
 import java.io._
 import java.lang.management._
@@ -28,12 +29,13 @@ import java.util.Properties
 import java.util.concurrent.atomic._
 import java.util.zip.CRC32
 import javax.management._
+import scala.collection.mutable
 
 /**
  * Helper functions!
  */
 object Utils {
-  private val logger = Logger.getLogger(getClass())
+  private val logger = LogManager.getLogger(getClass)
   
   /**
    * Wrap the given function in a java.lang.Runnable
@@ -473,7 +475,7 @@ object Utils {
         case None => m.put(k, List(v))
       }
     } 
-    m
+    m.toMap
   }
   
   /**
@@ -518,10 +520,9 @@ object Utils {
   private def getCSVMap[K, V](allCSVals: String, exceptionMsg:String, successMsg:String) :Map[K, V] = {
     val map = new mutable.HashMap[K, V]
     if("".equals(allCSVals))
-      return map
+      return map.toMap
     val csVals = allCSVals.split(",")
-    for(i <- 0 until csVals.length)
-    {
+    for(i <- 0 until csVals.length){
      try{
       val tempSplit = csVals(i).split(":")
       logger.info(successMsg + tempSplit(0) + " : " + Integer.parseInt(tempSplit(1).trim))
@@ -530,7 +531,7 @@ object Utils {
           case _ =>  logger.error(exceptionMsg + ": " + csVals(i))
         }
     }
-    map
+    map.toMap
   }
 
   def getCSVList(csvList: String): Seq[String] = {

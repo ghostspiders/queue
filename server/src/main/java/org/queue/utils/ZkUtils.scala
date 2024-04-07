@@ -16,13 +16,20 @@
 
 package org.queue.utils
 
+import org.I0Itec.zkclient.ZkClient
+import org.I0Itec.zkclient.exception.{ZkMarshallingError, ZkNoNodeException, ZkNodeExistsException}
+import org.I0Itec.zkclient.serialize.ZkSerializer
+import org.apache.logging.log4j.LogManager
+import org.queue.cluster.{Broker, Cluster}
+
 import java.util.Properties
+import scala.collection.mutable
 
 object ZkUtils {
   val ConsumersPath = "/consumers"
   val BrokerIdsPath = "/brokers/ids"
   val BrokerTopicsPath = "/brokers/topics"
-  private val logger = Logger.getLogger(getClass())  
+  private val logger = LogManager.getLogger(getClass())
 
   /**
    *  make sure a persistent path exists in ZK. Create the path if not exist.
@@ -162,7 +169,7 @@ object ZkUtils {
 
   def getChildren(client: ZkClient, path: String): Seq[String] = {
     // triggers implicit conversion from java list to scala Seq
-    client.getChildren(path)
+    client.getChildren(path).asInstanceOf[Seq[String]]
   }
 
   def getChildrenParentMayNotExist(client: ZkClient, path: String): Seq[String] = {
@@ -177,7 +184,7 @@ object ZkUtils {
         return Nil
       case e2 => throw e2
     }
-    return ret
+    return ret.asInstanceOf[Seq[String]]
   }
 
   /**

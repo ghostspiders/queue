@@ -16,7 +16,7 @@
 
 package org.queue.serializer
 
-import kafka.message.Message
+import org.queue.message.Message
 
 trait Encoder[T] {
   def toMessage(event: T):Message

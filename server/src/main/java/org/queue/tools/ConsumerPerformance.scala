@@ -16,6 +16,11 @@
 
 package org.queue.tools
 
+import jdk.internal.joptsimple.OptionParser
+import org.apache.logging.log4j.LogManager
+import org.queue.consumer.{Consumer, ConsumerConfig, ConsumerConnector}
+import org.queue.utils.Utils
+
 import java.nio.channels.ClosedByInterruptException
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.atomic.AtomicLong
@@ -28,7 +33,7 @@ abstract class ShutdownableThread(name: String) extends Thread(name) {
  * Performance test for the full zookeeper consumer
  */
 object ConsumerPerformance {
-  private val logger = Logger.getLogger(getClass())
+  private val logger = LogManager.getLogger(getClass())
 
   def main(args: Array[String]): Unit = {
     

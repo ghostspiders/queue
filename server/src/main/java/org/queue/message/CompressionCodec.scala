@@ -16,12 +16,14 @@
 
 package org.queue.message
 
+import org.queue.common.UnknownCodecException
+
 object CompressionCodec {
   def getCompressionCodec(codec: Int): CompressionCodec = {
     codec match {
       case 0 => NoCompressionCodec
       case 1 => GZIPCompressionCodec
-      case _ => throw new kafka.common.UnknownCodecException("%d is an unknown compression codec".format(codec))
+      case _ => throw new UnknownCodecException("%d is an unknown compression codec".format(codec))
     }
   }
 }

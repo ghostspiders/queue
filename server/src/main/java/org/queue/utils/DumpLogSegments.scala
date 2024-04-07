@@ -16,6 +16,8 @@
 
 package org.queue.utils
 
+import org.queue.message.FileMessageSet
+
 import java.io._
 
 object DumpLogSegments {

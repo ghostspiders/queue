@@ -15,8 +15,14 @@
 */
 package org.queue.producer
 
+import org.apache.logging.log4j.LogManager
+import org.queue.cluster.{Broker, Partition}
+import org.queue.common.InvalidConfigException
+
+import scala.collection.SortedSet
+
 private[producer] class ConfigBrokerPartitionInfo(config: ProducerConfig) extends BrokerPartitionInfo {
-  private val logger = Logger.getLogger(classOf[ConfigBrokerPartitionInfo])
+  private val logger = LogManager.getLogger(classOf[ConfigBrokerPartitionInfo])
   private val brokerPartitions: SortedSet[Partition] = getConfigTopicPartitionInfo
   private val allBrokers = getConfigBrokerInfo
 

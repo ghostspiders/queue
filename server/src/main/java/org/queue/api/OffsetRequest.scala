@@ -16,6 +16,10 @@
 
 package org.queue.api
 
+import org.queue.common.ErrorMapping
+import org.queue.network.{Request, Send}
+import org.queue.utils.{Utils, nonthreadsafe}
+
 import java.nio.ByteBuffer
 import java.nio.channels.WritableByteChannel
 

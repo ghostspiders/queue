@@ -16,14 +16,19 @@
 
 package kafka.log
 
+import akka.actor.Actor
+import org.apache.logging.log4j.LogManager
+
 import java.io._
-import org.apache.log4j.Logger
-import kafka.utils._
-import scala.actors.Actor
+import org.queue.utils._
+
 import scala.collection._
 import java.util.concurrent.CountDownLatch
-import kafka.server.{KafkaConfig, KafkaZooKeeper}
-import kafka.common.{InvalidTopicException, InvalidPartitionException}
+import org.queue.server.{KafkaConfig, KafkaZooKeeper}
+import org.queue.common.{InvalidPartitionException, InvalidTopicException}
+
+import java.lang.invoke.MethodHandles.loop
+import scala.sys.exit
 
 /**
  * The guy who creates and hands out logs
@@ -41,7 +46,7 @@ private[kafka] class LogManager(val config: KafkaConfig,
   private val maxSize: Long = config.logFileSize
   private val flushInterval = config.flushInterval
   private val topicPartitionsMap = config.topicPartitionsMap
-  private val logger = Logger.getLogger(classOf[LogManager])
+  private val logger = LogManager.getLogger(classOf[LogManager])
   private val logCreationLock = new Object
   private val random = new java.util.Random
   private var kafkaZookeeper: KafkaZooKeeper = null

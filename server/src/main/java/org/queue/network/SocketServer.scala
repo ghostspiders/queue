@@ -16,6 +16,10 @@
 
 package org.queue.network
 
+import org.apache.logging.log4j.LogManager
+import org.queue.api.RequestKeys
+import org.queue.utils.{SystemTime, Time, Utils}
+
 import java.io._
 import java.net._
 import java.nio.channels._
@@ -32,7 +36,7 @@ private[kafka] class SocketServer(val port: Int,
                    monitoringPeriodSecs: Int,
                    private val handlerFactory: Handler.HandlerMapping) {
  
-  private val logger = Logger.getLogger(classOf[SocketServer])
+  private val logger = LogManager.getLogger(classOf[SocketServer])
   private val time = SystemTime
   private val processors = new Array[Processor](numProcessorThreads)
   private var acceptor: Acceptor = new Acceptor(port, processors)
@@ -67,7 +71,7 @@ private[kafka] class SocketServer(val port: Int,
 private[kafka] abstract class AbstractServerThread extends Runnable {
   
   protected val selector = Selector.open();
-  protected val logger = Logger.getLogger(getClass())
+  protected val logger = LogManager.getLogger(getClass())
   private val startupLatch = new CountDownLatch(1)
   private val shutdownLatch = new CountDownLatch(1)
   private val alive = new AtomicBoolean(false) 
@@ -176,7 +180,7 @@ private[kafka] class Processor(val handlerMapping: Handler.HandlerMapping,
                 val stats: SocketServerStats) extends AbstractServerThread {
   
   private val newConnections = new ConcurrentLinkedQueue[SocketChannel]();
-  private val requestLogger = Logger.getLogger("kafka.request.logger")
+  private val requestLogger = LogManager.getLogger("kafka.request.logger")
 
   override def run() {
     startupComplete()

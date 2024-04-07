@@ -16,6 +16,12 @@
 
 package org.queue.producer
 
+import org.apache.logging.log4j.LogManager
+import org.queue.message.{ByteBufferMessageSet, Message, NoCompressionCodec}
+import org.queue.serializer.Encoder
+import org.queue.utils.Utils
+import org.slf4j.event.LoggingEvent
+
 import java.util.{Date, Properties}
 
 class KafkaLog4jAppender extends AppenderSkeleton {
@@ -25,7 +31,7 @@ class KafkaLog4jAppender extends AppenderSkeleton {
   var encoderClass:String = null
   
   private var producer:SyncProducer = null
-  private val logger = Logger.getLogger(classOf[KafkaLog4jAppender])
+  private val logger = LogManager.getLogger(classOf[KafkaLog4jAppender])
   private var encoder: Encoder[AnyRef] = null
   
   def getPort:Int = port

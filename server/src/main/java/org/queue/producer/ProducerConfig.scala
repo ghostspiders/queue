@@ -16,7 +16,9 @@
 
 package org.queue.producer
 
-import org.queue.produce.async.AsyncProducerConfigShared
+import org.queue.common.InvalidConfigException
+import org.queue.producer.async.AsyncProducerConfigShared
+import org.queue.utils.{Utils, ZKConfig}
 
 import java.util.Properties
 

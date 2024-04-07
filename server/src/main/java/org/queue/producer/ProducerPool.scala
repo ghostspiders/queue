@@ -16,7 +16,15 @@
 
 package org.queue.producer
 
-import org.queue.produce.async._
+
+import org.apache.logging.log4j.LogManager
+import org.queue.api.ProducerRequest
+import org.queue.cluster.{Broker, Partition}
+import org.queue.common.{InvalidConfigException, UnavailableProducerException}
+import org.queue.message.{ByteBufferMessageSet, NoCompressionCodec}
+import org.queue.producer.async.{AsyncProducer, AsyncProducerConfig, CallbackHandler, DefaultEventHandler, EventHandler}
+import org.queue.serializer.Encoder
+import org.queue.utils.Utils
 
 import java.util.Properties
 import java.util.concurrent.{ConcurrentHashMap, ConcurrentMap}
@@ -28,7 +36,7 @@ class ProducerPool[V](private val config: ProducerConfig,
                       private val inputEventHandler: EventHandler[V] = null,
                       private val cbkHandler: CallbackHandler[V] = null) {
 
-  private val logger = Logger.getLogger(classOf[ProducerPool[V]])
+  private val logger = LogManager.getLogger(classOf[ProducerPool[V]])
   private var eventHandler = inputEventHandler
   if(eventHandler == null)
     eventHandler = new DefaultEventHandler(config, cbkHandler)

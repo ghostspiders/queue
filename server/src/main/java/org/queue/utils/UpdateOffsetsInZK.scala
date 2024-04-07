@@ -16,6 +16,10 @@
 
 package org.queue.utils
 
+import org.queue.api.OffsetRequest
+import org.queue.consumer.{SimpleConsumer, ConsumerConfig}
+import org.queue.cluster.Partition
+import org.I0Itec.zkclient.ZkClient
 /**
  *  A utility that updates the offset of every broker partition to the offset of latest log segment file, in ZK.
  */

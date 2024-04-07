@@ -16,6 +16,10 @@
 
 package org.queue.tools
 
+import jdk.internal.joptsimple.OptionParser
+import org.queue.message.{ByteBufferMessageSet, Message, NoCompressionCodec}
+import org.queue.producer.{SyncProducer, SyncProducerConfig}
+
 import java.io._
 import java.net.URI
 import java.util.Properties

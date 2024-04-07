@@ -16,9 +16,16 @@
 
 package org.queue.producer
 
+import org.apache.logging.log4j.LogManager
 import java.net._
-import java.nio.ByteBuffer
 import java.nio.channels._
+import org.queue.message._
+import org.queue.network._
+import org.queue.utils._
+import org.queue.api._
+import scala.math._
+import org.queue.common.MessageSizeTooLargeException
+import java.nio.ByteBuffer
 
 object SyncProducer {
   val RequestKey: Short = 0
@@ -30,7 +37,7 @@ object SyncProducer {
 @threadsafe
 class SyncProducer(val config: SyncProducerConfig) {
   
-  private val logger = Logger.getLogger(getClass())
+  private val logger = LogManager.getLogger(getClass())
   private val MaxConnectBackoffMs = 60000
   private var channel : SocketChannel = null
   private var sentOnConnection = 0
@@ -212,7 +219,7 @@ class SyncProducerStats extends SyncProducerStatsMBean {
 }
 
 object SyncProducerStats {
-  private val logger = Logger.getLogger(getClass())
+  private val logger = LogManager.getLogger(getClass())
   private val kafkaProducerstatsMBeanName = "kafka:type=kafka.KafkaProducerStats"
   private val stats = new SyncProducerStats
   Utils.swallow(logger.warn, Utils.registerMBean(stats, kafkaProducerstatsMBeanName))

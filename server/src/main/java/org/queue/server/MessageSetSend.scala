@@ -16,6 +16,11 @@
 
 package org.queue.server
 
+import org.queue.common.ErrorMapping
+import org.queue.message.MessageSet
+import org.queue.network.Send
+import org.queue.utils.nonthreadsafe
+
 import java.nio._
 import java.nio.channels._
 

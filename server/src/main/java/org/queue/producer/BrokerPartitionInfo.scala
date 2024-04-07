@@ -15,6 +15,10 @@
 */
 package org.queue.producer
 
+import org.queue.cluster.{Broker, Partition}
+
+import scala.collection.SortedSet
+
 trait BrokerPartitionInfo {
   /**
    * Return a sequence of (brokerId, numPartitions).

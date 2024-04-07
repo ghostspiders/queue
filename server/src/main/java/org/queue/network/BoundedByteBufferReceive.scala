@@ -16,6 +16,8 @@
 
 package org.queue.network
 
+import org.queue.utils.{Utils, nonthreadsafe}
+
 import java.nio._
 import java.nio.channels._
 

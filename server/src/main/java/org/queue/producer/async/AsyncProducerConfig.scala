@@ -15,6 +15,9 @@
 */
 package org.queue.producer.async
 
+import org.queue.producer.SyncProducerConfig
+import org.queue.utils.Utils
+
 import java.util.Properties
 
 class AsyncProducerConfig(override val props: Properties) extends SyncProducerConfig(props)
