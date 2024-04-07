@@ -16,13 +16,18 @@
 
 package org.queue.consumer
 
+import org.I0Itec.zkclient.ZkClient
+import org.apache.logging.log4j.LogManager
+import org.queue.cluster.Cluster
+
 import java.util.concurrent.BlockingQueue
+import scala.collection.mutable
 
 /**
  * The fetcher is a background thread that fetches data from a set of servers
  */
 private[consumer] class Fetcher(val config: ConsumerConfig, val zkClient : ZkClient) {
-  private val logger = Logger.getLogger(getClass())
+  private val logger = LogManager.getLogger(getClass())
   private val EMPTY_FETCHER_THREADS = new Array[FetcherRunnable](0)
   @volatile
   private var fetcherThreads : Array[FetcherRunnable] = EMPTY_FETCHER_THREADS

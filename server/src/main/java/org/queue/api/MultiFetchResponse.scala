@@ -16,7 +16,11 @@
 
 package org.queue.api
 
+import org.queue.message.ByteBufferMessageSet
+import org.queue.utils.IteratorTemplate
+
 import java.nio._
+import scala.collection.mutable
 
 class MultiFetchResponse(val buffer: ByteBuffer, val numSets: Int, val offsets: Array[Long]) extends Iterable[ByteBufferMessageSet] {
   private val messageSets = new mutable.ListBuffer[ByteBufferMessageSet]

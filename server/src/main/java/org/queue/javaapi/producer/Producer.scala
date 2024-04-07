@@ -16,6 +16,13 @@
 
 package org.queue.javaapi.producer
 
+import org.queue.producer.{Partitioner, ProducerConfig, ProducerPool}
+import org.queue.serializer.Encoder
+import org.queue.utils.Utils
+import org.queue.javaapi.producer
+import org.queue.producer.async.QueueItem
+
+import java.util.Arrays.asList
 import java.util.Properties
 
 class Producer[K,V](config: ProducerConfig,
@@ -25,7 +32,7 @@ class Producer[K,V](config: ProducerConfig,
                                                           /* use the other constructor*/
 {
 
-  private val underlying = new kafka.producer.Producer[K,V](config, partitioner, producerPool, populateProducerPool, null)
+  private val underlying = new org.queue.producer.Producer[K,V](config, partitioner, producerPool, populateProducerPool, null)
 
   /**
    * This constructor can be used when all config parameters will be specified through the
@@ -51,20 +58,20 @@ class Producer[K,V](config: ProducerConfig,
    */
   def this(config: ProducerConfig,
            encoder: Encoder[V],
-           eventHandler: kafka.javaapi.producer.async.EventHandler[V],
-           cbkHandler: kafka.javaapi.producer.async.CallbackHandler[V],
+           eventHandler: producer.async.EventHandler[V],
+           cbkHandler: producer.async.CallbackHandler[V],
            partitioner: Partitioner[K]) = {
     this(config, partitioner,
          new ProducerPool[V](config, encoder,
-                             new kafka.producer.async.EventHandler[V] {
+                             new producer.async.EventHandler[V] {
                                override def init(props: Properties) { eventHandler.init(props) }
-                               override def handle(events: Seq[QueueItem[V]], producer: kafka.producer.SyncProducer,
+                               override def handle(events: Seq[QueueItem[V]], producer: producer.SyncProducer,
                                                    encoder: Encoder[V]) {
                                  eventHandler.handle(asList(events), producer, encoder)
                                }
                                override def close { eventHandler.close }
                              },
-                             new kafka.producer.async.CallbackHandler[V] {
+                             new producer.async.CallbackHandler[V] {
                                override def init(props: Properties) { cbkHandler.init(props)}
                                override def beforeEnqueue(data: QueueItem[V] = null.asInstanceOf[QueueItem[V]]): QueueItem[V] = {
                                  cbkHandler.beforeEnqueue(data)
@@ -90,8 +97,8 @@ class Producer[K,V](config: ProducerConfig,
    * synchronous or the asynchronous producer
    * @param producerData the producer data object that encapsulates the topic, key and message data
    */
-  def send(producerData: kafka.javaapi.producer.ProducerData[K,V]) {
-    underlying.send(new kafka.producer.ProducerData[K,V](producerData.getTopic, producerData.getKey,
+  def send(producerData: producer.ProducerData[K,V]) {
+    underlying.send(new producer.ProducerData[K,V](producerData.getTopic, producerData.getKey,
                                                          asBuffer(producerData.getData)))
   }
 
@@ -99,8 +106,8 @@ class Producer[K,V](config: ProducerConfig,
    * Use this API to send data to multiple topics
    * @param producerData list of producer data objects that encapsulate the topic, key and message data
    */
-  def send(producerData: java.util.List[kafka.javaapi.producer.ProducerData[K,V]]) {
-    underlying.send(asBuffer(producerData).map(pd => new kafka.producer.ProducerData[K,V](pd.getTopic, pd.getKey,
+  def send(producerData: java.util.List[producer.ProducerData[K,V]]) {
+    underlying.send(asBuffer(producerData).map(pd => new producer.ProducerData[K,V](pd.getTopic, pd.getKey,
                                                          asBuffer(pd.getData))): _*)
   }
 

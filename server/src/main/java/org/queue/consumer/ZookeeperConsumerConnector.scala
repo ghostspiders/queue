@@ -16,9 +16,17 @@
 
 package org.queue.consumer
 
+import org.I0Itec.zkclient.exception.ZkNodeExistsException
+import org.I0Itec.zkclient.{IZkChildListener, IZkStateListener, ZkClient}
+import org.apache.logging.log4j.LogManager
+import org.queue.api.OffsetRequest
+import org.queue.cluster.{Cluster, Partition}
+import org.queue.utils.{KafkaScheduler, Pool, StringSerializer, Utils, ZKGroupDirs, ZKGroupTopicDirs, ZkUtils}
+
 import java.net.InetAddress
 import java.util.concurrent._
 import java.util.concurrent.atomic._
+import scala.collection.mutable
 
 /**
  * This class handles the consumers interaction with zookeeper
@@ -75,7 +83,7 @@ private[kafka] class ZookeeperConsumerConnector(val config: ConsumerConfig,
                                                 val enableFetcher: Boolean) // for testing only
   extends ConsumerConnector with ZookeeperConsumerConnectorMBean {
 
-  private val logger = Logger.getLogger(getClass())
+  private val logger = LogManager.getLogger(getClass())
   private val isShuttingDown = new AtomicBoolean(false)
   private val rebalanceLock = new Object
   private var fetcher: Option[Fetcher] = None

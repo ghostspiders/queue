@@ -15,9 +15,9 @@
 */
 package org.queue.javaapi.producer.async;
 
-import kafka.javaapi.producer.SyncProducer;
-import kafka.producer.async.QueueItem;
-import kafka.serializer.Encoder;
+import org.queue.javaapi.producer.SyncProducer;
+import org.queue.producer.async.QueueItem;
+import org.queue.serializer.Encoder;
 
 import java.util.List;
 import java.util.Properties;

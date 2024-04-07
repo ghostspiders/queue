@@ -17,6 +17,7 @@ package org.queue.javaapi.consumer
 
 import org.queue.consumer.{ConsumerConfig, KafkaMessageStream}
 
+
 /**
  * This class handles the consumers interaction with zookeeper
  *

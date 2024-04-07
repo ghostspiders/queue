@@ -16,6 +16,9 @@
 
 package org.queue.consumer.storage
 
+import org.apache.logging.log4j.{LogManager, Logger}
+import org.queue.utils.{Utils, nonthreadsafe}
+
 import java.sql._
 
 /**
@@ -24,7 +27,7 @@ import java.sql._
 @nonthreadsafe
 class OracleOffsetStorage(val connection: Connection) extends OffsetStorage {
   
-  private val logger: Logger = Logger.getLogger(classOf[OracleOffsetStorage])
+  private val logger: Logger = LogManager.getLogger(classOf[OracleOffsetStorage])
   private val lock = new Object
   connection.setAutoCommit(false)
   

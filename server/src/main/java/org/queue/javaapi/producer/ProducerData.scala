@@ -15,6 +15,8 @@
 */
 package org.queue.javaapi.producer
 
+import java.util.Arrays.asList
+
 class ProducerData[K, V](private val topic: String,
                          private val key: K,
                          private val data: java.util.List[V]) {

@@ -16,6 +16,8 @@
 
 package org.queue.cluster
 
+import org.queue.utils.Utils
+
 /**
  * A Kafka broker
  */

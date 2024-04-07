@@ -16,6 +16,12 @@
 
 package org.queue.consumer
 
+import org.apache.logging.log4j.LogManager
+import org.queue.api.{FetchRequest, MultiFetchRequest, MultiFetchResponse, OffsetRequest}
+import org.queue.message.ByteBufferMessageSet
+import org.queue.network.{BoundedByteBufferReceive, BoundedByteBufferSend, Receive, Request}
+import org.queue.utils.{SnapshotStats, SystemTime, Utils, threadsafe}
+
 import java.net._
 import java.nio.channels._
 
@@ -27,7 +33,7 @@ class SimpleConsumer(val host: String,
                      val port: Int,
                      val soTimeout: Int,
                      val bufferSize: Int) {
-  private val logger = Logger.getLogger(getClass())
+  private val logger = LogManager.getLogger(getClass())
   private var channel : SocketChannel = null
   private val lock = new Object()
 
@@ -214,7 +220,7 @@ class SimpleConsumerStats extends SimpleConsumerStatsMBean {
 }
 
 object SimpleConsumerStats {
-  private val logger = Logger.getLogger(getClass())
+  private val logger = LogManager.getLogger(getClass())
   private val simpleConsumerstatsMBeanName = "kafka:type=kafka.SimpleConsumerStats"
   private val stats = new SimpleConsumerStats
   Utils.swallow(logger.warn, Utils.registerMBean(stats, simpleConsumerstatsMBeanName))

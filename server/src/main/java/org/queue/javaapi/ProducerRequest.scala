@@ -15,12 +15,15 @@
  */
 package org.queue.javaapi
 
+import org.queue.api.RequestKeys
+import org.queue.network.Request
+
 import java.nio.ByteBuffer
 
 class ProducerRequest(val topic: String,
                       val partition: Int,
-                      val messages: kafka.javaapi.message.ByteBufferMessageSet) extends Request(RequestKeys.Produce) {
-  private val underlying = new kafka.api.ProducerRequest(topic, partition, messages)
+                      val messages: org.queue.javaapi.message.ByteBufferMessageSet) extends Request(RequestKeys.Produce) {
+  private val underlying = new org.queue.api.ProducerRequest(topic, partition, messages)
 
   def writeTo(buffer: ByteBuffer) { underlying.writeTo(buffer) }
 

@@ -16,6 +16,8 @@
 
 package org.queue.api
 
+import org.queue.network.Request
+
 import java.nio._
 
 object MultiFetchRequest {

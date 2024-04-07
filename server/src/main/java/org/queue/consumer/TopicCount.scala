@@ -16,8 +16,12 @@
 
 package org.queue.consumer
 
+import org.apache.logging.log4j.LogManager
+
+import scala.collection.mutable
+
 private[consumer] object TopicCount {
-  private val logger = Logger.getLogger(getClass())
+  private val logger = LogManager.getLogger(getClass())
   val myConversionFunc = {input : String => input.toInt}
   JSON.globalNumberParser = myConversionFunc
 

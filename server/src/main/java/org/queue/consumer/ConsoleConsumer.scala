@@ -16,6 +16,12 @@
 
 package org.queue.consumer
 
+import jdk.internal.joptsimple.{OptionException, OptionParser, OptionSet, OptionSpec}
+import org.I0Itec.zkclient.ZkClient
+import org.apache.logging.log4j.LogManager
+import org.queue.message.Message
+import org.queue.utils.{StringSerializer, Utils}
+
 import java.io.PrintStream
 import java.util.{Properties, Random}
 
@@ -25,7 +31,7 @@ import java.util.{Properties, Random}
  */
 object ConsoleConsumer {
   
-  private val logger = Logger.getLogger(getClass())
+  private val logger = LogManager.getLogger(getClass())
 
   def main(args: Array[String]) {
     val parser = new OptionParser

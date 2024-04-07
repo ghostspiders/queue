@@ -16,6 +16,10 @@
 
 package org.queue.consumer
 
+import org.apache.logging.log4j.LogManager
+import org.queue.message.{Message, MessageAndOffset}
+import org.queue.utils.IteratorTemplate
+
 import java.util.concurrent.{BlockingQueue, TimeUnit}
 
 /**
@@ -26,7 +30,7 @@ import java.util.concurrent.{BlockingQueue, TimeUnit}
 class ConsumerIterator(private val channel: BlockingQueue[FetchedDataChunk], consumerTimeoutMs: Int)
         extends IteratorTemplate[Message] {
   
-  private val logger = Logger.getLogger(classOf[ConsumerIterator])
+  private val logger = LogManager.getLogger(classOf[ConsumerIterator])
   private var current: Iterator[MessageAndOffset] = null
   private var currentDataChunk: FetchedDataChunk = null
   private var currentTopicInfo: PartitionTopicInfo = null

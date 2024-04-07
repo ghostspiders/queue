@@ -15,9 +15,13 @@
  */
 package org.queue.javaapi.producer
 
-class SyncProducer(syncProducer: kafka.producer.SyncProducer) {
+import org.queue.api.ProducerRequest
+import org.queue.javaapi.message.ByteBufferMessageSet
+import org.queue.producer.SyncProducerConfig
 
-  def this(config: SyncProducerConfig) = this(new kafka.producer.SyncProducer(config))
+class SyncProducer(syncProducer: org.queue.producer.SyncProducer) {
+
+  def this(config: SyncProducerConfig) = this(new org.queue.producer.SyncProducer(config))
 
   val underlying = syncProducer
 
@@ -26,13 +30,13 @@ class SyncProducer(syncProducer: kafka.producer.SyncProducer) {
   }
 
   def send(topic: String, messages: ByteBufferMessageSet): Unit = send(topic,
-                                                                       kafka.api.ProducerRequest.RandomPartition,
+                                                                       ProducerRequest.RandomPartition,
                                                                        messages)
 
-  def multiSend(produces: Array[kafka.javaapi.ProducerRequest]) {
-    val produceRequests = new Array[kafka.api.ProducerRequest](produces.length)
+  def multiSend(produces: Array[ProducerRequest]) {
+    val produceRequests = new Array[ProducerRequest](produces.length)
     for(i <- 0 until produces.length)
-      produceRequests(i) = new kafka.api.ProducerRequest(produces(i).topic, produces(i).partition, produces(i).messages)
+      produceRequests(i) = new ProducerRequest(produces(i).topic, produces(i).partition, produces(i).messages)
     underlying.multiSend(produceRequests)
   }
 

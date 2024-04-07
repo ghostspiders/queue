@@ -16,6 +16,8 @@
 
 package org.queue.consumer
 
+import org.queue.message.ByteBufferMessageSet
+
 private[consumer] class FetchedDataChunk(val messages: ByteBufferMessageSet,
                                          val topicInfo: PartitionTopicInfo,
                                          val fetchOffset: Long)

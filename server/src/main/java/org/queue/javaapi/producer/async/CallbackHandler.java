@@ -15,7 +15,7 @@
 */
 package org.queue.javaapi.producer.async;
 
-import kafka.producer.async.QueueItem;
+import org.queue.producer.async.QueueItem;
 
 import java.util.Properties;
 
