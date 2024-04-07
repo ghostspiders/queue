@@ -16,13 +16,11 @@
 
 package org.queue.server
 
-import kafka.log.LogManager
 import org.I0Itec.zkclient.{IZkStateListener, ZkClient}
-import org.apache.logging.log4j.LogManager
-import org.apache.zookeeper.Watcher.Event.KeeperState
 import org.queue.cluster.Broker
+import org.queue.log.LogManager
 import org.queue.utils.{StringSerializer, ZkUtils}
-
+import org.apache.zookeeper.Watcher.Event.KeeperState
 import java.net.InetAddress
 
 /**
@@ -33,7 +31,7 @@ import java.net.InetAddress
  */
 class KafkaZooKeeper(config: KafkaConfig, logManager: LogManager) {
   
-  private val logger = LogManager.getLogger(classOf[KafkaZooKeeper])
+  private val logger = org.apache.logging.log4j.LogManager.getLogger(classOf[KafkaZooKeeper])
   
   val brokerIdPath = ZkUtils.BrokerIdsPath + "/" + config.brokerId
   var zkClient: ZkClient = null

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package kafka.log
+package org.queue.log
 
 import org.apache.logging.log4j.LogManager
 

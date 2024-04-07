@@ -16,8 +16,7 @@
 
 package org.queue.server
 
-import kafka.log.LogManager
-import org.apache.logging.log4j.LogManager
+import org.queue.log.LogManager
 import org.queue.network.{SocketServer, SocketServerStats}
 import org.queue.utils.{KafkaScheduler, SystemTime, Utils}
 
@@ -33,7 +32,7 @@ class KafkaServer(val config: KafkaConfig) {
   val CLEAN_SHUTDOWN_FILE = ".kafka_cleanshutdown"
   private val isShuttingDown = new AtomicBoolean(false)
   
-  private val logger = LogManager.getLogger(classOf[KafkaServer])
+  private val logger = org.apache.logging.log4j.LogManager.getLogger(classOf[KafkaServer])
   private val shutdownLatch = new CountDownLatch(1)
   private val statsMBeanName = "kafka:type=kafka.SocketServerStats"
   

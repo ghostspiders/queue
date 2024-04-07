@@ -16,12 +16,11 @@
 
 package org.queue.producer.async
 
-import org.apache.logging.log4j.LogManager
+import org.apache.logging.log4j.{Level, LogManager}
 import org.queue.api.ProducerRequest
 import org.queue.producer.{ProducerConfig, SyncProducer}
 import org.queue.serializer.Encoder
 import org.queue.utils.Utils
-import org.slf4j.event.Level
 
 import java.lang.management.ManagementFactory
 import java.util.concurrent.LinkedBlockingQueue
@@ -121,7 +120,7 @@ private[kafka] class AsyncProducer[T](config: AsyncProducerConfig,
   }
 
   // for testing only
-  def setLoggerLevel(level: Level) = logger.setLevel(level)
+  def setLoggerLevel(level: Level) = logger.atLevel(level)
 }
 
 class QueueItem[T](data: T, topic: String, partition: Int) {

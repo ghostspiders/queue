@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package kafka.log
+package org.queue.log
 
 import akka.actor.Actor
 import org.apache.logging.log4j.LogManager
@@ -34,7 +34,7 @@ import scala.sys.exit
  * The guy who creates and hands out logs
  */
 @threadsafe
-private[kafka] class LogManager(val config: KafkaConfig,
+private[queue] class LogManager(val config: KafkaConfig,
                                 private val scheduler: KafkaScheduler,
                                 private val time: Time,
                                 val logCleanupIntervalMs: Long,
