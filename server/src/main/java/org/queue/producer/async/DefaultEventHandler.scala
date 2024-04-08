@@ -24,7 +24,7 @@ import org.queue.serializer.Encoder
 import collection.mutable.HashMap
 import java.util.Properties
 
-private[kafka] class DefaultEventHandler[T](val config: ProducerConfig,
+private[queue] class DefaultEventHandler[T](val config: ProducerConfig,
                                             val cbkHandler: CallbackHandler[T]) extends EventHandler[T] {
 
   private val logger = LogManager.getLogger(classOf[DefaultEventHandler[T]])

@@ -63,7 +63,7 @@ import scala.collection.mutable
  * Each consumer tracks the offset of the latest message consumed for each partition.
  *
  */
-private[kafka] object ZookeeperConsumerConnector {
+private[queue] object ZookeeperConsumerConnector {
   val MAX_N_RETRIES = 4
   val shutdownCommand: FetchedDataChunk = new FetchedDataChunk(null, null, -1L)
 }
@@ -79,7 +79,7 @@ trait ZookeeperConsumerConnectorMBean {
   def getLatestOffset(topic: String, brokerId: Int, partitionId: Int): Long
 }
 
-private[kafka] class ZookeeperConsumerConnector(val config: ConsumerConfig,
+private[queue] class ZookeeperConsumerConnector(val config: ConsumerConfig,
                                                 val enableFetcher: Boolean) // for testing only
   extends ConsumerConnector with ZookeeperConsumerConnectorMBean {
 

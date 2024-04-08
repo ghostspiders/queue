@@ -49,9 +49,9 @@ class KafkaLog4jAppender extends AppenderSkeleton {
   override def activateOptions = {
     // check for config parameter validity
     if(host == null)
-      throw new async.MissingConfigException("Broker Host must be specified by the Kafka log4j appender")
+      throw new async.MissingConfigException("Broker Host must be specified by the queue log4j appender")
     if(port == 0)
-      throw new async.MissingConfigException("Broker Port must be specified by the Kafka log4j appender")
+      throw new async.MissingConfigException("Broker Port must be specified by the queue log4j appender")
     if(topic == null)
       throw new async.MissingConfigException("topic must be specified by the Kafka log4j appender")
     if(encoderClass == null) {

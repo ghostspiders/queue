@@ -16,7 +16,7 @@
 
 package org.queue.network
 
-private[kafka] object Handler {
+private[queue] object Handler {
   
   /**
    * A request handler is a function that turns an incoming 

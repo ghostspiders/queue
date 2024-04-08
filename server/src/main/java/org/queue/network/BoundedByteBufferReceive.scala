@@ -26,7 +26,7 @@ import java.nio.channels._
  * 
  */
 @nonthreadsafe
-private[kafka] class BoundedByteBufferReceive(val maxSize: Int) extends Receive {
+private[queue] class BoundedByteBufferReceive(val maxSize: Int) extends Receive {
   
   private val sizeBuffer: ByteBuffer = ByteBuffer.allocate(4)
   private var contentBuffer: ByteBuffer = null

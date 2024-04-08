@@ -18,17 +18,20 @@ package org.queue
 
 import org.apache.logging.log4j.LogManager
 
-import java.util.logging.Logger
 import org.queue.consumer.ConsumerConfig
 import org.queue.server.{KafkaConfig, KafkaServer, KafkaServerStartable}
 import org.queue.utils.Utils
+import org.apache.logging.log4j.core.jmx.LoggerContextAdmin
 
-object Kafka {
-  private val logger = LogManager.getLogger(Kafka.getClass)
+import java.util.concurrent.Executors
+object Queue {
+  private val logger = LogManager.getLogger(Queue.getClass)
 
   def main(args: Array[String]): Unit = {
     val kafkaLog4jMBeanName = "kafka:type=kafka.KafkaLog4j"
-    Utils.swallow(logger.warn, Utils.registerMBean(new LoggerDynamicMBean(Logger.getRootLogger()), kafkaLog4jMBeanName))
+    import org.slf4j.LoggerFactory
+    val loggerContext = LoggerFactory.getILoggerFactory.asInstanceOf[Nothing]
+    Utils.swallow(logger.warn, Utils.registerMBean(new LoggerContextAdmin(loggerContext,Executors.newFixedThreadPool(4)), kafkaLog4jMBeanName))
 
     if(args.length != 1 && args.length != 2) {
       println("USAGE: java [options] " + classOf[KafkaServer].getSimpleName() + " server.properties [consumer.properties")

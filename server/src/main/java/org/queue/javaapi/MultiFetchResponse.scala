@@ -16,7 +16,7 @@
 
 package org.queue.javaapi
 
-import org.queue.javaapi.message.ByteBufferMessageSet
+import org.queue.message.ByteBufferMessageSet
 import org.queue.utils.IteratorTemplate
 
 import java.nio.ByteBuffer

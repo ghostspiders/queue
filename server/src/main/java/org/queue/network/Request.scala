@@ -18,7 +18,7 @@ package org.queue.network
 
 import java.nio._
 
-private[kafka] abstract class Request(val id: Short) {
+private[queue] abstract class Request(val id: Short) {
 
   def sizeInBytes: Int
   

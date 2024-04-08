@@ -32,7 +32,7 @@ trait EventHandler[T] {
   def init(props: Properties) {}
 
   /**
-   * Callback to dispatch the batched data and send it to a Kafka server
+   * Callback to dispatch the batched data and send it to a queue server
    * @param events the data sent to the producer
    * @param producer the low-level producer used to send the data
   */

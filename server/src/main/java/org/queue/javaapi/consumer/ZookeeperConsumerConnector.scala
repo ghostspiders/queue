@@ -54,7 +54,7 @@ import org.queue.consumer.{ConsumerConfig, KafkaMessageStream}
  *
 */
 
-private[kafka] class ZookeeperConsumerConnector(val config: ConsumerConfig,
+private[queue] class ZookeeperConsumerConnector(val config: ConsumerConfig,
                                  val enableFetcher: Boolean) // for testing only
     extends ConsumerConnector {
 

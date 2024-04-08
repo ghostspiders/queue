@@ -19,9 +19,9 @@ import org.queue.api.ProducerRequest
 import org.queue.javaapi.message.ByteBufferMessageSet
 import org.queue.producer.SyncProducerConfig
 
-class SyncProducer(syncProducer: org.queue.producer.SyncProducer) {
+class SyncProducer(syncProducer: SyncProducer) {
 
-  def this(config: SyncProducerConfig) = this(new org.queue.producer.SyncProducer(config))
+  def this(config: SyncProducerConfig) = this(new SyncProducer(config))
 
   val underlying = syncProducer
 

@@ -28,7 +28,7 @@ import java.io.IOException
 /**
  * Logic to handle the various Kafka requests
  */
-private[kafka] class KafkaRequestHandlers(val logManager: LogManager) {
+private[queue] class KafkaRequestHandlers(val logManager: LogManager) {
   
   private val logger = org.apache.logging.log4j.LogManager.getLogger(classOf[KafkaRequestHandlers])
   private val requestLogger = org.apache.logging.log4j.LogManager.getLogger("kafka.request.logger")

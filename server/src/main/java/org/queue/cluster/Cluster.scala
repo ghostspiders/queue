@@ -21,7 +21,7 @@ import scala.collection.mutable
 /**
  * The set of active brokers in the cluster
  */
-private[kafka] class Cluster {
+private[queue] class Cluster {
   
   private val brokers = new mutable.HashMap[Int, Broker]
   

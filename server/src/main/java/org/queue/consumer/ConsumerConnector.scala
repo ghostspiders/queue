@@ -27,7 +27,7 @@ trait ConsumerConnector {
    *  Create a list of MessageStreams for each topic.
    *
    *  @param topicCountMap  a map of (topic, #streams) pair
-   *  @return a map of (topic, list of  KafkaMessageStream) pair. The number of items in the
+   *  @return a map of (topic, list of  QueueMessageStream) pair. The number of items in the
    *          list is #streams. Each KafkaMessageStream supports an iterator of messages.
    */
   def createMessageStreams(topicCountMap: Map[String,Int]) : Map[String,List[KafkaMessageStream]]
@@ -65,8 +65,8 @@ object Consumer {
    *  @param config  at the minimum, need to specify the groupid of the consumer and the zookeeper
    *                 connection string zk.connect.
    */
-  def createJavaConsumerConnector(config: ConsumerConfig): kafka.javaapi.consumer.ConsumerConnector = {
-    val consumerConnect = new kafka.javaapi.consumer.ZookeeperConsumerConnector(config)
+  def createJavaConsumerConnector(config: ConsumerConfig): org.queue.javaapi.consumer.ConsumerConnector = {
+    val consumerConnect = new org.queue.javaapi.consumer.ZookeeperConsumerConnector(config)
     Utils.swallow(logger.warn, Utils.registerMBean(consumerConnect.underlying, consumerStatsMBeanName))
     consumerConnect
   }

@@ -31,7 +31,7 @@ import java.util.concurrent.atomic._
  * messages will be read
  */
 @nonthreadsafe
-class FileMessageSet private[kafka](private[message] val channel: FileChannel,
+class FileMessageSet private[queue](private[message] val channel: FileChannel,
                                     private[message] val offset: Long,
                                     private[message] val limit: Long,
                                     val mutable: Boolean,

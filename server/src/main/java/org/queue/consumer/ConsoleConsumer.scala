@@ -22,6 +22,9 @@ import org.apache.logging.log4j.LogManager
 import org.queue.message.Message
 import org.queue.utils.{StringSerializer, Utils}
 
+import jdk.internal.joptsimple.{OptionParser, OptionSet}
+import org.apache.logging.log4j.LogManager
+
 import java.io.PrintStream
 import java.util.{Properties, Random}
 

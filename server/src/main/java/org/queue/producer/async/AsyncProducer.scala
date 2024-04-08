@@ -31,10 +31,10 @@ import javax.management.ObjectName
 object AsyncProducer {
   val Shutdown = new Object
   val Random = new Random
-  val ProducerMBeanName = "kafka.producer.Producer:type=AsyncProducerStats"
+  val ProducerMBeanName = "org.queue.producer.Producer:type=AsyncProducerStats"
 }
 
-private[kafka] class AsyncProducer[T](config: AsyncProducerConfig,
+private[queue] class AsyncProducer[T](config: AsyncProducerConfig,
                                       producer: SyncProducer,
                                       serializer: Encoder[T],
                                       eventHandler: EventHandler[T] = null,

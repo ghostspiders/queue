@@ -16,7 +16,7 @@
 
 package org.queue.producer
 
-private[kafka] class DefaultPartitioner[T] extends Partitioner[T] {
+private[queue] class DefaultPartitioner[T] extends Partitioner[T] {
   private val random = new java.util.Random
   
   def partition(key: T, numPartitions: Int): Int = {

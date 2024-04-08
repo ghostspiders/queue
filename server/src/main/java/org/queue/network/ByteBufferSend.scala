@@ -22,7 +22,7 @@ import java.nio._
 import java.nio.channels._
 
 @nonthreadsafe
-private[kafka] class ByteBufferSend(val buffer: ByteBuffer) extends Send {
+private[queue] class ByteBufferSend(val buffer: ByteBuffer) extends Send {
   
   var complete: Boolean = false
 

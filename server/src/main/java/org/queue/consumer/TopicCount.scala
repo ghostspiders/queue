@@ -16,30 +16,30 @@
 
 package org.queue.consumer
 
+import com.google.gson.Gson
 import org.apache.logging.log4j.LogManager
 
-import scala.collection.mutable
+import scala.collection.{Map, mutable}
 
 private[consumer] object TopicCount {
   private val logger = LogManager.getLogger(getClass())
-  val myConversionFunc = {input : String => input.toInt}
-  JSON.globalNumberParser = myConversionFunc
 
   def constructTopicCount(consumerIdSting: String, jsonString : String) : TopicCount = {
+    var value = null
     var topMap : Map[String,Int] = null
+    val gson = new Gson()
     try {
-      JSON.parseFull(jsonString) match {
+        value = gson.fromJson(jsonString, classOf[Map[String, Int]])
+        value match {
         case Some(m) => topMap = m.asInstanceOf[Map[String,Int]]
         case None => throw new RuntimeException("error constructing TopicCount : " + jsonString)
       }
-    }
-    catch {
+    }catch {
       case e =>
         logger.error("error parsing consumer json string " + jsonString, e)
         throw e
     }
-
-    new TopicCount(consumerIdSting, topMap)
+    new TopicCount(consumerIdSting, value)
   }
 
 }
@@ -54,7 +54,7 @@ private[consumer] class TopicCount(val consumerIdString: String, val topicCountM
       assert(nConsumers >= 1)
       for (i <- 0 until nConsumers)
         consumerSet += consumerIdString + "-" + i
-      consumerThreadIdsPerTopicMap.put(topic, consumerSet)
+      consumerThreadIdsPerTopicMap.put(topic, consumerSet.toSet)
     }
     consumerThreadIdsPerTopicMap
   }

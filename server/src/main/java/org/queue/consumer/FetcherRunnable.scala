@@ -18,7 +18,10 @@ package org.queue.consumer
 
 import org.I0Itec.zkclient.ZkClient
 import org.apache.logging.log4j.LogManager
-import org.queue.cluster.Broker
+import org.queue.api.{FetchRequest, OffsetRequest}
+import org.queue.cluster.{Broker, Partition}
+import org.queue.common.ErrorMapping
+import org.queue.utils.{Utils, ZKGroupTopicDirs, ZkUtils}
 
 import java.io.IOException
 import java.util.concurrent.CountDownLatch

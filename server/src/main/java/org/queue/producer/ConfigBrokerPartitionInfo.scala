@@ -19,7 +19,7 @@ import org.apache.logging.log4j.LogManager
 import org.queue.cluster.{Broker, Partition}
 import org.queue.common.InvalidConfigException
 
-import scala.collection.SortedSet
+import scala.collection.{SortedSet, mutable}
 
 private[producer] class ConfigBrokerPartitionInfo(config: ProducerConfig) extends BrokerPartitionInfo {
   private val logger = LogManager.getLogger(classOf[ConfigBrokerPartitionInfo])
@@ -81,14 +81,14 @@ private[producer] class ConfigBrokerPartitionInfo(config: ProducerConfig) extend
    * @return mapping from brokerId to (host, port) for all brokers
    */
   private def getConfigBrokerInfo(): Map[Int, Broker] = {
-    val brokerInfo = new HashMap[Int, Broker]()
+    val brokerInfo = new mutable.HashMap[Int, Broker]()
     val brokerInfoList = config.brokerPartitionInfo.split(",")
     brokerInfoList.foreach{ bInfo =>
       val brokerIdHostPort = bInfo.split(":")
       brokerInfo += (brokerIdHostPort(0).toInt -> new Broker(brokerIdHostPort(0).toInt, brokerIdHostPort(1),
         brokerIdHostPort(1), brokerIdHostPort(2).toInt))
     }
-    brokerInfo
+    brokerInfo.toMap
   }
 
 }

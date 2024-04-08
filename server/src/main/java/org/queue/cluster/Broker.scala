@@ -21,14 +21,14 @@ import org.queue.utils.Utils
 /**
  * A Kafka broker
  */
-private[kafka] object Broker {
+private[queue] object Broker {
   def createBroker(id: Int, brokerInfoString: String): Broker = {
     val brokerInfo = brokerInfoString.split(":")
     new Broker(id, brokerInfo(0), brokerInfo(1), brokerInfo(2).toInt)
   }
 }
 
-private[kafka] class Broker(val id: Int, val creatorId: String, val host: String, val port: Int) {
+private[queue] class Broker(val id: Int, val creatorId: String, val host: String, val port: Int) {
   
   override def toString(): String = new String("id:" + id + ",creatorId:" + creatorId + ",host:" + host + ",port:" + port)
 
