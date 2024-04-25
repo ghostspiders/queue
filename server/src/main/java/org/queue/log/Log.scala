@@ -16,8 +16,6 @@
 
 package org.queue.log
 
-import org.apache.logging.log4j.LogManager
-
 import java.util.concurrent.atomic._
 import java.text.NumberFormat
 import java.io._
@@ -25,6 +23,7 @@ import org.queue.message._
 import org.queue.utils._
 import org.queue.common._
 import org.queue.api.OffsetRequest
+import org.slf4j.LoggerFactory
 
 import java.util._
 
@@ -97,7 +96,7 @@ private[log] class LogSegment(val file: File, val messageSet: FileMessageSet, va
 @threadsafe
 private[log] class Log(val dir: File, val maxSize: Long, val flushInterval: Int, val needRecovery: Boolean) {
 
-  private val logger = LogManager.getLogger(classOf[Log])
+  private val logger = LoggerFactory.getLogger(classOf[Log])
 
   /* A lock that guards all modifications to the log */
   private val lock = new Object

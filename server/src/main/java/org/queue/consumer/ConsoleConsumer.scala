@@ -16,14 +16,11 @@
 
 package org.queue.consumer
 
-import jdk.internal.joptsimple.{OptionException, OptionParser, OptionSet, OptionSpec}
+import joptsimple.{OptionException, OptionParser, OptionSet, OptionSpec}
 import org.I0Itec.zkclient.ZkClient
 import org.apache.logging.log4j.LogManager
 import org.queue.message.Message
 import org.queue.utils.{StringSerializer, Utils}
-
-import jdk.internal.joptsimple.{OptionParser, OptionSet}
-import org.apache.logging.log4j.LogManager
 
 import java.io.PrintStream
 import java.util.{Properties, Random}
@@ -101,7 +98,7 @@ object ConsoleConsumer {
     
     val topic = options.valueOf(topicIdOpt)
     val messageFormatterClass = Class.forName(options.valueOf(messageFormatterOpt))
-    val formatterArgs = tryParseFormatterArgs(options.valuesOf(messageFormatterArgOpt))
+    val formatterArgs: Properties = tryParseFormatterArgs(options.valuesOf(messageFormatterArgOpt))
     
     val maxMessages = if(options.has(maxMessagesOpt)) options.valueOf(maxMessagesOpt).intValue else -1
 
