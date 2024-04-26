@@ -92,7 +92,7 @@ private[async] class ProducerSendThread[T](val threadName: String,
             if(full) logger.debug("Batch full. Sending..")
           }
           // if either queue time has reached or batch size has reached, dispatch to event handler
-          tryToHandle(events)
+          tryToHandle(events.toSeq)
           lastSend = SystemTime.milliseconds
           events = new ListBuffer[QueueItem[T]]
         }
@@ -103,7 +103,7 @@ private[async] class ProducerSendThread[T](val threadName: String,
       logEvents("last batch before close", addedEvents)
       events = events ++ addedEvents
     }
-    events
+    events.toSeq
   }
 
   def tryToHandle(events: Seq[QueueItem[T]]) {

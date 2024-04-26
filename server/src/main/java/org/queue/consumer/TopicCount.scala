@@ -26,13 +26,11 @@ private[consumer] object TopicCount {
 
   def constructTopicCount(consumerIdSting: String, jsonString : String) : TopicCount = {
     var value = null
-    var topMap : Map[String,Int] = null
     val gson = new Gson()
     try {
-        value = gson.fromJson(jsonString, classOf[Map[String, Int]])
-        value match {
-        case Some(m) => topMap = m.asInstanceOf[Map[String,Int]]
-        case None => throw new RuntimeException("error constructing TopicCount : " + jsonString)
+      value = gson.fromJson(jsonString, classOf[Map[String, Int]])
+      if(value == null){
+        throw new RuntimeException("error constructing TopicCount : " + jsonString)
       }
     }catch {
       case e =>
@@ -46,8 +44,7 @@ private[consumer] object TopicCount {
 
 private[consumer] class TopicCount(val consumerIdString: String, val topicCountMap: Map[String, Int]) {
 
-  def getConsumerThreadIdsPerTopic()
-    : Map[String, Set[String]] = {
+  def getConsumerThreadIdsPerTopic(): Map[String, Set[String]] = {
     val consumerThreadIdsPerTopicMap = new mutable.HashMap[String, Set[String]]()
     for ((topic, nConsumers) <- topicCountMap) {
       val consumerSet = new mutable.HashSet[String]

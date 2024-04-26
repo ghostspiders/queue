@@ -18,8 +18,8 @@ package org.queue.javaapi.message
 import org.apache.logging.log4j.LogManager
 import org.queue.common.ErrorMapping
 import org.queue.message.{CompressionCodec, CompressionUtils, Message, MessageAndOffset, MessageSet, NoCompressionCodec}
-
 import java.nio.ByteBuffer
+import scala.jdk.CollectionConverters.CollectionHasAsScala
 
 class ByteBufferMessageSet(private val buffer: ByteBuffer,
                            private val initialOffset: Long = 0L,
@@ -43,7 +43,7 @@ class ByteBufferMessageSet(private val buffer: ByteBuffer,
         buffer
       case _ =>
 
-        val message = CompressionUtils.compress(asBuffer(messages), compressionCodec)
+        val message = CompressionUtils.compress(messages.asScala, compressionCodec)
         val buffer = ByteBuffer.allocate(message.serializedSize)
         message.serializeTo(buffer)
         buffer.rewind
@@ -65,17 +65,14 @@ class ByteBufferMessageSet(private val buffer: ByteBuffer,
 
   def getErrorCode = errorCode
 
-  override def iterator: java.util.Iterator[MessageAndOffset] = new java.util.Iterator[MessageAndOffset] {
+  override def iterator: Iterator[MessageAndOffset] = new Iterator[MessageAndOffset] {
     val underlyingIterator = underlying.iterator
     override def hasNext(): Boolean = {
       underlyingIterator.hasNext
     }
-
     override def next(): MessageAndOffset = {
       underlyingIterator.next
     }
-
-    override def remove = throw new UnsupportedOperationException("remove API on MessageSet is not supported")
   }
 
   override def toString: String = underlying.toString

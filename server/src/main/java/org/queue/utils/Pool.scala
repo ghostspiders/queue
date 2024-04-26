@@ -18,7 +18,7 @@ package org.queue.utils
 
 import java.util.ArrayList
 import java.util.concurrent._
-import scala.concurrent.JavaConversions
+import scala.jdk.CollectionConverters.CollectionHasAsScala
 
 class Pool[K,V] extends Iterable[(K, V)] {
 
@@ -26,7 +26,7 @@ class Pool[K,V] extends Iterable[(K, V)] {
   
   def this(m: collection.Map[K, V]) {
     this()
-    for((k,v) <- m.elements)
+    for((k,v) <- m)
       pool.put(k, v)
   }
   
@@ -40,10 +40,9 @@ class Pool[K,V] extends Iterable[(K, V)] {
   
   def remove(key: K): V = pool.remove(key)
   
-  def keys = JavaConversions.asSet(pool.keySet())
+  def keys = pool.keySet().asScala.toSet
   
-  def values: Iterable[V] = 
-    JavaConversions.asIterable(new ArrayList[V](pool.values()))
+  def values: Iterable[V] = new ArrayList[V](pool.values()).asScala
   
   def clear: Unit = pool.clear()
   

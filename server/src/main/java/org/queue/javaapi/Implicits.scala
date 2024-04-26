@@ -19,8 +19,8 @@ import org.apache.logging.log4j.LogManager
 import org.queue.javaapi.message.ByteBufferMessageSet
 import org.queue.producer.async.QueueItem
 import org.queue.serializer.Encoder
-
 import java.util.Arrays.asList
+import scala.collection.convert.ImplicitConversions.`list asScalaBuffer`
 
 private[javaapi] object Implicits {
   private val logger = LogManager.getLogger(getClass())
@@ -46,8 +46,7 @@ private[javaapi] object Implicits {
     producer.underlying
   }
 
-  implicit def toScalaEventHandler[T](eventHandler: org.queue.javaapi.producer.async.EventHandler[T])
-       : org.queue.producer.async.EventHandler[T] = {
+  implicit def toScalaEventHandler[T](eventHandler: org.queue.javaapi.producer.async.EventHandler[T]) : org.queue.producer.async.EventHandler[T] = {
     new org.queue.producer.async.EventHandler[T] {
       override def init(props: java.util.Properties) { eventHandler.init(props) }
       override def handle(events: Seq[QueueItem[T]], producer: org.queue.producer.SyncProducer, encoder: Encoder[T]) {
@@ -63,7 +62,7 @@ private[javaapi] object Implicits {
       override def init(props: java.util.Properties) { eventHandler.init(props) }
       override def handle(events: java.util.List[QueueItem[T]], producer: org.queue.javaapi.producer.SyncProducer,
                           encoder: Encoder[T]) {
-        eventHandler.handle(asBuffer(events), producer, encoder)
+        eventHandler.handle(events.toSeq, producer, encoder)
       }
       override def close { eventHandler.close }
     }
@@ -83,10 +82,10 @@ private[javaapi] object Implicits {
         cbkHandler.afterDequeuingExistingData(data)
       }
       override def beforeSendingData(data: Seq[QueueItem[T]] = null): scala.collection.mutable.Seq[QueueItem[T]] = {
-        asList(cbkHandler.beforeSendingData(asList(data)))
+        cbkHandler.beforeSendingData(asList(data)).toSeq.toBuffer
       }
       override def lastBatchBeforeClose: scala.collection.mutable.Seq[QueueItem[T]] = {
-        asBuffer(cbkHandler.lastBatchBeforeClose)
+        cbkHandler.lastBatchBeforeClose
       }
       override def close { cbkHandler.close }
     }
@@ -102,13 +101,11 @@ private[javaapi] object Implicits {
       override def afterEnqueue(data: QueueItem[T] = null.asInstanceOf[QueueItem[T]], added: Boolean) {
         cbkHandler.afterEnqueue(data, added)
       }
-      override def afterDequeuingExistingData(data: QueueItem[T] = null)
-      : java.util.List[QueueItem[T]] = {
+      override def afterDequeuingExistingData(data: QueueItem[T] = null) : java.util.List[QueueItem[T]] = {
         asList(cbkHandler.afterDequeuingExistingData(data))
       }
-      override def beforeSendingData(data: java.util.List[QueueItem[T]] = null)
-      : java.util.List[QueueItem[T]] = {
-        asBuffer(cbkHandler.beforeSendingData(asBuffer(data)))
+      override def beforeSendingData(data: java.util.List[QueueItem[T]] = null) : java.util.List[QueueItem[T]] = {
+        asList(cbkHandler.beforeSendingData(data.toSeq))
       }
       override def lastBatchBeforeClose: java.util.List[QueueItem[T]] = {
         asList(cbkHandler.lastBatchBeforeClose)

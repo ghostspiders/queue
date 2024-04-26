@@ -32,7 +32,7 @@ private[queue] class DefaultEventHandler[T](val config: ProducerConfig,
   override def init(props: Properties) { }
 
   override def handle(events: Seq[QueueItem[T]], syncProducer: SyncProducer, serializer: Encoder[T]) {
-    var processedEvents = events
+    val processedEvents = events
     if(cbkHandler != null)
       processedEvents = cbkHandler.beforeSendingData(events)
     send(serialize(collate(processedEvents), serializer), syncProducer)
@@ -84,7 +84,7 @@ private[queue] class DefaultEventHandler[T](val config: ProducerConfig,
           }
       }
     })
-    topicsAndPartitions.zip(messages)
+    topicsAndPartitions.zip(messages).toMap
   }
 
   private def collate(events: Seq[QueueItem[T]]): Map[(String,Int), Seq[T]] = {
@@ -101,7 +101,7 @@ private[queue] class DefaultEventHandler[T](val config: ProducerConfig,
         collatedEvents += ( (topic, p) -> topicPartitionEvents._1.map(q => q.getData).toSeq)
       }
     }
-    collatedEvents
+    collatedEvents.toMap
   }
 
   override def close = {

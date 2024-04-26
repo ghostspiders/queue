@@ -206,7 +206,7 @@ object ZkUtils {
     cluster
   }
 
-  def getPartitionsForTopics(zkClient: ZkClient, topics: Iterator[String]): mutable.Map[String, List[String]] = {
+  def getPartitionsForTopics(zkClient: ZkClient, topics: Iterator[String]): Map[String, List[String]] = {
     val ret = new mutable.HashMap[String, List[String]]()
     for (topic <- topics) {
       var partList: List[String] = Nil
@@ -219,7 +219,7 @@ object ZkUtils {
       partList = partList.sortWith((s,t) => s < t)
       ret += (topic -> partList)
     }
-    ret
+    ret.toMap
   }
 
   def setupPartition(zkClient : ZkClient, brokerId: Int, host: String, port: Int, topic: String, nParts: Int) {

@@ -16,14 +16,15 @@
 
 package org.queue.consumer
 
-import joptsimple.{OptionException, OptionParser, OptionSet, OptionSpec}
+import jdk.internal.joptsimple.{OptionException, OptionParser, OptionSet, OptionSpec}
 import org.I0Itec.zkclient.ZkClient
 import org.apache.logging.log4j.LogManager
 import org.queue.message.Message
 import org.queue.utils.{StringSerializer, Utils}
-
 import java.io.PrintStream
 import java.util.{Properties, Random}
+import scala.collection.convert.ImplicitConversions.`seq AsJavaList`
+import scala.jdk.CollectionConverters.CollectionHasAsScala
 
 /**
  * Consumer that dumps messages out to standard out.
@@ -98,7 +99,7 @@ object ConsoleConsumer {
     
     val topic = options.valueOf(topicIdOpt)
     val messageFormatterClass = Class.forName(options.valueOf(messageFormatterOpt))
-    val formatterArgs: Properties = tryParseFormatterArgs(options.valuesOf(messageFormatterArgOpt))
+    val formatterArgs: Properties = tryParseFormatterArgs(options.valuesOf(messageFormatterArgOpt).asScala)
     
     val maxMessages = if(options.has(maxMessagesOpt)) options.valueOf(maxMessagesOpt).intValue else -1
 
@@ -164,19 +165,20 @@ object ConsoleConsumer {
       }
     }
   }
-  
+
   def tryParseFormatterArgs(args: Iterable[String]): Properties = {
-    val splits = args.map(_ split "=").filterNot(_ == null).filterNot(_.length == 0)
-    if(!splits.forall(_.length == 2)) {
-      System.err.println("Invalid parser arguments: " + args.mkString(" "))
-      System.exit(1)
-    }
-    val props = new Properties
-    for(a <- splits)
-      props.put(a(0), a(1))
-    props
+        val splits = args.map(_ split "=").filterNot(_ == null).filterNot(_.length == 0)
+        if(!splits.forall(_.length == 2)) {
+          System.err.println("Invalid parser arguments: " + args.mkString(" "))
+          System.exit(1)
+        }
+        val props = new Properties
+        for(a <- splits)
+          props.put(a(0), a(1))
+        props
+
   }
-  
+
   trait MessageFormatter {
     def writeTo(message: Message, output: PrintStream)
     def init(props: Properties) {}

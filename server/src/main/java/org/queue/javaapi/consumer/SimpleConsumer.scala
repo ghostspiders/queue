@@ -19,6 +19,7 @@ package org.queue.javaapi.consumer
 import org.queue.api.{FetchRequest, MultiFetchResponse}
 import org.queue.message.ByteBufferMessageSet
 import org.queue.utils.threadsafe
+import scala.jdk.CollectionConverters.CollectionHasAsScala
 
 /**
  * A consumer of kafka messages
@@ -47,7 +48,7 @@ class SimpleConsumer(val host: String,
    *  @return a sequence of fetch responses
    */
   def multifetch(fetches: java.util.List[FetchRequest]): MultiFetchResponse = {
-    underlying.multifetch(asBuffer(fetches): _*)
+    underlying.multifetch(fetches.asScala.toSeq: _*)
   }
 
   /**

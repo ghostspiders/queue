@@ -21,7 +21,7 @@ import org.queue.serializer.Encoder
 import org.queue.utils.Utils
 import org.queue.javaapi.producer
 import org.queue.producer.async.QueueItem
-
+import scala.jdk.CollectionConverters.CollectionHasAsScala
 import java.util.Arrays.asList
 import java.util.Properties
 
@@ -63,7 +63,7 @@ class Producer[K,V](config: ProducerConfig,
            partitioner: Partitioner[K]) = {
     this(config, partitioner,
          new ProducerPool[V](config, encoder,
-                             new producer.async.EventHandler[V] {
+                             new org.queue.producer.async.EventHandler[V] {
                                override def init(props: Properties) { eventHandler.init(props) }
                                override def handle(events: Seq[QueueItem[V]], producer: producer.SyncProducer,
                                                    encoder: Encoder[V]) {
@@ -80,13 +80,13 @@ class Producer[K,V](config: ProducerConfig,
                                  cbkHandler.afterEnqueue(data, added)
                                }
                                override def afterDequeuingExistingData(data: QueueItem[V] = null): scala.collection.mutable.Seq[QueueItem[V]] = {
-                                 cbkHandler.afterDequeuingExistingData(data)
+                                 cbkHandler.afterDequeuingExistingData(data).asScala
                                }
                                override def beforeSendingData(data: Seq[QueueItem[V]] = null): scala.collection.mutable.Seq[QueueItem[V]] = {
-                                 asList(cbkHandler.beforeSendingData(asList(data)))
+                                 cbkHandler.beforeSendingData(asList(data)).asScala.toBuffer
                                }
                                override def lastBatchBeforeClose: scala.collection.mutable.Seq[QueueItem[V]] = {
-                                 asBuffer(cbkHandler.lastBatchBeforeClose)
+                                 cbkHandler.lastBatchBeforeClose.asScala.toBuffer
                                }
                                override def close { cbkHandler.close }
                              }))
@@ -97,9 +97,9 @@ class Producer[K,V](config: ProducerConfig,
    * synchronous or the asynchronous producer
    * @param producerData the producer data object that encapsulates the topic, key and message data
    */
-  def send(producerData: producer.ProducerData[K,V]) {
-    underlying.send(new producer.ProducerData[K,V](producerData.getTopic, producerData.getKey,
-                                                         asBuffer(producerData.getData)))
+  def send(producerData: org.queue.producer.ProducerData[K,V]) {
+    underlying.send(new org.queue.producer.ProducerData[K,V](producerData.getTopic, producerData.getKey,
+                                                         producerData.getData))
   }
 
   /**
@@ -107,8 +107,8 @@ class Producer[K,V](config: ProducerConfig,
    * @param producerData list of producer data objects that encapsulate the topic, key and message data
    */
   def send(producerData: java.util.List[producer.ProducerData[K,V]]) {
-    underlying.send(asBuffer(producerData).map(pd => new producer.ProducerData[K,V](pd.getTopic, pd.getKey,
-                                                         asBuffer(pd.getData))): _*)
+    underlying.send(producerData.asScala.map(pd => new producer.ProducerData[K,V](pd.getTopic, pd.getKey,
+                                                         pd.getData.asScala)): _*)
   }
 
   /**

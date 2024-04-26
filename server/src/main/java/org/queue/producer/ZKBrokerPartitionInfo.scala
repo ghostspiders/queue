@@ -21,7 +21,9 @@ import org.apache.zookeeper.Watcher.Event.KeeperState
 import org.queue.cluster.{Broker, Partition}
 import org.queue.utils.{StringSerializer, ZKConfig, ZkUtils}
 
+import scala.collection.convert.ImplicitConversions.`collection AsScalaIterable`
 import scala.collection.{SortedSet, mutable}
+import scala.jdk.CollectionConverters.CollectionHasAsScala
 
 private[producer] object ZKBrokerPartitionInfo {
   /**
@@ -204,7 +206,7 @@ private[producer] class ZKBrokerPartitionInfo(config: ZKConfig, producerCbk: (In
 
         parentPath match {
           case "/brokers/topics" =>        // this is a watcher for /broker/topics path
-            val updatedTopics = asBuffer(curChilds)
+            val updatedTopics = curChilds
             logger.debug("[BrokerTopicsListener] List of topics changed at " + parentPath + " Updated topics -> " +
               curChilds.toString)
             logger.debug("[BrokerTopicsListener] Old list of topics: " + oldBrokerTopicPartitionsMap.keySet.toString)
@@ -221,14 +223,14 @@ private[producer] class ZKBrokerPartitionInfo(config: ZKConfig, producerCbk: (In
           case "/brokers/ids"    =>        // this is a watcher for /broker/ids path
             logger.debug("[BrokerTopicsListener] List of brokers changed in the Kafka cluster " + parentPath +
               "\t Currently registered list of brokers -> " + curChilds.toString)
-            processBrokerChange(parentPath, curChilds)
+            processBrokerChange(parentPath, curChilds.asScala.toSeq)
           case _ =>
             val pathSplits = parentPath.split("/")
             val topic = pathSplits.last
             if(pathSplits.length == 4 && pathSplits(2).equals("topics")) {
               logger.debug("[BrokerTopicsListener] List of brokers changed at " + parentPath + "\t Currently registered " +
                 " list of brokers -> " + curChilds.toString + " for topic -> " + topic)
-              processNewBrokerInExistingTopic(topic, asBuffer(curChilds))
+              processNewBrokerInExistingTopic(topic, curChilds.asScala.toSeq)
             }
         }
 
@@ -240,7 +242,7 @@ private[producer] class ZKBrokerPartitionInfo(config: ZKConfig, producerCbk: (In
 
     def processBrokerChange(parentPath: String, curChilds: Seq[String]) {
       if(parentPath.equals(ZkUtils.BrokerIdsPath)) {
-        val updatedBrokerList = asBuffer(curChilds).map(bid => bid.toInt)
+        val updatedBrokerList = (curChilds).map(bid => bid.toInt)
         val newBrokers = updatedBrokerList.toSet &~ oldBrokerIdMap.keySet
         logger.debug("[BrokerTopicsListener] List of newly registered brokers: " + newBrokers.toString)
         newBrokers.foreach { bid =>

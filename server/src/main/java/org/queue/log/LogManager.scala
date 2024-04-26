@@ -255,7 +255,7 @@ private[queue] class LogManager(val config: KafkaConfig,
         }
         // should never reach here
         assert(false)
-        return allDone
+         allDone
       }
     }
   }

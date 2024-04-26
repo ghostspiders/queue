@@ -15,13 +15,12 @@
  */
 package org.queue.javaapi.producer
 
-import org.queue.api.ProducerRequest
 import org.queue.javaapi.message.ByteBufferMessageSet
 import org.queue.producer.SyncProducerConfig
+import org.queue.javaapi.Implicits._
+class SyncProducer(syncProducer: org.queue.producer.SyncProducer) {
 
-class SyncProducer(syncProducer: SyncProducer) {
-
-  def this(config: SyncProducerConfig) = this(new SyncProducer(config))
+  def this(config: SyncProducerConfig) = this(new org.queue.producer.SyncProducer(config))
 
   val underlying = syncProducer
 
@@ -29,14 +28,14 @@ class SyncProducer(syncProducer: SyncProducer) {
     underlying.send(topic, partition, messages)
   }
 
-  def send(topic: String, messages: ByteBufferMessageSet): Unit = send(topic,
-                                                                       ProducerRequest.RandomPartition,
-                                                                       messages)
+  def send(topic: String, messages: ByteBufferMessageSet): Unit = send(topic,org.queue.api.ProducerRequest.RandomPartition,
+    messages)
 
-  def multiSend(produces: Array[ProducerRequest]) {
-    val produceRequests = new Array[ProducerRequest](produces.length)
+  def multiSend(produces: Array[org.queue.javaapi.ProducerRequest]) {
+
+    val produceRequests = new Array[org.queue.api.ProducerRequest](produces.length)
     for(i <- 0 until produces.length)
-      produceRequests(i) = new ProducerRequest(produces(i).topic, produces(i).partition, produces(i).messages)
+      produceRequests(i) = new org.queue.api.ProducerRequest(produces(i).topic, produces(i).partition, produces(i).messages)
     underlying.multiSend(produceRequests)
   }
 

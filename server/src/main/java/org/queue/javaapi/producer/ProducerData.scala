@@ -16,15 +16,13 @@
 package org.queue.javaapi.producer
 
 import java.util.Arrays.asList
-
-
 class ProducerData[K, V](private val topic: String,
                          private val key: K,
                          private val data: java.util.List[V]) {
 
   def this(t: String, d: java.util.List[V]) = this(topic = t, key = null.asInstanceOf[K], data = d)
 
-  def this(t: String, d: V) = this(topic = t, key = null.asInstanceOf[K], data = asList(List(d)))
+  def this(t: String, d: V) = this(topic = t, key = null.asInstanceOf[K], data = asList(d))
 
   def getTopic: String = topic
 

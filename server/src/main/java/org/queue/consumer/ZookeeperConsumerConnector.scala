@@ -19,6 +19,7 @@ package org.queue.consumer
 import org.I0Itec.zkclient.exception.ZkNodeExistsException
 import org.I0Itec.zkclient.{IZkChildListener, IZkStateListener, ZkClient}
 import org.apache.logging.log4j.LogManager
+import org.apache.zookeeper.Watcher.Event.KeeperState
 import org.queue.api.OffsetRequest
 import org.queue.cluster.{Cluster, Partition}
 import org.queue.utils.{KafkaScheduler, Pool, StringSerializer, Utils, ZKGroupDirs, ZKGroupTopicDirs, ZkUtils}
@@ -26,6 +27,7 @@ import org.queue.utils.{KafkaScheduler, Pool, StringSerializer, Utils, ZKGroupDi
 import java.net.InetAddress
 import java.util.concurrent._
 import java.util.concurrent.atomic._
+import scala.collection.convert.ImplicitConversions.`collection asJava`
 import scala.collection.mutable
 
 /**
@@ -187,7 +189,7 @@ private[queue] class ZookeeperConsumerConnector(val config: ConsumerConfig,
 
     // explicitly trigger load balancing for this consumer
     loadBalancerListener.syncedRebalance
-    ret
+     ret.toMap
   }
 
   private def registerConsumerInZK(dirs: ZKGroupDirs, consumerIdString: String, topicCount: TopicCount) = {
@@ -347,13 +349,14 @@ private[queue] class ZookeeperConsumerConnector(val config: ConsumerConfig,
       // The child change watchers will be set inside rebalance when we read the children list. 
     }
 
+    override def handleSessionEstablishmentError(throwable: Throwable): Unit ={}
   }
 
   class ZKRebalancerListener(val group: String, val consumerIdString: String)
     extends IZkChildListener {
     private val dirs = new ZKGroupDirs(group)
-    private var oldPartitionsPerTopicMap: mutable.Map[String,List[String]] = new mutable.HashMap[String,List[String]]()
-    private var oldConsumersPerTopicMap: mutable.Map[String,List[String]] = new mutable.HashMap[String,List[String]]()
+    private var oldPartitionsPerTopicMap: Map[String,List[String]] = new mutable.HashMap[String,List[String]]().toMap
+    private var oldConsumersPerTopicMap: Map[String,List[String]] = new mutable.HashMap[String,List[String]]().toMap
 
     @throws(classOf[Exception])
     def handleChildChange(parentPath : String, curChilds : java.util.List[String]) {
@@ -372,7 +375,7 @@ private[queue] class ZookeeperConsumerConnector(val config: ConsumerConfig,
       }
     }
 
-    private def getConsumersPerTopic(group: String) : mutable.Map[String, List[String]] = {
+    private def getConsumersPerTopic(group: String) : Map[String, List[String]] = {
       val consumers = ZkUtils.getChildrenParentMayNotExist(zkClient, dirs.consumerRegistryDir)
       val consumersPerTopicMap = new mutable.HashMap[String, List[String]]
       for (consumer <- consumers) {
@@ -387,7 +390,7 @@ private[queue] class ZookeeperConsumerConnector(val config: ConsumerConfig,
       }
       for ( (topic, consumerList) <- consumersPerTopicMap )
         consumersPerTopicMap.put(topic, consumerList.sortWith((s,t) => s < t))
-      consumersPerTopicMap
+      consumersPerTopicMap.toMap
     }
 
     private def getRelevantTopicMap(myTopicThreadIdsMap: Map[String, Set[String]],
@@ -399,7 +402,7 @@ private[queue] class ZookeeperConsumerConnector(val config: ConsumerConfig,
       for ( (topic, consumerThreadIdSet) <- myTopicThreadIdsMap )
         if ( oldPartMap.get(topic) != newPartMap.get(topic) || oldConsumerMap.get(topic) != newConsumerMap.get(topic))
           relevantTopicThreadIdsMap += (topic -> consumerThreadIdSet)
-      relevantTopicThreadIdsMap
+      relevantTopicThreadIdsMap.toMap
     }
 
     private def getTopicCount(consumerId: String) : TopicCount = {
@@ -452,7 +455,7 @@ private[queue] class ZookeeperConsumerConnector(val config: ConsumerConfig,
       val cluster = ZkUtils.getCluster(zkClient)
       val consumersPerTopicMap = getConsumersPerTopic(group)
       val partitionsPerTopicMap = ZkUtils.getPartitionsForTopics(zkClient, myTopicThreadIdsMap.keys.iterator)
-      val relevantTopicThreadIdsMap = getRelevantTopicMap(myTopicThreadIdsMap, partitionsPerTopicMap, oldPartitionsPerTopicMap, consumersPerTopicMap, oldConsumersPerTopicMap)
+      val relevantTopicThreadIdsMap = getRelevantTopicMap(myTopicThreadIdsMap.toMap, partitionsPerTopicMap, oldPartitionsPerTopicMap, consumersPerTopicMap, oldConsumersPerTopicMap)
       if (relevantTopicThreadIdsMap.size <= 0) {
         logger.info("Consumer " + consumerIdString + " with " + consumersPerTopicMap + " doesn't need to rebalance.")
         return true
@@ -480,7 +483,7 @@ private[queue] class ZookeeperConsumerConnector(val config: ConsumerConfig,
           " for topic " + topic + " with consumers: " + curConsumers)
 
         for (consumerThreadId <- consumerThreadIdSet) {
-          val myConsumerPosition = curConsumers.findIndexOf(_ == consumerThreadId)
+          val myConsumerPosition = curConsumers.indexWhere(_ == consumerThreadId)
           assert(myConsumerPosition >= 0)
           val startPart = nPartsPerConsumer*myConsumerPosition + myConsumerPosition.min(nConsumersWithExtraPart)
           val nParts = nPartsPerConsumer + (if (myConsumerPosition + 1 > nConsumersWithExtraPart) 0 else 1)
