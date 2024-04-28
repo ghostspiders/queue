@@ -19,8 +19,10 @@ import org.apache.logging.log4j.LogManager
 import org.queue.javaapi.message.ByteBufferMessageSet
 import org.queue.producer.async.QueueItem
 import org.queue.serializer.Encoder
+
 import java.util.Arrays.asList
 import scala.collection.convert.ImplicitConversions.`list asScalaBuffer`
+import scala.jdk.CollectionConverters.{ SeqHasAsJava}
 
 private[javaapi] object Implicits {
   private val logger = LogManager.getLogger(getClass())
@@ -50,7 +52,7 @@ private[javaapi] object Implicits {
     new org.queue.producer.async.EventHandler[T] {
       override def init(props: java.util.Properties) { eventHandler.init(props) }
       override def handle(events: Seq[QueueItem[T]], producer: org.queue.producer.SyncProducer, encoder: Encoder[T]) {
-        eventHandler.handle(asList(events), producer, encoder)
+        eventHandler.handle(events.asJava, producer, encoder)
       }
       override def close { eventHandler.close }
     }
@@ -82,7 +84,7 @@ private[javaapi] object Implicits {
         cbkHandler.afterDequeuingExistingData(data)
       }
       override def beforeSendingData(data: Seq[QueueItem[T]] = null): scala.collection.mutable.Seq[QueueItem[T]] = {
-        cbkHandler.beforeSendingData(asList(data)).toSeq.toBuffer
+        cbkHandler.beforeSendingData(data.asJava)
       }
       override def lastBatchBeforeClose: scala.collection.mutable.Seq[QueueItem[T]] = {
         cbkHandler.lastBatchBeforeClose
@@ -102,14 +104,14 @@ private[javaapi] object Implicits {
         cbkHandler.afterEnqueue(data, added)
       }
       override def afterDequeuingExistingData(data: QueueItem[T] = null) : java.util.List[QueueItem[T]] = {
-        asList(cbkHandler.afterDequeuingExistingData(data))
+        cbkHandler.afterDequeuingExistingData(data).asJava
       }
       override def beforeSendingData(data: java.util.List[QueueItem[T]] = null) : java.util.List[QueueItem[T]] = {
-        asList(cbkHandler.beforeSendingData(data.toSeq))
+        cbkHandler.beforeSendingData(data.toSeq).asJava
       }
       override def lastBatchBeforeClose: java.util.List[QueueItem[T]] = {
-        asList(cbkHandler.lastBatchBeforeClose)
-      }
+        cbkHandler.lastBatchBeforeClose.asJava
+    }
       override def close { cbkHandler.close }
     }
   }

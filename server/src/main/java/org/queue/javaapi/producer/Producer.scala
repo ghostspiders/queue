@@ -22,7 +22,6 @@ import java.util.Properties
 import org.queue.producer.{Partitioner, ProducerConfig, ProducerPool}
 import org.queue.serializer.Encoder
 
-import java.util.Arrays.asList
 import scala.collection.convert.ImplicitConversions.`collection AsScalaIterable`
 import scala.jdk.CollectionConverters.ListHasAsScala
 
@@ -68,7 +67,7 @@ class Producer[K,V](config: ProducerConfig,
           override def handle(events: Seq[QueueItem[V]], producer: org.queue.producer.SyncProducer,
                               encoder: Encoder[V]) {
             import org.queue.javaapi.Implicits._
-            eventHandler.handle(asList(events), producer, encoder)
+            eventHandler.handle(events, producer, encoder)
           }
           override def close { eventHandler.close }
         },
@@ -84,7 +83,8 @@ class Producer[K,V](config: ProducerConfig,
             cbkHandler.afterDequeuingExistingData(data).asScala
           }
           override def beforeSendingData(data: Seq[QueueItem[V]] = null): scala.collection.mutable.Seq[QueueItem[V]] = {
-            cbkHandler.beforeSendingData(asList(data)).asScala
+            import org.queue.javaapi.Implicits._
+            cbkHandler.beforeSendingData(data)
           }
           override def lastBatchBeforeClose: scala.collection.mutable.Seq[QueueItem[V]] = {
             cbkHandler.lastBatchBeforeClose.asScala
