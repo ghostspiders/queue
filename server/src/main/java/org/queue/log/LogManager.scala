@@ -89,25 +89,28 @@ private[queue] class LogManager(val config: KafkaConfig,
   if(config.enableZookeeper) {
     kafkaZookeeper = new KafkaZooKeeper(config, this)
     kafkaZookeeper.startup
-    zkActor = new Actor {
+        zkActor = new Actor {
       def act() {
-        loop {
-          receive {
-            case topic: String =>
-              try {
-                kafkaZookeeper.registerTopicInZk(topic)
-              }
-              catch {
-                case e => logger.error(e) // log it and let it go
-              }
-            case StopActor =>
-              logger.info("zkActor stopped")
-              exit
-          }
+        var i = 0
+        while (i < 100000000){
+          receive
+          i += 1
         }
       }
+      def receive: Receive = {
+        case topic: String =>
+          try {
+            kafkaZookeeper.registerTopicInZk(topic)
+          }
+          catch {
+            case e => logger.error(e) // log it and let it go
+          }
+        case StopActor =>
+          logger.info("zkActor stopped")
+          exit
+      }
     }
-    zkActor.start
+    zkActor.preStart()
   }
 
   case object StopActor
@@ -140,7 +143,7 @@ private[queue] class LogManager(val config: KafkaConfig,
 
   def registerNewTopicInZK(topic: String) {
     if (config.enableZookeeper)
-      zkActor ! topic 
+      zkActor.sender() ! topic
   }
 
   /**
@@ -235,7 +238,7 @@ private[queue] class LogManager(val config: KafkaConfig,
     while(iter.hasNext)
       iter.next.close()
     if (config.enableZookeeper) {
-      zkActor ! StopActor
+      zkActor.sender() ! StopActor
       kafkaZookeeper.close
     }
   }

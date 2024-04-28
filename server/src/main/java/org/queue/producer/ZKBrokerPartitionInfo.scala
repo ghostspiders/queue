@@ -63,7 +63,7 @@ private[producer] class ZKBrokerPartitionInfo(config: ZKConfig, producerCbk: (In
   // maintain a map from topic -> list of (broker, num_partitions) from zookeeper
   private var topicBrokerPartitions = getZKTopicPartitionInfo
   // maintain a map from broker id to the corresponding Broker object
-  private var allBrokers = getZKBrokerInfo
+  private var allBrokers = getZKBrokerInfo.toMap
 
   // use just the brokerTopicsListener for all watchers
   private val brokerTopicsListener = new BrokerTopicsListener(topicBrokerPartitions, allBrokers)
@@ -118,7 +118,7 @@ private[producer] class ZKBrokerPartitionInfo(config: ZKConfig, producerCbk: (In
    * Generate a mapping from broker id to the host and port for all brokers
    * @return mapping from id to host and port of all brokers
    */
-  def getAllBrokerInfo: Map[Int, Broker] = allBrokers
+  def getAllBrokerInfo: Map[Int, Broker] = allBrokers.toMap
 
   def close = zkClient.close
 
@@ -340,7 +340,7 @@ private[producer] class ZKBrokerPartitionInfo(config: ZKConfig, producerCbk: (In
        */
       logger.info("ZK expired; release old list of broker partitions for topics ")
       topicBrokerPartitions = getZKTopicPartitionInfo
-      allBrokers = getZKBrokerInfo
+      allBrokers = getZKBrokerInfo.toMap
       brokerTopicsListener.resetState
 
       // register listener for change of brokers for each topic to keep topicsBrokerPartitions updated
@@ -352,6 +352,9 @@ private[producer] class ZKBrokerPartitionInfo(config: ZKConfig, producerCbk: (In
       // permanent nodes
     }
 
+    override def handleSessionEstablishmentError(throwable: Throwable): Unit = {
+
+    }
   }
 
 }

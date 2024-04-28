@@ -16,7 +16,7 @@
 
 package org.queue.api
 
-import org.queue.javaapi.message.ByteBufferMessageSet
+import org.queue.message.ByteBufferMessageSet
 import org.queue.network.Request
 import org.queue.utils.Utils
 

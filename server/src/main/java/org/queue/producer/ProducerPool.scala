@@ -108,7 +108,7 @@ class ProducerPool[V](private val config: ProducerConfig,
    */
   def send(poolData: ProducerPoolData[V]*) {
     val distinctBrokers = poolData.map(pd => pd.getBidPid.brokerId).distinct
-    var remainingRequests = poolData.toSeq
+    var remainingRequests = poolData
     distinctBrokers.foreach { bid =>
       val requestsForThisBid = remainingRequests partition (_.getBidPid.brokerId == bid)
       remainingRequests = requestsForThisBid._2
