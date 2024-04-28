@@ -91,7 +91,7 @@ private[javaapi] object Implicits {
     }
   }
 
-   def toJavaCbkHandler[T](cbkHandler: org.queue.producer.async.CallbackHandler[T])
+  implicit def toJavaCbkHandler[T](cbkHandler: org.queue.producer.async.CallbackHandler[T])
       : org.queue.javaapi.producer.async.CallbackHandler[T] = {
     new org.queue.javaapi.producer.async.CallbackHandler[T] {
       override def init(props: java.util.Properties) { cbkHandler.init(props)}

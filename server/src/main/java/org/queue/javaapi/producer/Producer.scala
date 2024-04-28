@@ -15,22 +15,22 @@
 */
 
 package org.queue.javaapi.producer
-
-import org.queue.javaapi.producer
+import org.queue.utils.Utils
 import org.queue.producer.async.QueueItem
+
+import java.util.Properties
 import org.queue.producer.{Partitioner, ProducerConfig, ProducerPool}
 import org.queue.serializer.Encoder
-import org.queue.utils.Utils
 
 import java.util.Arrays.asList
-import java.util.Properties
 import scala.collection.convert.ImplicitConversions.`collection AsScalaIterable`
-import scala.jdk.CollectionConverters.CollectionHasAsScala
+import scala.jdk.CollectionConverters.ListHasAsScala
 
 class Producer[K,V](config: ProducerConfig,
                     partitioner: Partitioner[K],
                     producerPool: ProducerPool[V],
-                    populateProducerPool: Boolean = true) {
+                    populateProducerPool: Boolean = true)
+{
 
   private val underlying = new org.queue.producer.Producer[K,V](config, partitioner, producerPool, populateProducerPool, null)
 
@@ -58,39 +58,39 @@ class Producer[K,V](config: ProducerConfig,
    */
   def this(config: ProducerConfig,
            encoder: Encoder[V],
-           eventHandler: producer.async.EventHandler[V],
-           cbkHandler: producer.async.CallbackHandler[V],
+           eventHandler: org.queue.javaapi.producer.async.EventHandler[V],
+           cbkHandler: org.queue.javaapi.producer.async.CallbackHandler[V],
            partitioner: Partitioner[K]) = {
     this(config, partitioner,
-         new ProducerPool[V](config, encoder,
-                             new org.queue.producer.async.EventHandler[V] {
-                               override def init(props: Properties) { eventHandler.init(props) }
-                               override def handle(events: Seq[QueueItem[V]], producer: org.queue.producer.SyncProducer,
-                                                   encoder: Encoder[V]) {
-                                 import org.queue.javaapi.Implicits._
-                                 eventHandler.handle(asList(events), producer, encoder)
-                               }
-                               override def close { eventHandler.close }
-                             },
-                             new org.queue.producer.async.CallbackHandler[V] {
-                               override def init(props: Properties) { cbkHandler.init(props)}
-                               override def beforeEnqueue(data: QueueItem[V] = null.asInstanceOf[QueueItem[V]]): QueueItem[V] = {
-                                 cbkHandler.beforeEnqueue(data)
-                               }
-                               override def afterEnqueue(data: QueueItem[V] = null.asInstanceOf[QueueItem[V]], added: Boolean) {
-                                 cbkHandler.afterEnqueue(data, added)
-                               }
-                               override def afterDequeuingExistingData(data: QueueItem[V] = null): scala.collection.mutable.Seq[QueueItem[V]] = {
-                                 cbkHandler.afterDequeuingExistingData(data).toBuffer
-                               }
-                               override def beforeSendingData(data: Seq[QueueItem[V]] = null): scala.collection.mutable.Seq[QueueItem[V]] = {
-                                 cbkHandler.beforeSendingData(asList(data)).asScala.toBuffer
-                               }
-                               override def lastBatchBeforeClose: scala.collection.mutable.Seq[QueueItem[V]] = {
-                                 cbkHandler.lastBatchBeforeClose.asScala.toBuffer
-                               }
-                               override def close { cbkHandler.close }
-                             }))
+      new ProducerPool[V](config, encoder,
+        new org.queue.producer.async.EventHandler[V] {
+          override def init(props: Properties) { eventHandler.init(props) }
+          override def handle(events: Seq[QueueItem[V]], producer: org.queue.producer.SyncProducer,
+                              encoder: Encoder[V]) {
+            import org.queue.javaapi.Implicits._
+            eventHandler.handle(asList(events), producer, encoder)
+          }
+          override def close { eventHandler.close }
+        },
+        new org.queue.producer.async.CallbackHandler[V] {
+          override def init(props: Properties) { cbkHandler.init(props)}
+          override def beforeEnqueue(data: QueueItem[V] = null.asInstanceOf[QueueItem[V]]): QueueItem[V] = {
+            cbkHandler.beforeEnqueue(data)
+          }
+          override def afterEnqueue(data: QueueItem[V] = null.asInstanceOf[QueueItem[V]], added: Boolean) {
+            cbkHandler.afterEnqueue(data, added)
+          }
+          override def afterDequeuingExistingData(data: QueueItem[V] = null): scala.collection.mutable.Seq[QueueItem[V]] = {
+            cbkHandler.afterDequeuingExistingData(data).asScala
+          }
+          override def beforeSendingData(data: Seq[QueueItem[V]] = null): scala.collection.mutable.Seq[QueueItem[V]] = {
+            cbkHandler.beforeSendingData(asList(data)).asScala
+          }
+          override def lastBatchBeforeClose: scala.collection.mutable.Seq[QueueItem[V]] = {
+            cbkHandler.lastBatchBeforeClose.asScala
+          }
+          override def close { cbkHandler.close }
+        }))
   }
 
   /**

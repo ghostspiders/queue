@@ -32,9 +32,9 @@ private[queue] class DefaultEventHandler[T](val config: ProducerConfig,
   override def init(props: Properties) { }
 
   override def handle(events: Seq[QueueItem[T]], syncProducer: SyncProducer, serializer: Encoder[T]) {
-    val processedEvents = events
+    var processedEvents = events
     if(cbkHandler != null)
-      processedEvents = cbkHandler.beforeSendingData(events)
+      processedEvents = cbkHandler.beforeSendingData(events).toSeq
     send(serialize(collate(processedEvents), serializer), syncProducer)
   }
 
