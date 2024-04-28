@@ -80,7 +80,7 @@ private[queue] class BoundedByteBufferReceive(val maxSize: Int) extends Receive 
     catch {
       case e: OutOfMemoryError =>
         throw new RuntimeException("OOME with size " + size, e)
-      case e2 =>
+      case e2 : Throwable =>
         throw e2
     }
     buffer

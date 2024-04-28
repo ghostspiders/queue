@@ -25,7 +25,6 @@ import org.queue.message.{ByteBufferMessageSet, NoCompressionCodec}
 import org.queue.producer.async.{AsyncProducer, AsyncProducerConfig, CallbackHandler, DefaultEventHandler, EventHandler}
 import org.queue.serializer.Encoder
 import org.queue.utils.Utils
-
 import java.util.Properties
 import java.util.concurrent.{ConcurrentHashMap, ConcurrentMap}
 

@@ -59,7 +59,7 @@ object Utils {
           fun()
         }
         catch {
-          case t =>
+          case t : Throwable=>
             // log any error and the stack trace
             logger.error(t, t)
             logger.error(stackTrace(t), t)
@@ -528,7 +528,7 @@ object Utils {
       logger.info(successMsg + tempSplit(0) + " : " + Integer.parseInt(tempSplit(1).trim))
       map += tempSplit(0).asInstanceOf[K] -> Integer.parseInt(tempSplit(1).trim).asInstanceOf[V]
       } catch {
-          case _ =>  logger.error(exceptionMsg + ": " + csVals(i))
+          case _ : Throwable=>  logger.error(exceptionMsg + ": " + csVals(i))
         }
     }
     map.toMap

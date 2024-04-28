@@ -77,7 +77,7 @@ class KafkaServer(val config: KafkaConfig) {
       logger.info("Server started.")
     }
     catch {
-      case e =>
+      case e : Throwable =>
         logger.fatal(e)
         logger.fatal(Utils.stackTrace(e))
         shutdown
@@ -102,7 +102,7 @@ class KafkaServer(val config: KafkaConfig) {
         cleanShutDownFile.createNewFile
       }
       catch {
-        case e =>
+        case e : Throwable =>
           logger.fatal(e)
           logger.fatal(Utils.stackTrace(e))
       }

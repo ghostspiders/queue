@@ -134,7 +134,7 @@ private[queue] class ZookeeperConsumerConnector(val config: ConsumerConfig,
         }
       }
       catch {
-        case e =>
+        case e : Throwable =>
           logger.fatal(e)
           logger.fatal(Utils.stackTrace(e))
       }
@@ -286,7 +286,7 @@ private[queue] class ZookeeperConsumerConnector(val config: ConsumerConfig,
         return -1
     }
     catch {
-      case e =>
+      case e : Throwable=>
         logger.error("error in getConsumedOffset JMX ", e)
     }
     return -2
@@ -305,7 +305,7 @@ private[queue] class ZookeeperConsumerConnector(val config: ConsumerConfig,
       producedOffset = latestOffset(0)
     }
     catch {
-      case e =>
+      case e : Throwable =>
         logger.error("error in getLatestOffset jmx ", e)
     }
     finally {
@@ -425,7 +425,7 @@ private[queue] class ZookeeperConsumerConnector(val config: ConsumerConfig,
             done = rebalance
           }
           catch {
-            case e =>
+            case e : Throwable =>
               // occasionally, we may hit a ZK exception because the ZK state is changing while we are iterating.
               // For example, a ZK node can disappear between the time we get all children and the time we try to get
               // the value of a child. Just let this go since another rebalance will be triggered.
@@ -537,7 +537,7 @@ private[queue] class ZookeeperConsumerConnector(val config: ConsumerConfig,
         // The node hasn't been deleted by the original owner. So wait a bit and retry.
           logger.info("waiting for the partition ownership to be deleted: " + partition)
           return false
-        case e2 => throw e2
+        case e2 : Throwable => throw e2
       }
       addPartitionTopicInfo(topicDirs, partition, topic, consumerThreadId)
       true

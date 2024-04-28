@@ -56,7 +56,7 @@ object Queue {
       kafkaServerStartble.awaitShutdown
     }
     catch {
-      case e => logger.fatal(e)
+      case e : Throwable => logger.fatal(e)
     }
     System.exit(0)
   }

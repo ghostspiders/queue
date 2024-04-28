@@ -16,21 +16,21 @@
 
 package org.queue.javaapi.producer
 
+import org.queue.javaapi.producer
+import org.queue.producer.async.QueueItem
 import org.queue.producer.{Partitioner, ProducerConfig, ProducerPool}
 import org.queue.serializer.Encoder
 import org.queue.utils.Utils
-import org.queue.javaapi.producer
-import org.queue.producer.async.QueueItem
-import scala.jdk.CollectionConverters.CollectionHasAsScala
+
 import java.util.Arrays.asList
 import java.util.Properties
+import scala.collection.convert.ImplicitConversions.`collection AsScalaIterable`
+import scala.jdk.CollectionConverters.CollectionHasAsScala
 
 class Producer[K,V](config: ProducerConfig,
                     partitioner: Partitioner[K],
                     producerPool: ProducerPool[V],
-                    populateProducerPool: Boolean = true) /* for testing purpose only. Applications should ideally */
-                                                          /* use the other constructor*/
-{
+                    populateProducerPool: Boolean = true) {
 
   private val underlying = new org.queue.producer.Producer[K,V](config, partitioner, producerPool, populateProducerPool, null)
 
@@ -65,13 +65,14 @@ class Producer[K,V](config: ProducerConfig,
          new ProducerPool[V](config, encoder,
                              new org.queue.producer.async.EventHandler[V] {
                                override def init(props: Properties) { eventHandler.init(props) }
-                               override def handle(events: Seq[QueueItem[V]], producer: producer.SyncProducer,
+                               override def handle(events: Seq[QueueItem[V]], producer: org.queue.producer.SyncProducer,
                                                    encoder: Encoder[V]) {
+                                 import org.queue.javaapi.Implicits._
                                  eventHandler.handle(asList(events), producer, encoder)
                                }
                                override def close { eventHandler.close }
                              },
-                             new producer.async.CallbackHandler[V] {
+                             new org.queue.producer.async.CallbackHandler[V] {
                                override def init(props: Properties) { cbkHandler.init(props)}
                                override def beforeEnqueue(data: QueueItem[V] = null.asInstanceOf[QueueItem[V]]): QueueItem[V] = {
                                  cbkHandler.beforeEnqueue(data)
@@ -80,7 +81,7 @@ class Producer[K,V](config: ProducerConfig,
                                  cbkHandler.afterEnqueue(data, added)
                                }
                                override def afterDequeuingExistingData(data: QueueItem[V] = null): scala.collection.mutable.Seq[QueueItem[V]] = {
-                                 cbkHandler.afterDequeuingExistingData(data).asScala
+                                 cbkHandler.afterDequeuingExistingData(data).toBuffer
                                }
                                override def beforeSendingData(data: Seq[QueueItem[V]] = null): scala.collection.mutable.Seq[QueueItem[V]] = {
                                  cbkHandler.beforeSendingData(asList(data)).asScala.toBuffer
@@ -97,18 +98,19 @@ class Producer[K,V](config: ProducerConfig,
    * synchronous or the asynchronous producer
    * @param producerData the producer data object that encapsulates the topic, key and message data
    */
-  def send(producerData: org.queue.producer.ProducerData[K,V]) {
+  def send(producerData: org.queue.javaapi.producer.ProducerData[K,V]) {
     underlying.send(new org.queue.producer.ProducerData[K,V](producerData.getTopic, producerData.getKey,
-                                                         producerData.getData))
+      producerData.getData.toSeq))
   }
 
   /**
    * Use this API to send data to multiple topics
    * @param producerData list of producer data objects that encapsulate the topic, key and message data
    */
-  def send(producerData: java.util.List[producer.ProducerData[K,V]]) {
-    underlying.send(producerData.asScala.map(pd => new producer.ProducerData[K,V](pd.getTopic, pd.getKey,
-                                                         pd.getData.asScala)): _*)
+  def send(producerData: java.util.List[org.queue.javaapi.producer.ProducerData[K,V]]) {
+    for (elem <- producerData) {
+      send(elem)
+    }
   }
 
   /**

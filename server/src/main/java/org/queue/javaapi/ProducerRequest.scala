@@ -23,6 +23,7 @@ import java.nio.ByteBuffer
 class ProducerRequest(val topic: String,
                       val partition: Int,
                       val messages: org.queue.javaapi.message.ByteBufferMessageSet) extends Request(RequestKeys.Produce) {
+  import Implicits._
   private val underlying = new org.queue.api.ProducerRequest(topic, partition, messages)
 
   def writeTo(buffer: ByteBuffer) { underlying.writeTo(buffer) }

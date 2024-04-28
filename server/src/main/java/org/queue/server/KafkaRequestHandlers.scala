@@ -72,7 +72,7 @@ private[queue] class KafkaRequestHandlers(val logManager: LogManager) {
         logger.trace(request.messages.sizeInBytes + " bytes written to logs.")
     }
     catch {
-      case e =>
+      case e : Throwable =>
         logger.error("error processing " + requestHandlerName + " on " + request.topic + ":" + partition, e)
         e match {
           case _: IOException =>
@@ -111,7 +111,7 @@ private[queue] class KafkaRequestHandlers(val logManager: LogManager) {
       response = new MessageSetSend(log.read(fetchRequest.offset, fetchRequest.maxSize))
     }
     catch {
-      case e =>
+      case e : Throwable =>
         logger.error("error when processing request " + fetchRequest, e)
         response=new MessageSetSend(MessageSet.Empty, ErrorMapping.codeFor(e.getClass.asInstanceOf[Class[Throwable]]))
     }

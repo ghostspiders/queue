@@ -96,7 +96,7 @@ class SimpleConsumer(val host: String,
           }catch {
             case ioe: java.io.IOException => channel = null; throw ioe;
           }
-        case e => throw e
+        case e : Throwable => throw e
       }
       val endTime = SystemTime.nanoseconds
       SimpleConsumerStats.recordFetchRequest(endTime - startTime)
@@ -130,7 +130,7 @@ class SimpleConsumer(val host: String,
           }catch {
             case ioe: java.io.IOException => channel = null; throw ioe;
           }
-        case e => throw e        
+        case e : Throwable => throw e
       }
       val endTime = SystemTime.nanoseconds
       SimpleConsumerStats.recordFetchRequest(endTime - startTime)

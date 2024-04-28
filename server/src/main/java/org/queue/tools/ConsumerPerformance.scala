@@ -116,7 +116,7 @@ object ConsumerPerformance {
             catch {
               case _: InterruptedException =>
               case _: ClosedByInterruptException =>
-              case e => throw e
+              case e : Throwable => throw e
             }
             totalNumMsgs.addAndGet(nMessages)
             totalNumBytes.addAndGet(totalBytesRead)
@@ -150,7 +150,7 @@ object ConsumerPerformance {
           consumerConnector.shutdown
         }
         catch {
-          case _ =>
+          case _ : Throwable=>
         }
         println("total nMsgs: " + totalNumMsgs)
         println("totalBytesRead " + totalNumBytes)

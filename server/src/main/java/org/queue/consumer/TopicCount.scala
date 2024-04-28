@@ -33,7 +33,7 @@ private[consumer] object TopicCount {
         throw new RuntimeException("error constructing TopicCount : " + jsonString)
       }
     }catch {
-      case e =>
+      case e : Throwable =>
         logger.error("error parsing consumer json string " + jsonString, e)
         throw e
     }

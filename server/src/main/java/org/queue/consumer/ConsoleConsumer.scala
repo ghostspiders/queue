@@ -129,7 +129,7 @@ object ConsoleConsumer {
         try {
           formatter.writeTo(message, System.out)
         } catch {
-          case e =>
+          case e :Throwable =>
             if (skipMessageOnError)
               logger.error("error processing message, skipping and resume consumption: " + e)
             else
@@ -137,7 +137,7 @@ object ConsoleConsumer {
         }
       }
     } catch {
-      case e => logger.error("error processing message, stop consuming: " + e)
+      case  e : Throwable => logger.error("error processing message, stop consuming: " + e)
     }
       
     System.out.flush()
@@ -201,7 +201,7 @@ object ConsoleConsumer {
       zk.deleteRecursive(dir)
       zk.close()
     } catch {
-      case _ => // swallow
+      case   _ : Throwable => // swallow
     }
   }
    

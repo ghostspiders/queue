@@ -80,7 +80,7 @@ object ZkUtils {
         }
         catch {
           case e1: ZkNoNodeException => // the node disappeared; treat as if node existed and let caller handles this
-          case e2 => throw e2
+          case e2 : Throwable => throw e2
         }
         if (storedData == null || storedData != data) {
           logger.info("conflict in " + path + " data: " + data + " stored data: " + storedData)
@@ -91,7 +91,7 @@ object ZkUtils {
           logger.info(path + " exists with value " + data + " during connection loss; this is ok")
         }
       }
-      case e2 => throw e2
+      case e2 : Throwable => throw e2
     }
   }
 
@@ -111,10 +111,10 @@ object ZkUtils {
         }
         catch {
           case e: ZkNodeExistsException => client.writeData(path, data)
-          case e2 => throw e2
+          case e2 : Throwable => throw e2
         }
       }
-      case e2 => throw e2
+      case e2 : Throwable => throw e2
     }
   }
 
@@ -131,7 +131,7 @@ object ZkUtils {
         createParentPath(client, path)
         client.createEphemeral(path, data)
       }
-      case e2 => throw e2
+      case e2 : Throwable => throw e2
     }
   }
 
@@ -143,7 +143,7 @@ object ZkUtils {
       case e: ZkNoNodeException =>
         // this can happen during a connection loss event, return normally
         logger.info(path + " deleted during connection loss; this is ok")
-      case e2 => throw e2
+      case e2 : Throwable => throw e2
     }
   }
 
@@ -155,7 +155,7 @@ object ZkUtils {
       case e: ZkNoNodeException =>
         // this can happen during a connection loss event, return normally
         logger.info(path + " deleted during connection loss; this is ok")
-      case e2 => throw e2
+      case e2 : Throwable => throw e2
     }
   }
 
@@ -182,9 +182,9 @@ object ZkUtils {
     catch {
       case e: ZkNoNodeException =>
         return Nil
-      case e2 => throw e2
+      case e2 : Throwable => throw e2
     }
-    return ret.asInstanceOf[Seq[String]]
+    ret.asInstanceOf[Seq[String]]
   }
 
   /**

@@ -84,7 +84,7 @@ class FetcherRunnable(val name: String,
             case e1: IOException =>
               // something is wrong with the socket, re-throw the exception to stop the fetcher
               throw e1
-            case e2 =>
+            case e2 : Throwable =>
               if (!stopped) {
                 // this is likely a repeatable error, log it and trigger an exception in the consumer
                 logger.error("error in FetcherRunnable for " + info, e2)
@@ -104,7 +104,7 @@ class FetcherRunnable(val name: String,
       }
     }
     catch {
-      case e =>
+      case e : Throwable =>
         if (stopped)
           logger.info("FecherRunnable " + this + " interrupted")
         else

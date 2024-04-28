@@ -18,7 +18,6 @@ package org.queue.log
 
 import akka.actor.Actor
 import org.apache.logging.log4j.LogManager
-
 import java.io._
 import org.queue.utils._
 
@@ -26,8 +25,6 @@ import scala.collection._
 import java.util.concurrent.CountDownLatch
 import org.queue.server.{KafkaConfig, KafkaZooKeeper}
 import org.queue.common.{InvalidPartitionException, InvalidTopicException}
-
-import java.lang.invoke.MethodHandles.loop
 import scala.sys.exit
 
 /**
@@ -103,7 +100,7 @@ private[queue] class LogManager(val config: KafkaConfig,
             kafkaZookeeper.registerTopicInZk(topic)
           }
           catch {
-            case e => logger.error(e) // log it and let it go
+            case e : Throwable=> logger.error(e) // log it and let it go
           }
         case StopActor =>
           logger.info("zkActor stopped")
@@ -281,7 +278,7 @@ private[queue] class LogManager(val config: KafkaConfig,
           log.flush
       }
       catch {
-        case e =>
+        case e  : Throwable=>
           logger.error("error flushing " + log.getTopicName, e)
           e match {
             case _: IOException =>

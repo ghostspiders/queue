@@ -79,7 +79,7 @@ class EmbeddedConsumer(private val consumerConfig: ConsumerConfig,
               }
             }
             catch {
-              case e =>
+              case e : Throwable =>
                 logger.fatal(e + Utils.stackTrace(e))
                 logger.fatal(topic + " stream " + i + " unexpectedly exited")
             }
