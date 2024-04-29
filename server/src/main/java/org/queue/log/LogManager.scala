@@ -291,7 +291,6 @@ private[queue] class LogManager(val config: KafkaConfig,
     }     
   }
 
-
   def getAllTopics(): Iterator[String] = logs.keys.iterator
   def getTopicPartitionsMap() = topicPartitionsMap
 }
