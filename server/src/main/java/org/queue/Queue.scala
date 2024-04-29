@@ -25,11 +25,11 @@ object Queue {
   private val logger = LogManager.getLogger(Queue.getClass)
 
   def main(args: Array[String]): Unit = {
-    val kafkaLog4jMBeanName = "kafka:type=kafka.KafkaLog4j"
-    Utils.swallow(logger.warn, Utils.registerMBean(LogManager.getContext(), kafkaLog4jMBeanName))
+//    val kafkaLog4jMBeanName = "kafka:type=kafka.KafkaLog4j"
+//    Utils.swallow(logger.warn, Utils.registerMBean(LogManager.getContext(), kafkaLog4jMBeanName))
 
     if(args.length != 1 && args.length != 2) {
-      println("USAGE: java [options] " + classOf[KafkaServer].getSimpleName() + " server.properties [consumer.properties")
+      println("USAGE: java [options] " + classOf[KafkaServer].getSimpleName() + " server.properties [consumer.properties]")
       System.exit(1)
     }
   
