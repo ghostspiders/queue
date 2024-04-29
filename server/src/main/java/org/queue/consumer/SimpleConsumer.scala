@@ -16,11 +16,12 @@
 
 package org.queue.consumer
 
-import org.apache.logging.log4j.LogManager
 import org.queue.api.{FetchRequest, MultiFetchRequest, MultiFetchResponse, OffsetRequest}
 import org.queue.message.ByteBufferMessageSet
 import org.queue.network.{BoundedByteBufferReceive, BoundedByteBufferSend, Receive, Request}
 import org.queue.utils.{SnapshotStats, SystemTime, Utils, threadsafe}
+import org.slf4j.LoggerFactory
+import org.slf4j.event.Level
 
 import java.net._
 import java.nio.channels._
@@ -33,7 +34,7 @@ class SimpleConsumer(val host: String,
                      val port: Int,
                      val soTimeout: Int,
                      val bufferSize: Int) {
-  private val logger = LogManager.getLogger(getClass())
+  private val logger = LoggerFactory.getLogger(getClass())
   private var channel : SocketChannel = null
   private val lock = new Object()
 
@@ -59,8 +60,8 @@ class SimpleConsumer(val host: String,
   private def close(channel: SocketChannel) = {
     if(logger.isDebugEnabled)
       logger.debug("Disconnecting from " + channel.socket.getRemoteSocketAddress())
-    Utils.swallow(logger.warn, channel.close())
-    Utils.swallow(logger.warn, channel.socket.close())
+    Utils.swallow(Level.WARN, channel.close())
+    Utils.swallow(Level.WARN, channel.socket.close())
   }
 
   def close() {
@@ -220,10 +221,10 @@ class SimpleConsumerStats extends SimpleConsumerStatsMBean {
 }
 
 object SimpleConsumerStats {
-  private val logger = LogManager.getLogger(getClass())
+  private val logger = LoggerFactory.getLogger(getClass())
   private val simpleConsumerstatsMBeanName = "kafka:type=kafka.SimpleConsumerStats"
   private val stats = new SimpleConsumerStats
-  Utils.swallow(logger.warn, Utils.registerMBean(stats, simpleConsumerstatsMBeanName))
+  Utils.swallow(Level.ERROR, Utils.registerMBean(stats, simpleConsumerstatsMBeanName))
 
   def recordFetchRequest(requestMs: Long) = stats.recordFetchRequest(requestMs)
   def recordConsumptionThroughput(data: Long) = stats.recordConsumptionThroughput(data)

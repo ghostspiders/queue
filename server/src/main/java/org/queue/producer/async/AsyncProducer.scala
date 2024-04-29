@@ -16,11 +16,12 @@
 
 package org.queue.producer.async
 
-import org.apache.logging.log4j.{Level, LogManager}
+import org.apache.logging.log4j.Level
 import org.queue.api.ProducerRequest
 import org.queue.producer.{ProducerConfig, SyncProducer}
 import org.queue.serializer.Encoder
 import org.queue.utils.Utils
+import org.slf4j.LoggerFactory
 
 import java.lang.management.ManagementFactory
 import java.util.concurrent.LinkedBlockingQueue
@@ -41,7 +42,7 @@ private[queue] class AsyncProducer[T](config: AsyncProducerConfig,
                                       eventHandlerProps: Properties = null,
                                       cbkHandler: CallbackHandler[T] = null,
                                       cbkHandlerProps: Properties = null) {
-  private val logger = LogManager.getLogger(classOf[AsyncProducer[T]])
+  private val logger = LoggerFactory.getLogger(classOf[AsyncProducer[T]])
   private val closed = new AtomicBoolean(false)
   private val queue = new LinkedBlockingQueue[QueueItem[T]](config.queueSize)
   // initialize the callback handlers
@@ -120,7 +121,7 @@ private[queue] class AsyncProducer[T](config: AsyncProducerConfig,
   }
 
   // for testing only
-  def setLoggerLevel(level: Level) = logger.atLevel(level)
+  def setLoggerLevel(level: Level) = logger.isDebugEnabled
 }
 
 class QueueItem[T](data: T, topic: String, partition: Int) {

@@ -16,8 +16,9 @@
 
 package org.queue.consumer.storage
 
-import org.apache.logging.log4j.{LogManager, Logger}
 import org.queue.utils.{Utils, nonthreadsafe}
+import org.slf4j.event.Level
+import org.slf4j.{Logger, LoggerFactory}
 
 import java.sql._
 
@@ -27,7 +28,7 @@ import java.sql._
 @nonthreadsafe
 class OracleOffsetStorage(val connection: Connection) extends OffsetStorage {
   
-  private val logger: Logger = LogManager.getLogger(classOf[OracleOffsetStorage])
+  private val logger: Logger = LoggerFactory.getLogger(classOf[OracleOffsetStorage])
   private val lock = new Object
   connection.setAutoCommit(false)
   
@@ -61,7 +62,7 @@ class OracleOffsetStorage(val connection: Connection) extends OffsetStorage {
   }
   
   def close() {
-    Utils.swallow(logger.error, connection.close())
+    Utils.swallow(Level.ERROR, connection.close())
   }
   
   /**
@@ -133,25 +134,25 @@ class OracleOffsetStorage(val connection: Connection) extends OffsetStorage {
   private def commitOrRollback(connection: Connection, commit: Boolean) {
     if(connection != null) {
       if(commit)
-        Utils.swallow(logger.error, connection.commit())
+        Utils.swallow(Level.ERROR, connection.commit())
       else
-        Utils.swallow(logger.error, connection.rollback())
+        Utils.swallow(Level.ERROR, connection.rollback())
     }
   }
   
   private def close(rs: ResultSet) {
     if(rs != null)
-      Utils.swallow(logger.error, rs.close())
+      Utils.swallow(Level.ERROR, rs.close())
   }
   
   private def close(stmt: PreparedStatement) {
     if(stmt != null)
-      Utils.swallow(logger.error, stmt.close())
+      Utils.swallow(Level.ERROR, stmt.close())
   }
   
   private def close(connection: Connection) {
     if(connection != null)
-      Utils.swallow(logger.error, connection.close())
+      Utils.swallow(Level.ERROR, connection.close())
   }
   
 }

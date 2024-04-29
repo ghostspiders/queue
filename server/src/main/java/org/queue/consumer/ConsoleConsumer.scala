@@ -18,9 +18,10 @@ package org.queue.consumer
 
 import jdk.internal.joptsimple.{OptionException, OptionParser, OptionSet, OptionSpec}
 import org.I0Itec.zkclient.ZkClient
-import org.apache.logging.log4j.LogManager
 import org.queue.message.Message
 import org.queue.utils.{StringSerializer, Utils}
+import org.slf4j.LoggerFactory
+
 import java.io.PrintStream
 import java.util.{Properties, Random}
 import scala.collection.convert.ImplicitConversions.`seq AsJavaList`
@@ -32,7 +33,7 @@ import scala.jdk.CollectionConverters.CollectionHasAsScala
  */
 object ConsoleConsumer {
   
-  private val logger = LogManager.getLogger(getClass())
+  private val logger = LoggerFactory.getLogger(getClass())
 
   def main(args: Array[String]) {
     val parser = new OptionParser

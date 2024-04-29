@@ -16,7 +16,8 @@
 
 package org.queue.utils
 
-import org.apache.logging.log4j.LogManager
+
+import org.slf4j.LoggerFactory
 
 import java.util.concurrent._
 import java.util.concurrent.atomic._
@@ -26,7 +27,7 @@ import java.util.concurrent.atomic._
  * TODO: ScheduledThreadPoolExecutor notriously swallows exceptions
  */
 class KafkaScheduler(val numThreads: Int, val baseThreadName: String, isDaemon: Boolean) {
-  private val logger = LogManager.getLogger(getClass)
+  private val logger = LoggerFactory.getLogger(getClass)
   private val threadId = new AtomicLong(0)
   private val executor = new ScheduledThreadPoolExecutor(numThreads, new ThreadFactory() {
     def newThread(runnable: Runnable): Thread = {

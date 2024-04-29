@@ -16,13 +16,13 @@
 
 package org.queue.producer
 
-import org.apache.logging.log4j.LogManager
 import org.queue.api.ProducerRequest
 import org.queue.cluster.{Broker, Partition}
 import org.queue.common.{InvalidConfigException, InvalidPartitionException, NoBrokersForPartitionException}
 import org.queue.producer.async.{CallbackHandler, EventHandler}
 import org.queue.serializer.Encoder
 import org.queue.utils.{Utils, ZKConfig}
+import org.slf4j.LoggerFactory
 
 import java.util.Properties
 import java.util.concurrent.atomic.AtomicBoolean
@@ -34,7 +34,7 @@ class Producer[K,V](config: ProducerConfig,
                     private var brokerPartitionInfo: BrokerPartitionInfo) /* for testing purpose only. Applications should ideally */
                                                           /* use the other constructor*/
 {
-  private val logger = LogManager.getLogger(classOf[Producer[K, V]])
+  private val logger = LoggerFactory.getLogger(classOf[Producer[K, V]])
   private val hasShutdown = new AtomicBoolean(false)
   if(!Utils.propertyExists(config.zkConnect) && !Utils.propertyExists(config.brokerPartitionInfo))
     throw new InvalidConfigException("At least one of zk.connect or broker.list must be specified")

@@ -16,18 +16,19 @@
 
 package org.queue.producer.async
 
-import org.apache.logging.log4j.LogManager
 import org.queue.api.ProducerRequest
 import org.queue.message.{ByteBufferMessageSet, NoCompressionCodec}
 import org.queue.producer.{ProducerConfig, SyncProducer}
 import org.queue.serializer.Encoder
+import org.slf4j.LoggerFactory
+
 import collection.mutable.HashMap
 import java.util.Properties
 
 private[queue] class DefaultEventHandler[T](val config: ProducerConfig,
                                             val cbkHandler: CallbackHandler[T]) extends EventHandler[T] {
 
-  private val logger = LogManager.getLogger(classOf[DefaultEventHandler[T]])
+  private val logger = LoggerFactory.getLogger(classOf[DefaultEventHandler[T]])
 
   override def init(props: Properties) { }
 

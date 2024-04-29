@@ -18,6 +18,7 @@ package org.queue.log
 
 import akka.actor.Actor
 import org.apache.logging.log4j.{LogManager => Log4jLogManager}
+
 import java.io._
 import org.queue.utils._
 
@@ -25,6 +26,8 @@ import scala.collection._
 import java.util.concurrent.CountDownLatch
 import org.queue.server.{KafkaConfig, KafkaZooKeeper}
 import org.queue.common.{InvalidPartitionException, InvalidTopicException}
+import org.slf4j.event.Level
+
 import scala.sys.exit
 
 /**
@@ -215,7 +218,7 @@ private[queue] class LogManager(val config: KafkaConfig,
       val toBeDeleted = log.markDeletedWhile(startMs - _.file.lastModified > logCleanupThresholdMS)
       for(segment <- toBeDeleted) {
         logger.info("Deleting log segment " + segment.file.getName() + " from " + log.name)
-        Utils.swallow(logger.warn, segment.messageSet.close())
+        Utils.swallow(Level.ERROR, segment.messageSet.close())
         if(!segment.file.delete())
           logger.warn("Delete failed.")
         else

@@ -16,8 +16,9 @@
 
 package org.queue.message
 
-import org.apache.logging.log4j.LogManager
 import org.queue.utils.{IteratorTemplate, SnapshotStats, SystemTime, Utils, nonthreadsafe, threadsafe}
+import org.slf4j.LoggerFactory
+import org.slf4j.event.Level
 
 import java.io._
 import java.nio._
@@ -39,7 +40,7 @@ class FileMessageSet private[queue](private[message] val channel: FileChannel,
   
   private val setSize = new AtomicLong()
   private val setHighWaterMark = new AtomicLong()
-  private val logger = LogManager.getLogger(classOf[FileMessageSet])
+  private val logger = LoggerFactory.getLogger(classOf[FileMessageSet])
   
   if(mutable) {
     if(limit < Long.MaxValue || offset > 0)
@@ -274,10 +275,10 @@ class LogFlushStats extends LogFlushStatsMBean {
 }
 
 object LogFlushStats {
-  private val logger = LogManager.getLogger(getClass())
+  private val logger = LoggerFactory.getLogger(getClass())
   private val LogFlushStatsMBeanName = "kafka:type=kafka.LogFlushStats"
   private val stats = new LogFlushStats
-  Utils.swallow(logger.warn, Utils.registerMBean(stats, LogFlushStatsMBeanName))
+  Utils.swallow(Level.ERROR, Utils.registerMBean(stats, LogFlushStatsMBeanName))
 
   def recordFlushRequest(requestMs: Long) = stats.recordFlushRequest(requestMs)
 }

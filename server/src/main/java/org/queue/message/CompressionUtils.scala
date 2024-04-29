@@ -16,15 +16,15 @@
 
 package org.queue.message
 
-import org.apache.logging.log4j.LogManager
 import org.queue.common.UnknownCodecException
+import org.slf4j.LoggerFactory
 
 import java.io.{ByteArrayOutputStream, IOException, InputStream}
 import java.nio.ByteBuffer
 import java.util.zip.{GZIPInputStream, GZIPOutputStream}
 
 object CompressionUtils {
-  private val logger = LogManager.getLogger(getClass)
+  private val logger = LoggerFactory.getLogger(getClass)
 
   def compress(messages: Iterable[Message]): Message = compress(messages, DefaultCompressionCodec)
 

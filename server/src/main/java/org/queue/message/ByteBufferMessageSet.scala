@@ -16,9 +16,9 @@
 
 package org.queue.message
 
-import org.apache.logging.log4j.LogManager
 import org.queue.common.{ErrorMapping, InvalidMessageSizeException}
 import org.queue.utils.IteratorTemplate
+import org.slf4j.LoggerFactory
 
 import java.nio.ByteBuffer
 import java.nio.channels.WritableByteChannel
@@ -36,7 +36,7 @@ import java.nio.channels.WritableByteChannel
 class ByteBufferMessageSet(private val buffer: ByteBuffer,
                            private val initialOffset: Long = 0L,
                            private val errorCode: Int = ErrorMapping.NoError) extends MessageSet {
-  private val logger = LogManager.getLogger(getClass())
+  private val logger = LoggerFactory.getLogger(getClass())
   private var validByteCount = -1L
   private var shallowValidByteCount = -1L
   private var deepValidByteCount = -1L

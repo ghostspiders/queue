@@ -16,18 +16,17 @@
 
 package org.queue.network
 
-import org.apache.logging.log4j.LogManager
 
 import java.nio._
 import java.nio.channels._
-import org.apache.logging.log4j.Logger
+import org.slf4j.{Logger, LoggerFactory}
 
 /**
  * Represents a stateful transfer of data to or from the network
  */
 private[network] trait Transmission {
   
-  protected val logger: Logger = LogManager.getLogger(getClass())
+  protected val logger: Logger = LoggerFactory.getLogger(getClass())
   
   def complete: Boolean
   

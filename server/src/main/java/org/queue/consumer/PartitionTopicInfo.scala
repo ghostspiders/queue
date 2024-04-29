@@ -16,10 +16,10 @@
 
 package org.queue.consumer
 
-import org.apache.logging.log4j.LogManager
 import org.queue.cluster.Partition
 import org.queue.common.ErrorMapping
 import org.queue.message.ByteBufferMessageSet
+import org.slf4j.LoggerFactory
 
 import java.util.concurrent._
 import java.util.concurrent.atomic._
@@ -31,7 +31,7 @@ private[consumer] class PartitionTopicInfo(val topic: String,
                                            private val consumedOffset: AtomicLong,
                                            private val fetchedOffset: AtomicLong,
                                            private val fetchSize: AtomicInteger) {
-  private val logger = LogManager.getLogger(getClass())
+  private val logger = LoggerFactory.getLogger(getClass())
   if (logger.isDebugEnabled) {
     logger.debug("initial consumer offset of " + this + " is " + consumedOffset.get)
     logger.debug("initial fetch offset of " + this + " is " + fetchedOffset.get)

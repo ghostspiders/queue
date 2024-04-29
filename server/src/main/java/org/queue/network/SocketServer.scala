@@ -16,9 +16,10 @@
 
 package org.queue.network
 
-import org.apache.logging.log4j.LogManager
 import org.queue.api.RequestKeys
 import org.queue.utils.{SystemTime, Time, Utils}
+import org.slf4j.LoggerFactory
+import org.slf4j.event.Level
 
 import java.io._
 import java.net._
@@ -36,7 +37,7 @@ private[queue] class SocketServer(val port: Int,
                    monitoringPeriodSecs: Int,
                    private val handlerFactory: Handler.HandlerMapping) {
  
-  private val logger = LogManager.getLogger(classOf[SocketServer])
+  private val logger = LoggerFactory.getLogger(classOf[SocketServer])
   private val time = SystemTime
   private val processors = new Array[Processor](numProcessorThreads)
   private var acceptor: Acceptor = new Acceptor(port, processors)
@@ -71,7 +72,7 @@ private[queue] class SocketServer(val port: Int,
 private[queue] abstract class AbstractServerThread extends Runnable {
   
   protected val selector = Selector.open();
-  protected val logger = LogManager.getLogger(getClass())
+  protected val logger = LoggerFactory.getLogger(getClass())
   private val startupLatch = new CountDownLatch(1)
   private val shutdownLatch = new CountDownLatch(1)
   private val alive = new AtomicBoolean(false) 
@@ -152,8 +153,8 @@ private[queue] class Acceptor(val port: Int, private val processors: Array[Proce
       }
     }
     logger.debug("Closing server socket and selector.")
-    Utils.swallow(logger.error, serverChannel.close())
-    Utils.swallow(logger.error, selector.close())
+    Utils.swallow(Level.ERROR, serverChannel.close())
+    Utils.swallow(Level.ERROR, selector.close())
     shutdownComplete()
   }
   
@@ -180,7 +181,7 @@ private[queue] class Processor(val handlerMapping: Handler.HandlerMapping,
                 val stats: SocketServerStats) extends AbstractServerThread {
   
   private val newConnections = new ConcurrentLinkedQueue[SocketChannel]();
-  private val requestLogger = LogManager.getLogger("kafka.request.logger")
+  private val requestLogger = LoggerFactory.getLogger("org.queue.request.logger")
 
   override def run() {
     startupComplete()
@@ -212,7 +213,7 @@ private[queue] class Processor(val handlerMapping: Handler.HandlerMapping,
 		      		close(key)
 		      	} case e: Throwable => {
               logger.info("Closing socket for " + channelFor(key).socket.getInetAddress + " because of error")
-              logger.error(e, e)
+              logger.error(e.getMessage, e)
               close(key)
             }
           }
@@ -220,7 +221,7 @@ private[queue] class Processor(val handlerMapping: Handler.HandlerMapping,
       }
     }
     logger.debug("Closing selector.")
-    Utils.swallow(logger.info, selector.close())
+    Utils.swallow(Level.INFO, selector.close())
     shutdownComplete()
   }
   
@@ -228,10 +229,10 @@ private[queue] class Processor(val handlerMapping: Handler.HandlerMapping,
     val channel = key.channel.asInstanceOf[SocketChannel]
     if(logger.isDebugEnabled)
       logger.debug("Closing connection from " + channel.socket.getRemoteSocketAddress())
-    Utils.swallow(logger.info, channel.socket().close())
-    Utils.swallow(logger.info, channel.close())
+    Utils.swallow(Level.INFO, channel.socket().close())
+    Utils.swallow(Level.INFO, channel.close())
     key.attach(null)
-    Utils.swallow(logger.info, key.cancel())
+    Utils.swallow(Level.INFO, key.cancel())
   }
   
   /**

@@ -17,11 +17,11 @@
 package org.queue.tools
 
 import jdk.internal.joptsimple.OptionParser
-import org.apache.logging.log4j.LogManager
 import org.queue.message.CompressionCodec
 import org.queue.producer.async.DefaultEventHandler
 import org.queue.producer.{DefaultPartitioner, Producer, ProducerConfig, ProducerData}
 import org.queue.serializer.StringEncoder
+import org.slf4j.LoggerFactory
 
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.{CountDownLatch, Executors}
@@ -34,7 +34,7 @@ object ProducerPerformance {
 
   def main(args: Array[String]) {
 
-    val logger = LogManager.getLogger(getClass)
+    val logger = LoggerFactory.getLogger(getClass)
     val config = new PerfConfig(args)
     if(!config.isFixSize)
       logger.info("WARN: Throughput will be slower due to changing message size per request")
@@ -142,7 +142,7 @@ object ProducerPerformance {
                             val totalMessagesSent: AtomicLong,
                             val allDone: CountDownLatch,
                             val rand: Random) extends Runnable {
-    val logger = LogManager.getLogger(getClass)
+    val logger = LoggerFactory.getLogger(getClass)
     val brokerInfoList = config.brokerInfo.split("=")
     val props = new Properties()
     if (brokerInfoList(0) == "zk.connect")
@@ -211,7 +211,7 @@ object ProducerPerformance {
                            val totalMessagesSent: AtomicLong,
                            val allDone: CountDownLatch,
                            val rand: Random) extends Runnable {
-    val logger = LogManager.getLogger(getClass)
+    val logger = LoggerFactory.getLogger(getClass)
     val props = new Properties()
     val brokerInfoList = config.brokerInfo.split("=")
     if (brokerInfoList(0) == "zk.connect")

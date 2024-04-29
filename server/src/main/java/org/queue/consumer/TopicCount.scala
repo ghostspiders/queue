@@ -17,12 +17,12 @@
 package org.queue.consumer
 
 import com.google.gson.Gson
-import org.apache.logging.log4j.LogManager
+import org.slf4j.LoggerFactory
 
 import scala.collection.{Map, mutable}
 
 private[consumer] object TopicCount {
-  private val logger = LogManager.getLogger(getClass())
+  private val logger = LoggerFactory.getLogger(getClass())
 
   def constructTopicCount(consumerIdSting: String, jsonString : String) : TopicCount = {
     var value = null

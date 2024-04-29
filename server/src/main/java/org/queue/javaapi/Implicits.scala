@@ -15,17 +15,17 @@
 */
 package org.queue.javaapi
 
-import org.apache.logging.log4j.LogManager
 import org.queue.javaapi.message.ByteBufferMessageSet
 import org.queue.producer.async.QueueItem
 import org.queue.serializer.Encoder
+import org.slf4j.LoggerFactory
 
 import java.util.Arrays.asList
 import scala.collection.convert.ImplicitConversions.`list asScalaBuffer`
-import scala.jdk.CollectionConverters.{ SeqHasAsJava}
+import scala.jdk.CollectionConverters.SeqHasAsJava
 
 private[javaapi] object Implicits {
-  private val logger = LogManager.getLogger(getClass())
+  private val logger = LoggerFactory.getLogger(getClass())
 
   implicit def javaMessageSetToScalaMessageSet(messageSet: ByteBufferMessageSet):
      org.queue.message.ByteBufferMessageSet = messageSet.underlying

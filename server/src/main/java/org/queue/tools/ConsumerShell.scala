@@ -17,9 +17,9 @@
 package org.queue.tools
 
 import jdk.internal.joptsimple.OptionParser
-import org.apache.logging.log4j.LogManager
 import org.queue.consumer.{Consumer, ConsumerConfig, ConsumerConnector, ConsumerTimeoutException, KafkaMessageStream}
 import org.queue.utils.Utils
+import org.slf4j.LoggerFactory
 
 import java.util.concurrent.CountDownLatch
 
@@ -27,7 +27,7 @@ import java.util.concurrent.CountDownLatch
  * Program to read using the rich consumer and dump the results to standard out
  */
 object ConsumerShell {
-  val logger = LogManager.getLogger(getClass)
+  val logger = LoggerFactory.getLogger(getClass)
   def main(args: Array[String]): Unit = {
     
     val parser = new OptionParser
@@ -85,7 +85,7 @@ object ConsumerShell {
 
 class ZKConsumerThread(stream: KafkaMessageStream) extends Thread {
   val shutdownLatch = new CountDownLatch(1)
-  val logger = LogManager.getLogger(getClass)
+  val logger = LoggerFactory.getLogger(getClass)
 
   override def run() {
     println("Starting consumer thread..")
@@ -97,7 +97,7 @@ class ZKConsumerThread(stream: KafkaMessageStream) extends Thread {
       }
     }catch {
       case e:ConsumerTimeoutException => // this is ok
-      case oe: Exception => logger.error(oe)
+      case oe: Exception => logger.error(oe.getMessage)
     }
     shutdownLatch.countDown
     println("Received " + count + " messages")

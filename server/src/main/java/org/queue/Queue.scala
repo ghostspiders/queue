@@ -16,23 +16,23 @@
 
 package org.queue
 
-import org.apache.logging.log4j.LogManager
 import org.queue.consumer.ConsumerConfig
 import org.queue.server.{KafkaConfig, KafkaServer, KafkaServerStartable}
 import org.queue.utils.Utils
+import org.slf4j.LoggerFactory
 
 object Queue {
-  private val logger = LogManager.getLogger(Queue.getClass)
+  private val logger = LoggerFactory.getLogger(Queue.getClass)
 
   def main(args: Array[String]): Unit = {
 //    val kafkaLog4jMBeanName = "kafka:type=kafka.KafkaLog4j"
 //    Utils.swallow(logger.warn, Utils.registerMBean(LogManager.getContext(), kafkaLog4jMBeanName))
 
     if(args.length != 1 && args.length != 2) {
-      println("USAGE: java [options] " + classOf[KafkaServer].getSimpleName() + " server.properties [consumer.properties]")
+      logger.error("USAGE: java [options] " + classOf[KafkaServer].getSimpleName() + " server.properties [consumer.properties]")
       System.exit(1)
     }
-  
+
     try {
       var kafkaServerStartble: KafkaServerStartable = null
       val props = Utils.loadProps(args(0))
@@ -56,7 +56,7 @@ object Queue {
       kafkaServerStartble.awaitShutdown
     }
     catch {
-      case e : Throwable => logger.fatal(e)
+      case e : Throwable => logger.error(e.getMessage,e)
     }
     System.exit(0)
   }

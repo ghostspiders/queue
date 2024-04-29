@@ -15,9 +15,9 @@
 */
 package org.queue.javaapi.message
 
-import org.apache.logging.log4j.LogManager
 import org.queue.common.ErrorMapping
 import org.queue.message.{CompressionCodec, CompressionUtils, Message, MessageAndOffset, MessageSet, NoCompressionCodec}
+import org.slf4j.LoggerFactory
 
 import java.nio.ByteBuffer
 import java.nio.channels.WritableByteChannel
@@ -26,7 +26,7 @@ import scala.jdk.CollectionConverters.CollectionHasAsScala
 class ByteBufferMessageSet(private val buffer: ByteBuffer,
                            private val initialOffset: Long = 0L,
                            private val errorCode: Int = ErrorMapping.NoError) extends MessageSet {
-  private val logger = LogManager.getLogger(getClass())
+  private val logger = LoggerFactory.getLogger(getClass())
   val underlying: org.queue.message.ByteBufferMessageSet = new org.queue.message.ByteBufferMessageSet(buffer,
                                                                                               initialOffset,
                                                                                               errorCode)

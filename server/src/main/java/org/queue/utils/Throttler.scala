@@ -15,13 +15,12 @@
  */
 
 package org.queue.utils
-
-import org.apache.logging.log4j.LogManager
+import org.slf4j.LoggerFactory
 
 import scala.math.round
 
 object Throttler {
-  val logger = LogManager.getLogger(classOf[Throttler])
+  val logger = LoggerFactory.getLogger(classOf[Throttler])
   val DefaultCheckIntervalMs = 100L
 }
 

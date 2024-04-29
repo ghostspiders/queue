@@ -18,8 +18,9 @@ package org.queue.utils
 
 
 
-import org.apache.logging.log4j.LogManager
 import org.queue.message.{CompressionCodec, NoCompressionCodec}
+import org.slf4j.LoggerFactory
+import org.slf4j.event.Level
 
 import java.io._
 import java.lang.management._
@@ -35,7 +36,7 @@ import scala.collection.mutable
  * Helper functions!
  */
 object Utils {
-  private val logger = LogManager.getLogger(getClass)
+  private val logger = LoggerFactory.getLogger(getClass)
   
   /**
    * Wrap the given function in a java.lang.Runnable
@@ -61,7 +62,7 @@ object Utils {
         catch {
           case t : Throwable=>
             // log any error and the stack trace
-            logger.error(t, t)
+            logger.error(t.getMessage, t)
             logger.error(stackTrace(t), t)
         }
       }
@@ -291,14 +292,19 @@ object Utils {
    * @param log The log method to use for logging. E.g. logger.warn
    * @param action The action to execute
    */
-  def swallow(log: (Object, Throwable) => Unit, action: => Unit) = {
+  def swallow( logLevel: Level = Level.WARN,action: => Unit) = {
     try {
       action
     } catch {
-      case e: Throwable => log(e.getMessage(), e)
+      case e: Throwable => logLevel match {
+        case Level.ERROR => logger.error(e.getMessage, e)
+        case Level.WARN => logger.warn(e.getMessage, e)
+        case Level.INFO => logger.info(e.getMessage, e)
+        case Level.DEBUG => logger.debug(e.getMessage, e)
+        case Level.TRACE => logger.trace(e.getMessage, e)
+      }
     }
   }
-  
   /**
    * Test if two byte buffers are equal. In this case equality means having
    * the same bytes from the current position to the limit

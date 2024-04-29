@@ -16,15 +16,18 @@
 
 package org.queue.producer
 
-import org.apache.logging.log4j.LogManager
 import java.net._
 import java.nio.channels._
 import org.queue.message._
 import org.queue.network._
 import org.queue.utils._
 import org.queue.api._
+
 import scala.math._
 import org.queue.common.MessageSizeTooLargeException
+import org.slf4j.LoggerFactory
+import org.slf4j.event.Level
+
 import java.nio.ByteBuffer
 
 object SyncProducer {
@@ -37,7 +40,7 @@ object SyncProducer {
 @threadsafe
 class SyncProducer(val config: SyncProducerConfig) {
   
-  private val logger = LogManager.getLogger(getClass())
+  private val logger = LoggerFactory.getLogger(getClass())
   private val MaxConnectBackoffMs = 60000
   private var channel : SocketChannel = null
   private var sentOnConnection = 0
@@ -148,8 +151,8 @@ class SyncProducer(val config: SyncProducerConfig) {
     try {
       if(channel != null) {
         logger.info("Disconnecting from " + config.host + ":" + config.port)
-        Utils.swallow(logger.warn, channel.close())
-        Utils.swallow(logger.warn, channel.socket.close())
+        Utils.swallow(Level.WARN, channel.close())
+        Utils.swallow(Level.WARN, channel.socket.close())
         channel = null
       }
     } catch {
@@ -219,10 +222,10 @@ class SyncProducerStats extends SyncProducerStatsMBean {
 }
 
 object SyncProducerStats {
-  private val logger = LogManager.getLogger(getClass())
+  private val logger = LoggerFactory.getLogger(getClass())
   private val kafkaProducerstatsMBeanName = "kafka:type=kafka.KafkaProducerStats"
   private val stats = new SyncProducerStats
-  Utils.swallow(logger.warn, Utils.registerMBean(stats, kafkaProducerstatsMBeanName))
+  Utils.swallow(Level.WARN, Utils.registerMBean(stats, kafkaProducerstatsMBeanName))
 
   def recordProduceRequest(requestMs: Long) = stats.recordProduceRequest(requestMs)
 }

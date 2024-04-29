@@ -19,6 +19,8 @@ package org.queue.server
 import org.queue.log.LogManager
 import org.queue.network.{SocketServer, SocketServerStats}
 import org.queue.utils.{KafkaScheduler, SystemTime, Utils}
+import org.slf4j.LoggerFactory
+import org.slf4j.event.Level
 
 import java.io.File
 import java.util.concurrent.CountDownLatch
@@ -32,7 +34,7 @@ class KafkaServer(val config: KafkaConfig) {
   val CLEAN_SHUTDOWN_FILE = ".kafka_cleanshutdown"
   private val isShuttingDown = new AtomicBoolean(false)
   
-  private val logger = org.apache.logging.log4j.LogManager.getLogger(classOf[KafkaServer])
+  private val logger = LoggerFactory.getLogger(classOf[KafkaServer])
   private val shutdownLatch = new CountDownLatch(1)
   private val statsMBeanName = "kafka:type=kafka.SocketServerStats"
   
@@ -67,7 +69,7 @@ class KafkaServer(val config: KafkaConfig) {
                                       config.numThreads,
                                       config.monitoringPeriodSecs,
                                       handlers.handlerFor)
-      Utils.swallow(logger.warn, Utils.registerMBean(socketServer.stats, statsMBeanName))
+      Utils.swallow(Level.ERROR, Utils.registerMBean(socketServer.stats, statsMBeanName))
       socketServer.startup
       /**
        *  Registers this broker in ZK. After this, consumers can connect to broker.
@@ -78,8 +80,8 @@ class KafkaServer(val config: KafkaConfig) {
     }
     catch {
       case e : Throwable =>
-        logger.fatal(e)
-        logger.fatal(Utils.stackTrace(e))
+        logger.debug(e.getMessage,e)
+        logger.debug(Utils.stackTrace(e))
         shutdown
     }
   }
@@ -95,7 +97,7 @@ class KafkaServer(val config: KafkaConfig) {
       try {
         scheduler.shutdown
         socketServer.shutdown()
-        Utils.swallow(logger.warn, Utils.unregisterMBean(statsMBeanName))
+        Utils.swallow(Level.ERROR, Utils.unregisterMBean(statsMBeanName))
         logManager.close()
 
         val cleanShutDownFile = new File(new File(config.logDir), CLEAN_SHUTDOWN_FILE)
@@ -103,8 +105,8 @@ class KafkaServer(val config: KafkaConfig) {
       }
       catch {
         case e : Throwable =>
-          logger.fatal(e)
-          logger.fatal(Utils.stackTrace(e))
+          logger.debug(e.getMessage,e)
+          logger.debug(Utils.stackTrace(e))
       }
       shutdownLatch.countDown()
       logger.info("shut down completed")

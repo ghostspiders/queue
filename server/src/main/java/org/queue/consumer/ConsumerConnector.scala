@@ -16,8 +16,9 @@
 
 package org.queue.consumer
 
-import org.apache.logging.log4j.LogManager
 import org.queue.utils.Utils
+import org.slf4j.LoggerFactory
+import org.slf4j.event.Level
 
 /**
  *  Main interface for consumer
@@ -44,7 +45,7 @@ trait ConsumerConnector {
 }
 
 object Consumer {
-  private val logger = LogManager.getLogger(getClass())
+  private val logger = LoggerFactory.getLogger(getClass())
   private val consumerStatsMBeanName = "kafka:type=kafka.ConsumerStats"
 
   /**
@@ -55,7 +56,7 @@ object Consumer {
    */
   def create(config: ConsumerConfig): ConsumerConnector = {
     val consumerConnect = new ZookeeperConsumerConnector(config)
-    Utils.swallow(logger.warn, Utils.registerMBean(consumerConnect, consumerStatsMBeanName))
+    Utils.swallow(Level.TRACE,Utils.registerMBean(consumerConnect, consumerStatsMBeanName))
     consumerConnect
   }
 
@@ -67,7 +68,7 @@ object Consumer {
    */
   def createJavaConsumerConnector(config: ConsumerConfig): org.queue.javaapi.consumer.ConsumerConnector = {
     val consumerConnect = new org.queue.javaapi.consumer.ZookeeperConsumerConnector(config)
-    Utils.swallow(logger.warn, Utils.registerMBean(consumerConnect.underlying, consumerStatsMBeanName))
+    Utils.swallow(Level.WARN, Utils.registerMBean(consumerConnect.underlying, consumerStatsMBeanName))
     consumerConnect
   }
 }

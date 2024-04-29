@@ -16,10 +16,10 @@
 package org.queue.producer
 
 import org.I0Itec.zkclient.{IZkChildListener, IZkStateListener, ZkClient}
-import org.apache.logging.log4j.LogManager
 import org.apache.zookeeper.Watcher.Event.KeeperState
 import org.queue.cluster.{Broker, Partition}
 import org.queue.utils.{StringSerializer, ZKConfig, ZkUtils}
+import org.slf4j.LoggerFactory
 
 import scala.collection.convert.ImplicitConversions.`collection AsScalaIterable`
 import scala.collection.{SortedSet, mutable}
@@ -56,7 +56,7 @@ private[producer] object ZKBrokerPartitionInfo {
  * host, port, number of partitions from zookeeper
  */
 private[producer] class ZKBrokerPartitionInfo(config: ZKConfig, producerCbk: (Int, String, Int) => Unit) extends BrokerPartitionInfo {
-  private val logger = LogManager.getLogger(classOf[ZKBrokerPartitionInfo])
+  private val logger = LoggerFactory.getLogger(classOf[ZKBrokerPartitionInfo])
   private val zkWatcherLock = new Object
   private val zkClient = new ZkClient(config.zkConnect, config.zkSessionTimeoutMs, config.zkConnectionTimeoutMs,
     StringSerializer)
@@ -192,7 +192,7 @@ private[producer] class ZKBrokerPartitionInfo(config: ZKConfig, producerCbk: (In
     private var oldBrokerTopicPartitionsMap = collection.mutable.Map.empty[String, SortedSet[Partition]] ++
                                               originalBrokerTopicsPartitionsMap
     private var oldBrokerIdMap = collection.mutable.Map.empty[Int, Broker] ++ originalBrokerIdMap
-    private val logger = LogManager.getLogger(classOf[BrokerTopicsListener])
+    private val logger = LoggerFactory.getLogger(classOf[BrokerTopicsListener])
 
     logger.debug("[BrokerTopicsListener] Creating broker topics listener to watch the following paths - \n" +
     "/broker/topics, /broker/topics/topic, /broker/ids")

@@ -19,8 +19,8 @@ package org.queue.utils
 import org.I0Itec.zkclient.ZkClient
 import org.I0Itec.zkclient.exception.{ZkMarshallingError, ZkNoNodeException, ZkNodeExistsException}
 import org.I0Itec.zkclient.serialize.ZkSerializer
-import org.apache.logging.log4j.LogManager
 import org.queue.cluster.{Broker, Cluster}
+import org.slf4j.LoggerFactory
 
 import java.util.Properties
 import scala.collection.mutable
@@ -29,7 +29,7 @@ object ZkUtils {
   val ConsumersPath = "/consumers"
   val BrokerIdsPath = "/brokers/ids"
   val BrokerTopicsPath = "/brokers/topics"
-  private val logger = LogManager.getLogger(getClass())
+  private val logger = LoggerFactory.getLogger(getClass())
 
   /**
    *  make sure a persistent path exists in ZK. Create the path if not exist.
