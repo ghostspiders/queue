@@ -20,25 +20,30 @@ import org.queue.consumer.ConsumerConfig
 import org.queue.server.{KafkaConfig, KafkaServer, KafkaServerStartable}
 import org.queue.utils.Utils
 import org.slf4j.LoggerFactory
+import org.slf4j.event.Level
 
 object Queue {
   private val logger = LoggerFactory.getLogger(Queue.getClass)
 
   def main(args: Array[String]): Unit = {
 //    val kafkaLog4jMBeanName = "kafka:type=kafka.KafkaLog4j"
-//    Utils.swallow(logger.warn, Utils.registerMBean(LogManager.getContext(), kafkaLog4jMBeanName))
+//    Utils.swallow(Level.WARN, Utils.registerMBean(LoggerFactory.getLogger(""), kafkaLog4jMBeanName))
 
-    if(args.length != 1 && args.length != 2) {
-      logger.error("USAGE: java [options] " + classOf[KafkaServer].getSimpleName() + " server.properties [consumer.properties]")
-      System.exit(1)
+    var serverPath = System.getProperty("server.config")
+    if(serverPath == null || serverPath.isBlank) {
+      serverPath = getClass().getResource("/server.properties").getPath
+    }
+    var consumerPath = System.getProperty("consumer.config")
+    if(consumerPath == null || serverPath.isBlank) {
+      consumerPath = getClass().getResource("/consumer.properties").getPath
     }
 
     try {
       var kafkaServerStartble: KafkaServerStartable = null
-      val props = Utils.loadProps(args(0))
+      val props = Utils.loadProps(serverPath)
       val serverConfig = new KafkaConfig(props)
       if (args.length == 2) {
-        val consumerConfig = new ConsumerConfig(Utils.loadProps(args(1)))
+        val consumerConfig = new ConsumerConfig(Utils.loadProps(consumerPath))
         kafkaServerStartble = new KafkaServerStartable(serverConfig, consumerConfig)
       }
       else
