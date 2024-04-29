@@ -75,7 +75,7 @@ abstract class MessageSet extends Iterable[MessageAndOffset] {
   /**
    * Gives the total size of this message set in bytes
    */
-  def sizeInBytes: Long
+  def sizeInBytes(): Long
   
   /**
    * Validate the checksum of all the messages in the set. Throws an InvalidMessageException if the checksum doesn't

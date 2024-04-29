@@ -39,7 +39,7 @@ class MultiProducerRequest(val produces: Array[ProducerRequest]) extends Request
       produce.writeTo(buffer)
   }
 
-  def sizeInBytes: Int = {
+  def sizeInBytes(): Int = {
     var size = 2
     for(produce <- produces)
       size += produce.sizeInBytes

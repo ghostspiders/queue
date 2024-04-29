@@ -74,8 +74,8 @@ private[queue] object ZookeeperConsumerConnector {
  *  JMX interface for monitoring consumer
  */
 trait ZookeeperConsumerConnectorMBean {
-  def getPartOwnerStats: String
-  def getConsumerGroup: String
+  def getPartOwnerStats() : String
+  def getConsumerGroup() : String
   def getOffsetLag(topic: String, brokerId: Int, partitionId: Int): Long
   def getConsumedOffset(topic: String, brokerId: Int, partitionId: Int): Long
   def getLatestOffset(topic: String, brokerId: Int, partitionId: Int): Long

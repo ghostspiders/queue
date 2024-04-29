@@ -165,7 +165,7 @@ class ByteBufferMessageSet(private val buffer: ByteBuffer,
     }
   }
 
-  def sizeInBytes: Long = buffer.limit
+  def sizeInBytes(): Long = buffer.limit
   
   override def toString: String = {
     val builder = new StringBuilder()

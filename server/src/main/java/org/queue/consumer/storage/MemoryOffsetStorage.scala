@@ -37,7 +37,6 @@ class MemoryOffsetStorage extends OffsetStorage {
     val (highwater, lock) = offsetAndLock.get((node, topic))
     highwater.set(offset)
     lock.unlock
-    offset
   }
   
 }

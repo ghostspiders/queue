@@ -35,7 +35,7 @@ trait ConsumerConnector {
   /**
    *  Commit the offsets of all broker partitions connected by this connector.
    */
-  def commitOffsets
+  def commitOffsets()
   
   /**
    *  Shut down the connector

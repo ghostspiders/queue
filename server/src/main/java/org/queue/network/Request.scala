@@ -20,7 +20,7 @@ import java.nio._
 
 private[queue] abstract class Request(val id: Short) {
 
-  def sizeInBytes: Int
+  def sizeInBytes(): Int
   
   def writeTo(buffer: ByteBuffer): Unit
   

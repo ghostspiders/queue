@@ -67,7 +67,7 @@ class ByteBufferMessageSet(private val buffer: ByteBuffer,
 
   override def iterator: Iterator[MessageAndOffset] = new Iterator[MessageAndOffset] {
     val underlyingIterator = underlying.iterator
-    override def hasNext(): Boolean = {
+    override def hasNext: Boolean = {
       underlyingIterator.hasNext
     }
     override def next(): MessageAndOffset = {
@@ -77,7 +77,7 @@ class ByteBufferMessageSet(private val buffer: ByteBuffer,
 
   override def toString: String = underlying.toString
 
-  def sizeInBytes: Long = underlying.sizeInBytes
+  def sizeInBytes(): Long = underlying.sizeInBytes
 
   override def equals(other: Any): Boolean = {
     other match {

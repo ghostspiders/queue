@@ -17,7 +17,7 @@
 package org.queue.log
 
 import akka.actor.Actor
-import org.apache.logging.log4j.LogManager
+import org.apache.logging.log4j.{LogManager => Log4jLogManager}
 import java.io._
 import org.queue.utils._
 
@@ -43,7 +43,7 @@ private[queue] class LogManager(val config: KafkaConfig,
   private val maxSize: Long = config.logFileSize
   private val flushInterval = config.flushInterval
   private val topicPartitionsMap = config.topicPartitionsMap
-  private val logger = LogManager.getLogger(classOf[LogManager])
+  private val logger = Log4jLogManager.getLogger(classOf[LogManager])
   private val logCreationLock = new Object
   private val random = new java.util.Random
   private var kafkaZookeeper: KafkaZooKeeper = null

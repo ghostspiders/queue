@@ -39,7 +39,7 @@ class MultiFetchRequest(val fetches: Array[FetchRequest]) extends Request(Reques
       fetch.writeTo(buffer)
   }
   
-  def sizeInBytes: Int = {
+  def sizeInBytes(): Int = {
     var size = 2
     for(fetch <- fetches)
       size += fetch.sizeInBytes
