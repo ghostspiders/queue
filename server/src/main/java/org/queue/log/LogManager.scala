@@ -86,7 +86,7 @@ private[queue] class LogManager(val config: KafkaConfig,
 
   if(config.enableZookeeper) {
     kafkaZookeeper = new KafkaZooKeeper(config, this)
-    kafkaZookeeper.startup
+    kafkaZookeeper.startup()
         zkActor = new Actor {
       def act() {
         var i = 0

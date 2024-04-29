@@ -40,7 +40,7 @@ object MessageSet {
     var size = 0
     val iter = messages.iterator
     while(iter.hasNext) {
-      val message = iter.next.asInstanceOf[Message]
+      val message = iter.next
       size += entrySize(message)
     }
     size

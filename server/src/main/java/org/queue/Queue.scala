@@ -45,9 +45,9 @@ object Queue {
       if (args.length == 2) {
         val consumerConfig = new ConsumerConfig(Utils.loadProps(consumerPath))
         kafkaServerStartble = new KafkaServerStartable(serverConfig, consumerConfig)
-      }
-      else
+      }else {
         kafkaServerStartble = new KafkaServerStartable(serverConfig)
+      }
 
       // attach shutdown handler to catch control-c
       Runtime.getRuntime().addShutdownHook(new Thread() {
@@ -59,8 +59,7 @@ object Queue {
 
       kafkaServerStartble.startup
       kafkaServerStartble.awaitShutdown
-    }
-    catch {
+    }catch {
       case e : Throwable => logger.error(e.getMessage,e)
     }
     System.exit(0)

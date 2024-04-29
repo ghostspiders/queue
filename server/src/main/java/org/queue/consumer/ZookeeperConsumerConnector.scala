@@ -82,7 +82,7 @@ trait ZookeeperConsumerConnectorMBean {
 }
 
 private[queue] class ZookeeperConsumerConnector(val config: ConsumerConfig,
-                                                val enableFetcher: Boolean) // for testing only
+                                                val enableFetcher: Boolean)
   extends ConsumerConnector with ZookeeperConsumerConnectorMBean {
 
   private val logger = LoggerFactory.getLogger(getClass())

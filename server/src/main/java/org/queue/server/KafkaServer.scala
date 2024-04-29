@@ -77,8 +77,7 @@ class KafkaServer(val config: KafkaConfig) {
        */
       logManager.startup
       logger.info("Server started.")
-    }
-    catch {
+    } catch {
       case e : Throwable =>
         logger.debug(e.getMessage,e)
         logger.debug(Utils.stackTrace(e))
