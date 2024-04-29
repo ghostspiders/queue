@@ -185,8 +185,6 @@ class ByteBufferMessageSet(private val buffer: ByteBuffer,
       case _ => false
     }
   }
-
   def canEqual(other: Any): Boolean = other.isInstanceOf[ByteBufferMessageSet]
-
   override def hashCode: Int = 31 + (17 * errorCode) + buffer.hashCode + initialOffset.hashCode
 }
