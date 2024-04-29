@@ -97,6 +97,8 @@ class KafkaZooKeeper(config: KafkaConfig, logManager: LogManager) {
       }
       logger.info("done re-registering broker")
     }
+
+    override def handleSessionEstablishmentError(throwable: Throwable): Unit = {}
   }
 
   def close() {

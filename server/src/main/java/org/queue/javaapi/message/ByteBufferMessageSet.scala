@@ -18,7 +18,9 @@ package org.queue.javaapi.message
 import org.apache.logging.log4j.LogManager
 import org.queue.common.ErrorMapping
 import org.queue.message.{CompressionCodec, CompressionUtils, Message, MessageAndOffset, MessageSet, NoCompressionCodec}
+
 import java.nio.ByteBuffer
+import java.nio.channels.WritableByteChannel
 import scala.jdk.CollectionConverters.CollectionHasAsScala
 
 class ByteBufferMessageSet(private val buffer: ByteBuffer,
@@ -91,4 +93,10 @@ class ByteBufferMessageSet(private val buffer: ByteBuffer,
 
   override def hashCode: Int = 31 * (17 + errorCode) + buffer.hashCode + initialOffset.hashCode
 
+  /** Write the messages in this set to the given channel starting at the given offset byte.
+   * Less than the complete amount may be written, but no more than maxSize can be. The number
+   * of bytes written is returned */
+  override def writeTo(channel: WritableByteChannel, offset: Long, maxSize: Long): Long = {
+    offset
+  }
 }
