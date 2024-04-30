@@ -41,7 +41,7 @@ object Queue {
       var kafkaServerStartble: KafkaServerStartable = null
       val props = Utils.loadProps(serverPath)
       val serverConfig = new KafkaConfig(props)
-      if (args.length == 2) {
+      if (consumerPath != null || !serverPath.isBlank) {
         val consumerConfig = new ConsumerConfig(Utils.loadProps(consumerPath))
         kafkaServerStartble = new KafkaServerStartable(serverConfig, consumerConfig)
       }else {

@@ -29,7 +29,7 @@ private[consumer] object TopicCount {
     val gson = new Gson()
     try {
       value = gson.fromJson(jsonString, classOf[Map[String, Int]])
-      if(value.equals(null)){
+      if(value == null){
         throw new RuntimeException("error constructing TopicCount : " + jsonString)
       }
     }catch {
