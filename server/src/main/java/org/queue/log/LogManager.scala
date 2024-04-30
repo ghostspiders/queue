@@ -17,14 +17,18 @@
 package org.queue.log
 
 import akka.actor.Actor
+
 import java.io._
 import org.queue.utils._
+
 import scala.collection._
 import java.util.concurrent.CountDownLatch
 import org.queue.server.{KafkaConfig, KafkaZooKeeper}
 import org.queue.common.{InvalidPartitionException, InvalidTopicException}
 import org.slf4j.LoggerFactory
 import org.slf4j.event.Level
+import akka.actor.typed.{ActorRef, ActorSystem, Behavior, PostStop, Terminated}
+import akka.actor.typed.scaladsl.Behaviors
 
 import scala.sys.exit
 
@@ -48,7 +52,7 @@ private[queue] class LogManager(val config: KafkaConfig,
   private val logCreationLock = new Object
   private val random = new java.util.Random
   private var kafkaZookeeper: KafkaZooKeeper = null
-  private var zkActor: Actor = null
+  private var zkActor: ActorRef[MyMessage]  = null
   private val startupLatch: CountDownLatch = if (config.enableZookeeper) new CountDownLatch(1) else null
   private val logFlusherScheduler = new KafkaScheduler(1, "kafka-logflusher-", false)
   private val logFlushIntervalMap = config.flushIntervalMap
@@ -87,31 +91,36 @@ private[queue] class LogManager(val config: KafkaConfig,
   if(config.enableZookeeper) {
     kafkaZookeeper = new KafkaZooKeeper(config, this)
     kafkaZookeeper.startup()
-        zkActor = new Actor {
-      def act() {
-        var i = 0
-        while (i < 100000000){
-          receive
-          i += 1
+
+    val system: ActorSystem[Nothing] = ActorSystem(Behaviors.empty, "ActorSystem")
+    zkActor = system.systemActorOf(ZkActor(), "ZkActor")
+
+  }
+  sealed trait MyMessage
+  case object StopActor extends MyMessage
+  case class TopicMsg(msg: String) extends MyMessage
+
+  object ZkActor {
+    def apply(): Behavior[MyMessage] =
+      Behaviors.setup { context =>
+        Behaviors.receiveMessage[MyMessage] {
+          case TopicMsg(msg) =>
+            try {
+              kafkaZookeeper.registerTopicInZk(msg)
+            }catch {
+              case e : Throwable=> logger.error(e.getMessage,e)
+            }
+            Behaviors.same
+          case StopActor =>
+            logger.info("zkActor stopped")
+            Behaviors.stopped
+        }
+        Behaviors.receiveSignal {
+          case (_, Terminated(_)) =>
+            Behaviors.stopped
         }
       }
-      def receive: Receive = {
-        case topic: String =>
-          try {
-            kafkaZookeeper.registerTopicInZk(topic)
-          }
-          catch {
-            case e : Throwable=> logger.error(e.getMessage,e) // log it and let it go
-          }
-        case StopActor =>
-          logger.info("zkActor stopped")
-          exit
-      }
-    }
-    zkActor.preStart()
   }
-
-  case object StopActor
 
   private def getLogRetentionMSMap(logRetentionHourMap: Map[String, Int]) : Map[String, Long] = {
     var ret = new mutable.HashMap[String, Long]
@@ -141,7 +150,7 @@ private[queue] class LogManager(val config: KafkaConfig,
 
   def registerNewTopicInZK(topic: String) {
     if (config.enableZookeeper)
-      zkActor.sender() ! topic
+      zkActor ! TopicMsg(topic)
   }
 
   /**
@@ -236,7 +245,7 @@ private[queue] class LogManager(val config: KafkaConfig,
     while(iter.hasNext)
       iter.next.close()
     if (config.enableZookeeper) {
-      zkActor.sender() ! StopActor
+      zkActor ! StopActor
       kafkaZookeeper.close
     }
   }

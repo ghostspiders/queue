@@ -17,10 +17,9 @@
 package org.queue
 
 import org.queue.consumer.ConsumerConfig
-import org.queue.server.{KafkaConfig, KafkaServer, KafkaServerStartable}
+import org.queue.server.{KafkaConfig, KafkaServerStartable}
 import org.queue.utils.Utils
 import org.slf4j.LoggerFactory
-import org.slf4j.event.Level
 
 object Queue {
   private val logger = LoggerFactory.getLogger(Queue.getClass)
