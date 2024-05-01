@@ -35,5 +35,5 @@ class KafkaMessageStream(private val queue: BlockingQueue[FetchedDataChunk], con
   /**
    *  Create an iterator over messages in the stream.
    */
-  def iterator(): ConsumerIterator = iter
+   def iterator(): ConsumerIterator = iter
 }

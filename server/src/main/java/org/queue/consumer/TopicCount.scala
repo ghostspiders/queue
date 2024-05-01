@@ -23,10 +23,13 @@ import scala.collection.{Map, mutable}
 
 private[consumer] object TopicCount {
   private val logger = LoggerFactory.getLogger(getClass())
-
+  val gson = new Gson()
   def constructTopicCount(consumerIdSting: String, jsonString : String) : TopicCount = {
+    if("{  }".equals(jsonString)){
+      return new TopicCount(consumerIdSting, gson.fromJson("", classOf[Map[String, Int]]))
+    }
+
     var value = null
-    val gson = new Gson()
     try {
       value = gson.fromJson(jsonString, classOf[Map[String, Int]])
       if(value == null){

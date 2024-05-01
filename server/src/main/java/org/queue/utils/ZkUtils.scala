@@ -57,6 +57,7 @@ object ZkUtils {
     }
     catch {
       case e: ZkNoNodeException => {
+        e.printStackTrace()
         createParentPath(client, path)
         client.createEphemeral(path, data)
       }
@@ -91,7 +92,7 @@ object ZkUtils {
           logger.info(path + " exists with value " + data + " during connection loss; this is ok")
         }
       }
-      case e2 : Throwable => throw e2
+      case e2 : Throwable => e2.printStackTrace()
     }
   }
 
@@ -269,7 +270,7 @@ class ZKConfig(props: Properties) {
   val zkConnect = Utils.getString(props, "zk.connect", null)
 
   /** zookeeper session timeout */
-  val zkSessionTimeoutMs = Utils.getInt(props, "zk.sessiontimeout.ms", 6000)
+  val zkSessionTimeoutMs = Utils.getInt(props, "zk.sessiontimeout.ms", 6000*1000*1000)
 
   /** the max time that the client waits to establish a connection to zookeeper */
   val zkConnectionTimeoutMs = Utils.getInt(props, "zk.connectiontimeout.ms",zkSessionTimeoutMs)

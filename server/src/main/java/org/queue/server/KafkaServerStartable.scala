@@ -16,11 +16,11 @@
 
 package org.queue.server
 
+import org.apache.logging.log4j.LogManager
 import org.queue.api.RequestKeys
 import org.queue.consumer.{Consumer, ConsumerConfig, ConsumerConnector}
 import org.queue.message.{ByteBufferMessageSet, NoCompressionCodec}
 import org.queue.utils.{SystemTime, Utils}
-import org.slf4j.LoggerFactory
 
 class KafkaServerStartable(val serverConfig: KafkaConfig, val consumerConfig: ConsumerConfig) {
   private var server : KafkaServer = null
@@ -55,7 +55,7 @@ class KafkaServerStartable(val serverConfig: KafkaConfig, val consumerConfig: Co
 
 class EmbeddedConsumer(private val consumerConfig: ConsumerConfig,
                        private val kafkaServer: KafkaServer) {
-  private val logger = LoggerFactory.getLogger(getClass())
+  private val logger = LogManager.getLogger(getClass())
   private val consumerConnector: ConsumerConnector = Consumer.create(consumerConfig)
   private val topicMessageStreams = consumerConnector.createMessageStreams(consumerConfig.embeddedConsumerTopicMap)
 
@@ -80,8 +80,8 @@ class EmbeddedConsumer(private val consumerConfig: ConsumerConfig,
             }
             catch {
               case e : Throwable =>
-                logger.error(e + Utils.stackTrace(e))
-                logger.error(topic + " stream " + i + " unexpectedly exited")
+                logger.fatal(e + Utils.stackTrace(e))
+                logger.fatal(topic + " stream " + i + " unexpectedly exited")
             }
           }
         }, false)
