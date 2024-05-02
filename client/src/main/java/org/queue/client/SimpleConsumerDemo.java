@@ -4,22 +4,23 @@ package org.queue.client;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.queue.javaapi.Implicits;
 import org.queue.javaapi.MultiFetchResponse;
 import org.queue.javaapi.consumer.SimpleConsumer;
 import org.queue.javaapi.message.ByteBufferMessageSet;
 import org.queue.message.MessageAndOffset;
-import scala.collection.Iterator;
-
 import org.queue.api.FetchRequest;
-import org.queue.message.Message;
-
-
+import org.queue.message.MessageSet;
+import scala.collection.Iterator;
 public class SimpleConsumerDemo
 {
-    private static void printMessages(ByteBufferMessageSet messageSet)
-    {
-        for (MessageAndOffset messageAndOffset : messageSet) {
-            System.out.println(ExampleUtils.getMessage(messageAndOffset.message()));
+    private static void printMessages(ByteBufferMessageSet messageSet){
+
+        MessageSet iterable = messageSet.toIterable();
+        Iterator<MessageAndOffset> iterator = iterable.iterator();
+        while (iterator.hasNext()){
+            System.out.println(ExampleUtils.getMessage(iterator.next().message()));
+            System.out.println(iterator.next());
         }
     }
 
@@ -50,8 +51,8 @@ public class SimpleConsumerDemo
 
         System.out.println("Testing single fetch");
         FetchRequest req = new FetchRequest(KafkaProperties.topic2, 0, 0L, 100);
-        ByteBufferMessageSet messageSet = simpleConsumer.fetch(req);
-        printMessages(messageSet);
+        org.queue.message.ByteBufferMessageSet messageSet = simpleConsumer.fetch(req);
+        printMessages(Implicits.scalaMessageSetToJavaMessageSet(messageSet));
 
         System.out.println("Testing single multi-fetch");
         req = new FetchRequest(KafkaProperties.topic2, 0, 0L, 100);
@@ -59,12 +60,16 @@ public class SimpleConsumerDemo
         list.add(req);
         req = new FetchRequest(KafkaProperties.topic3, 0, 0L, 100);
         list.add(req);
-        MultiFetchResponse response = simpleConsumer.multifetch(list);
+
+        org.queue.api.MultiFetchResponse multifetch = simpleConsumer.multifetch(list);
+        MultiFetchResponse response = Implicits.toJavaMultiFetchResponse(multifetch);
         int fetchReq = 0;
-        for (ByteBufferMessageSet resMessageSet : response )
-        {
+
+
+        java.util.Iterator<org.queue.message.ByteBufferMessageSet> iterator1 = response.iterator();
+        while (iterator1.hasNext()){
             System.out.println("Response from fetch request no: " + ++fetchReq);
-            printMessages(resMessageSet);
+            printMessages(Implicits.scalaMessageSetToJavaMessageSet(iterator1.next()));
         }
     }
 
