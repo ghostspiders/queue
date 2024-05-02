@@ -44,7 +44,7 @@ private[queue] class DefaultEventHandler[T](val config: ProducerConfig,
       val requests = messagesPerTopic.map(f => new ProducerRequest(f._1._1, f._1._2, f._2)).toArray
       syncProducer.multiSend(requests)
       if(logger.isTraceEnabled)
-        logger.trace("kafka producer sent messages for topics " + messagesPerTopic)
+        logger.trace("queue producer sent messages for topics " + messagesPerTopic)
     }
   }
 

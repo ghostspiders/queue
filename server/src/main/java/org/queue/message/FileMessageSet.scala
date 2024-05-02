@@ -276,7 +276,7 @@ class LogFlushStats extends LogFlushStatsMBean {
 
 object LogFlushStats {
   private val logger = LoggerFactory.getLogger(getClass())
-  private val LogFlushStatsMBeanName = "kafka:type=kafka.LogFlushStats"
+  private val LogFlushStatsMBeanName = "queue:type=queue.LogFlushStats"
   private val stats = new LogFlushStats
   Utils.swallow(Level.ERROR, Utils.registerMBean(stats, LogFlushStatsMBeanName))
 

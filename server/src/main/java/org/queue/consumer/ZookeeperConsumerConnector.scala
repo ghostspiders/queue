@@ -93,7 +93,7 @@ private[queue] class ZookeeperConsumerConnector(val config: ConsumerConfig,
   private val topicRegistry = new Pool[String, Pool[Partition, PartitionTopicInfo]]
   // queues : (topic,consumerThreadId) -> queue
   private val queues = new Pool[Tuple2[String,String], BlockingQueue[FetchedDataChunk]]
-  private val scheduler = new KafkaScheduler(1, "Kafka-consumer-autocommit-", false)
+  private val scheduler = new KafkaScheduler(1, "queue-consumer-autocommit-", false)
   connectZk
   createFetcher
   if (config.autoCommit) {

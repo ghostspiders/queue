@@ -26,10 +26,7 @@ import java.io.File
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.atomic.AtomicBoolean
 
-/**
- * Represents the lifecycle of a single Kafka broker. Handles all functionality required
- * to start up and shutdown a single Kafka node.
- */
+
 class KafkaServer(val config: KafkaConfig) {
   val CLEAN_SHUTDOWN_FILE = ".kafka_cleanshutdown"
   private val isShuttingDown = new AtomicBoolean(false)

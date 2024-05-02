@@ -61,7 +61,7 @@ object ConsoleConsumer {
                            .describedAs("size")
                            .ofType(classOf[java.lang.Integer])
                            .defaultsTo(2 * 1024 * 1024)
-    val messageFormatterOpt = parser.accepts("formatter", "The name of a class to use for formatting kafka messages for display.")
+    val messageFormatterOpt = parser.accepts("formatter", "The name of a class to use for formatting queue messages for display.")
                            .withRequiredArg
                            .describedAs("class")
                            .ofType(classOf[String])

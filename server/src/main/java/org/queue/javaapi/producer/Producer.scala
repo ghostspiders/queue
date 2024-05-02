@@ -41,20 +41,7 @@ class Producer[K,V](config: ProducerConfig,
   def this(config: ProducerConfig) = this(config, Utils.getObject(config.partitionerClass),
     new ProducerPool[V](config, Utils.getObject(config.serializerClass)))
 
-  /**
-   * This constructor can be used to provide pre-instantiated objects for all config parameters
-   * that would otherwise be instantiated via reflection. i.e. encoder, partitioner, event handler and
-   * callback handler
-   * @param config Producer Configuration object
-   * @param encoder Encoder used to convert an object of type V to a kafka.message.Message
-   * @param eventHandler the class that implements kafka.javaapi.producer.async.IEventHandler[T] used to
-   * dispatch a batch of produce requests, using an instance of kafka.javaapi.producer.SyncProducer
-   * @param cbkHandler the class that implements kafka.javaapi.producer.async.CallbackHandler[T] used to inject
-   * callbacks at various stages of the kafka.javaapi.producer.AsyncProducer pipeline.
-   * @param partitioner class that implements the kafka.javaapi.producer.Partitioner[K], used to supply a custom
-   * partitioning strategy on the message key (of type K) that is specified through the ProducerData[K, T]
-   * object in the  send API
-   */
+
   def this(config: ProducerConfig,
            encoder: Encoder[V],
            eventHandler: org.queue.javaapi.producer.async.EventHandler[V],

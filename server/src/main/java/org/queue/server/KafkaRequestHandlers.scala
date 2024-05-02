@@ -27,7 +27,7 @@ import org.slf4j.LoggerFactory
 import java.io.IOException
 
 /**
- * Logic to handle the various Kafka requests
+ * Logic to handle the various queue requests
  */
 private[queue] class KafkaRequestHandlers(val logManager: LogManager) {
   
@@ -53,7 +53,7 @@ private[queue] class KafkaRequestHandlers(val logManager: LogManager) {
       requestLogger.trace("Producer request " + request.toString)
     handleProducerRequest(request, "ProduceRequest")
     if (logger.isDebugEnabled)
-      logger.debug("kafka produce time " + (SystemTime.milliseconds - sTime) + " ms")
+      logger.debug("queue produce time " + (SystemTime.milliseconds - sTime) + " ms")
     None
   }
 

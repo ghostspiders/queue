@@ -22,7 +22,7 @@ import org.queue.utils.{Utils, ZKConfig}
 import java.util.Properties
 
 /**
- * Configuration settings for the kafka server
+ * Configuration settings for the queue server
  */
 class KafkaConfig(props: Properties) extends ZKConfig(props) {
   /* the port to listen and accept connections on */

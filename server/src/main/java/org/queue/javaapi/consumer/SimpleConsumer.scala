@@ -23,7 +23,7 @@ import org.queue.utils.threadsafe
 import scala.jdk.CollectionConverters.CollectionHasAsScala
 
 /**
- * A consumer of kafka messages
+ * A consumer of queue messages
  */
 @threadsafe
 class SimpleConsumer(val host: String,

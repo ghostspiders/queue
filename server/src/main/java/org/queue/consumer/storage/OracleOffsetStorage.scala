@@ -71,9 +71,9 @@ class OracleOffsetStorage(val connection: Connection) extends OffsetStorage {
    */
   private def maybeInsertZeroOffset(connection: Connection, node: Int, topic: String): Boolean = {
     val stmt = connection.prepareStatement(
-      """insert into kafka_offsets (node, topic, offset) 
+      """insert into queue_offsets (node, topic, offset)
          select ?, ?, 0 from dual where not exists 
-         (select null from kafka_offsets where node = ? and topic = ?)""")
+         (select null from queue_offsets where node = ? and topic = ?)""")
     stmt.setInt(1, node)
     stmt.setString(2, topic)
     stmt.setInt(3, node)
@@ -91,7 +91,7 @@ class OracleOffsetStorage(val connection: Connection) extends OffsetStorage {
    */
   private def selectExistingOffset(connection: Connection, node: Int, topic: String): Option[Long] = {
     val stmt = connection.prepareStatement(
-        """select offset from kafka_offsets
+        """select offset from queue_offsets
            where node = ? and topic = ?
            for update""")
     var results: ResultSet = null
@@ -117,7 +117,7 @@ class OracleOffsetStorage(val connection: Connection) extends OffsetStorage {
                            node: Int, 
                            topic: String, 
                            newOffset: Long): Unit = {
-    val stmt = connection.prepareStatement("update kafka_offsets set offset = ? where node = ? and topic = ?")
+    val stmt = connection.prepareStatement("update queue_offsets set offset = ? where node = ? and topic = ?")
     try {
       stmt.setLong(1, newOffset)
       stmt.setInt(2, node)

@@ -19,7 +19,7 @@ package org.queue.cluster
 import org.queue.utils.Utils
 
 /**
- * A Kafka broker
+ * A queue broker
  */
 private[queue] object Broker {
   def createBroker(id: Int, brokerInfoString: String): Broker = {

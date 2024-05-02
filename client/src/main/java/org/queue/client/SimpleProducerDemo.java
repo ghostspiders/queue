@@ -26,7 +26,7 @@ import scala.collection.Iterator;
 
 import org.queue.api.FetchRequest;
 
-public class SimpleConsumerDemo {
+public class SimpleProducerDemo {
     private static void printMessages(ByteBufferMessageSet messageSet) {
         Iterator<MessageAndOffset> iterator = messageSet.toIterable().iterator();
         while (iterator.hasNext()){

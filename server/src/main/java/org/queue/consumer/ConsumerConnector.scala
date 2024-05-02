@@ -24,13 +24,7 @@ import org.slf4j.event.Level
  *  Main interface for consumer
  */
 trait ConsumerConnector {
-  /**
-   *  Create a list of MessageStreams for each topic.
-   *
-   *  @param topicCountMap  a map of (topic, #streams) pair
-   *  @return a map of (topic, list of  QueueMessageStream) pair. The number of items in the
-   *          list is #streams. Each KafkaMessageStream supports an iterator of messages.
-   */
+
   def createMessageStreams(topicCountMap: Map[String,Int]) : Map[String,List[KafkaMessageStream]]
 
   /**
@@ -46,7 +40,7 @@ trait ConsumerConnector {
 
 object Consumer {
   private val logger = LoggerFactory.getLogger(getClass())
-  private val consumerStatsMBeanName = "kafka:type=kafka.ConsumerStats"
+  private val consumerStatsMBeanName = "queue:type=queue.ConsumerStats"
 
   /**
    *  Create a ConsumerConnector

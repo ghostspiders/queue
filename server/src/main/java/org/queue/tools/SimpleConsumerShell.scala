@@ -33,7 +33,7 @@ object SimpleConsumerShell {
     val parser = new OptionParser
     val urlOpt = parser.accepts("server", "REQUIRED: The hostname of the server to connect to.")
                            .withRequiredArg
-                           .describedAs("kafka://hostname:port")
+                           .describedAs("queue://hostname:port")
                            .ofType(classOf[String])
     val topicOpt = parser.accepts("topic", "REQUIRED: The topic to consume from.")
                            .withRequiredArg
@@ -73,7 +73,7 @@ object SimpleConsumerShell {
 
     println("Starting consumer...")
     val consumer = new SimpleConsumer(url.getHost, url.getPort, 10000, 64*1024)
-    val thread = Utils.newThread("kafka-consumer", new Runnable() {
+    val thread = Utils.newThread("queue-consumer", new Runnable() {
       def run() {
         var offset = startingOffset
         while(true) {

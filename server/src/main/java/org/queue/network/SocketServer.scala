@@ -49,9 +49,9 @@ private[queue] class SocketServer(val port: Int,
   def startup() {
     for(i <- 0 until numProcessorThreads) {
       processors(i) = new Processor(handlerFactory, time, stats)
-      Utils.newThread("kafka-processor-" + i, processors(i), false).start()
+      Utils.newThread("queue-processor-" + i, processors(i), false).start()
     }
-    Utils.newThread("kafka-acceptor", acceptor, false).start()
+    Utils.newThread("queue-acceptor", acceptor, false).start()
     acceptor.awaitStartup
   }
   

@@ -223,7 +223,7 @@ class SyncProducerStats extends SyncProducerStatsMBean {
 
 object SyncProducerStats {
   private val logger = LoggerFactory.getLogger(getClass())
-  private val kafkaProducerstatsMBeanName = "kafka:type=kafka.KafkaProducerStats"
+  private val kafkaProducerstatsMBeanName = "queue:type=queue.queueProducerStats"
   private val stats = new SyncProducerStats
   Utils.swallow(Level.WARN, Utils.registerMBean(stats, kafkaProducerstatsMBeanName))
 

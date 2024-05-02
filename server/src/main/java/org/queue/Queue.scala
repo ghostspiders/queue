@@ -27,7 +27,7 @@ object Queue {
   def main(args: Array[String]): Unit = {
 //    val kafkaLog4jMBeanName = "kafka:type=kafka.KafkaLog4j"
 //    Utils.swallow(Level.WARN, Utils.registerMBean(LoggerFactory.getLogger(""), kafkaLog4jMBeanName))
-
+    val embeddedConsumer = false
     var serverPath = System.getProperty("server.config")
     if(serverPath == null || serverPath.isBlank) {
       serverPath = getClass().getResource("/server.properties").getPath
@@ -41,7 +41,7 @@ object Queue {
       var kafkaServerStartble: KafkaServerStartable = null
       val props = Utils.loadProps(serverPath)
       val serverConfig = new KafkaConfig(props)
-      if (consumerPath != null || !serverPath.isBlank) {
+      if (embeddedConsumer) {
         val consumerConfig = new ConsumerConfig(Utils.loadProps(consumerPath))
         kafkaServerStartble = new KafkaServerStartable(serverConfig, consumerConfig)
       }else {

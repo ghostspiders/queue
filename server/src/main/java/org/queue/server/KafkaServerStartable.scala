@@ -63,7 +63,7 @@ class EmbeddedConsumer(private val consumerConfig: ConsumerConfig,
     var threadList = List[Thread]()
     for ((topic, streamList) <- topicMessageStreams)
       for (i <- 0 until streamList.length)
-        threadList ::= Utils.newThread("kafka-embedded-consumer-" + topic + "-" + i, new Runnable() {
+        threadList ::= Utils.newThread("queue-embedded-consumer-" + topic + "-" + i, new Runnable() {
           def run() {
             logger.info("starting consumer thread " + i + " for topic " + topic)
             val logManager = kafkaServer.getLogManager

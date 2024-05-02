@@ -221,7 +221,7 @@ private[producer] class ZKBrokerPartitionInfo(config: ZKConfig, producerCbk: (In
                 brokerTopicsListener)
             }
           case "/brokers/ids"    =>        // this is a watcher for /broker/ids path
-            logger.debug("[BrokerTopicsListener] List of brokers changed in the Kafka cluster " + parentPath +
+            logger.debug("[BrokerTopicsListener] List of brokers changed in the queue cluster " + parentPath +
               "\t Currently registered list of brokers -> " + curChilds.toString)
             processBrokerChange(parentPath, curChilds.asScala.toSeq)
           case _ =>

@@ -54,7 +54,7 @@ private[queue] class LogManager(val config: KafkaConfig,
   private var kafkaZookeeper: KafkaZooKeeper = null
   private var zkActor: ActorRef[MyMessage]  = null
   private val startupLatch: CountDownLatch = if (config.enableZookeeper) new CountDownLatch(1) else null
-  private val logFlusherScheduler = new KafkaScheduler(1, "kafka-logflusher-", false)
+  private val logFlusherScheduler = new KafkaScheduler(1, "queue-logflusher-", false)
   private val logFlushIntervalMap = config.flushIntervalMap
   private val logRetentionMSMap = getLogRetentionMSMap(config.logRetentionHoursMap)
 

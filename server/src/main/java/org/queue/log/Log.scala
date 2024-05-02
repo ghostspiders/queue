@@ -28,7 +28,7 @@ import org.slf4j.LoggerFactory
 import java.util._
 
 private[log] object Log {
-  val FileSuffix = ".kafka"
+  val FileSuffix = ".queue"
 
   /**
    * Find a given range object in a list of ranges by a value in that range. Does a binary search over the ranges
@@ -115,7 +115,7 @@ private[log] class Log(val dir: File, val maxSize: Long, val flushInterval: Int,
 
   private val logStats = new LogStats(this)
 
-  Utils.registerMBean(logStats, "kafka:type=kafka.logs." + dir.getName)  
+  Utils.registerMBean(logStats, "queue:type=queue.logs." + dir.getName)
 
   /* Load the log segments from the log files on disk */
   private def loadSegments(): SegmentList[LogSegment] = {

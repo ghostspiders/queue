@@ -28,7 +28,7 @@ import java.net._
 import java.nio.channels._
 
 /**
- * A consumer of kafka messages
+ * A consumer of queue messages
  */
 @threadsafe
 class SimpleConsumer(val host: String,
@@ -223,7 +223,7 @@ class SimpleConsumerStats extends SimpleConsumerStatsMBean {
 
 object SimpleConsumerStats {
   private val logger = LoggerFactory.getLogger(getClass())
-  private val simpleConsumerstatsMBeanName = "kafka:type=kafka.SimpleConsumerStats"
+  private val simpleConsumerstatsMBeanName = "queue:type=queue.SimpleConsumerStats"
   private val stats = new SimpleConsumerStats
   Utils.swallow(Level.ERROR, Utils.registerMBean(stats, simpleConsumerstatsMBeanName))
 

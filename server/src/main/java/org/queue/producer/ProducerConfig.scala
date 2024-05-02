@@ -33,7 +33,7 @@ class ProducerConfig(val props: Properties) extends ZKConfig(props)
     throw new InvalidConfigException("partitioner.class cannot be used when broker.list is set")
 
   /** the partitioner class for partitioning events amongst sub-topics */
-  val partitionerClass = Utils.getString(props, "partitioner.class", "kafka.producer.DefaultPartitioner")
+  val partitionerClass = Utils.getString(props, "partitioner.class", "org.queue.producer.DefaultPartitioner")
 
   /** this parameter specifies whether the messages are sent asynchronously *
    * or not. Valid values are - async for asynchronous send                 *

@@ -11,7 +11,7 @@ public class Producer extends Thread {
     private final Properties props = new Properties();
 
     public Producer(String topic) {
-        props.put("serializer.class", "kafka.serializer.StringEncoder");
+        props.put("serializer.class", "org.queue.serializer.StringEncoder");
         props.put("zk.connect", "localhost:2181");
         // Use random partitioner. Don't need the key type. Just set it to Integer.
         // The message is of type String.

@@ -27,7 +27,7 @@ object GetOffsetShell {
     val parser = new OptionParser
     val urlOpt = parser.accepts("server", "REQUIRED: The hostname of the server to connect to.")
                            .withRequiredArg
-                           .describedAs("kafka://hostname:port")
+                           .describedAs("queue://hostname:port")
                            .ofType(classOf[String])
     val topicOpt = parser.accepts("topic", "REQUIRED: The topic to get offset from.")
                            .withRequiredArg
