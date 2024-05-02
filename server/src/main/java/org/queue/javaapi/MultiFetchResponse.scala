@@ -16,7 +16,7 @@
 
 package org.queue.javaapi
 
-import org.queue.message.ByteBufferMessageSet
+import message.ByteBufferMessageSet
 import org.queue.utils.IteratorTemplate
 
 import java.nio.ByteBuffer
@@ -25,6 +25,7 @@ class MultiFetchResponse(buffer: ByteBuffer, numSets: Int, offsets: Array[Long])
   val underlyingBuffer = ByteBuffer.wrap(buffer.array)
     // this has the side effect of setting the initial position of buffer correctly
   val errorCode = underlyingBuffer.getShort
+  import Implicits._
   val underlying = new org.queue.api.MultiFetchResponse(underlyingBuffer, numSets, offsets)
 
   override def toString() = underlying.toString
@@ -36,7 +37,7 @@ class MultiFetchResponse(buffer: ByteBuffer, numSets: Int, offsets: Array[Long])
         if(iter.hasNext)
           iter.next
         else
-          return allDone
+           allDone
       }
     }
   }

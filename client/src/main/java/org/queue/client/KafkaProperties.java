@@ -1,9 +1,6 @@
 package org.queue.client;
 
-
-
-public interface KafkaProperties
-{
+public interface KafkaProperties {
     final static String zkConnect = "127.0.0.1:2181";
     final static  String groupId = "group1";
     final static String topic = "topic1";

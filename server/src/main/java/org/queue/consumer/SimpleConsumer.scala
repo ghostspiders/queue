@@ -16,8 +16,9 @@
 
 package org.queue.consumer
 
-import org.queue.api.{FetchRequest, MultiFetchRequest, MultiFetchResponse, OffsetRequest}
-import org.queue.message.ByteBufferMessageSet
+import org.queue.api.{FetchRequest, MultiFetchRequest, OffsetRequest}
+import org.queue.api. MultiFetchResponse
+import org.queue.javaapi.message.ByteBufferMessageSet
 import org.queue.network.{BoundedByteBufferReceive, BoundedByteBufferSend, Receive, Request}
 import org.queue.utils.{SnapshotStats, SystemTime, Utils, threadsafe}
 import org.slf4j.LoggerFactory

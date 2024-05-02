@@ -16,8 +16,9 @@
 
 package org.queue.javaapi.consumer
 
-import org.queue.api.{FetchRequest, MultiFetchResponse}
-import org.queue.message.ByteBufferMessageSet
+import org.queue.api.FetchRequest
+import org.queue.javaapi. MultiFetchResponse
+import org.queue.javaapi.message.ByteBufferMessageSet
 import org.queue.utils.threadsafe
 import scala.jdk.CollectionConverters.CollectionHasAsScala
 
@@ -48,6 +49,7 @@ class SimpleConsumer(val host: String,
    *  @return a sequence of fetch responses
    */
   def multifetch(fetches: java.util.List[FetchRequest]): MultiFetchResponse = {
+    import org.queue.javaapi.Implicits._
     underlying.multifetch(fetches.asScala.toSeq: _*)
   }
 
