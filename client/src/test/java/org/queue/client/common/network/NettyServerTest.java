@@ -1,4 +1,4 @@
-package org.example.common.network;
+package org.queue.client.common.network;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;

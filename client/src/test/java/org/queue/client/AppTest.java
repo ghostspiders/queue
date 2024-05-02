@@ -1,4 +1,4 @@
-package org.example;
+package org.queue.client;
 
 import static org.junit.Assert.assertTrue;
 
