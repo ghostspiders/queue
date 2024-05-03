@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory
 
 import java.util.Properties
 import scala.collection.mutable
+import scala.jdk.CollectionConverters.CollectionHasAsScala
 
 object ZkUtils {
   val ConsumersPath = "/consumers"
@@ -185,7 +186,11 @@ object ZkUtils {
         return Nil
       case e2 : Throwable => throw e2
     }
-    ret.asInstanceOf[Seq[String]]
+    if(ret == null){
+
+    }
+    ret.asScala.toSeq
+//    ret.asInstanceOf[Seq[String]]
   }
 
   /**

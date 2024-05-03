@@ -171,7 +171,7 @@ class SyncProducer(val config: SyncProducerConfig) {
         channel.configureBlocking(true)
         channel.socket.setSoTimeout(config.socketTimeoutMs)
         channel.socket.setKeepAlive(true)
-        channel.connect(new InetSocketAddress(config.host, config.port))
+        channel.connect(new InetSocketAddress("127.0.0.1", config.port))
         logger.info("Connected to " + config.host + ":" + config.port + " for producing")
       }
       catch {

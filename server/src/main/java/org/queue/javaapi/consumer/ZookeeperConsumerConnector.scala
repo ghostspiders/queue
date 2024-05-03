@@ -17,6 +17,9 @@ package org.queue.javaapi.consumer
 
 import org.queue.consumer.{ConsumerConfig, KafkaMessageStream}
 
+import scala.collection.convert.ImplicitConversions.`map AsScala`
+import scala.jdk.CollectionConverters.MapHasAsScala
+
 
 /**
  * This class handles the consumers interaction with zookeeper
@@ -63,10 +66,13 @@ private[queue] class ZookeeperConsumerConnector(val config: ConsumerConfig,
   def this(config: ConsumerConfig) = this(config, true)
 
  // for java client
-  def createMessageStreams(topicCountMap: java.util.Map[String,java.lang.Integer]):
+  def createMessageStreams(topicCountMap: java.util.Map[String, Integer]):
     java.util.Map[String,java.util.List[KafkaMessageStream]] = {
+    val topicCountMap2: Map[String, Int] = topicCountMap
+      .map { case (k, v) => (k, v.toInt) }
+      .toMap
 
-    val scalaTopicCountMap: Map[String, Int] = Map.empty[String, Int] ++ (topicCountMap.asInstanceOf[Map[String, Int]])
+    val scalaTopicCountMap: Map[String, Int] = Map.empty[String, Int] ++ topicCountMap2
     val scalaReturn = underlying.consume(scalaTopicCountMap)
     val ret = new java.util.HashMap[String,java.util.List[KafkaMessageStream]]
     for ((topic, streams) <- scalaReturn) {

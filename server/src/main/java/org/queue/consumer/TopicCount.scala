@@ -20,18 +20,19 @@ import com.google.gson.Gson
 import org.slf4j.LoggerFactory
 
 import scala.collection.{Map, mutable}
+import scala.jdk.CollectionConverters.MapHasAsScala
 
 private[consumer] object TopicCount {
   private val logger = LoggerFactory.getLogger(getClass())
   val gson = new Gson()
   def constructTopicCount(consumerIdSting: String, jsonString : String) : TopicCount = {
     if("{  }".equals(jsonString)){
-      return new TopicCount(consumerIdSting, gson.fromJson("", classOf[Map[String, Int]]))
+      return new TopicCount(consumerIdSting, gson.fromJson("", classOf[java.util.Map[String, Int]]))
     }
 
-    var value = null
+    var value :java.util.Map[String, Int] = null
     try {
-      value = gson.fromJson(jsonString, classOf[Map[String, Int]])
+      value = gson.fromJson(jsonString, classOf[java.util.Map[String, Int]])
       if(value == null){
         throw new RuntimeException("error constructing TopicCount : " + jsonString)
       }
@@ -40,7 +41,7 @@ private[consumer] object TopicCount {
         logger.error("error parsing consumer json string " + jsonString, e)
         throw e
     }
-    new TopicCount(consumerIdSting, value)
+    new TopicCount(consumerIdSting, value.asScala)
   }
 
 }

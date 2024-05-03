@@ -9,6 +9,7 @@ import org.queue.consumer.ConsumerConfig;
 import org.queue.consumer.ConsumerIterator;
 import org.queue.consumer.KafkaMessageStream;
 import org.queue.javaapi.consumer.ConsumerConnector;
+import scala.Int;
 
 public class Consumer extends Thread {
     private final ConsumerConnector consumer;
@@ -38,7 +39,7 @@ public class Consumer extends Thread {
         KafkaMessageStream stream =  consumerMap.get(topic).get(0);
         ConsumerIterator it = stream.iterator();
         while(it.hasNext()){
-            System.out.println(ExampleUtils.getMessage(it.next()));
+            System.out.println("ConsumerConsole"+ExampleUtils.getMessage(it.next()));
         }
     }
 }
