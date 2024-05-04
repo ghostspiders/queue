@@ -27,13 +27,13 @@ import java.util.concurrent.BlockingQueue
  * that feeds messages into a blocking queue for processing.
  */
 class KafkaMessageStream(private val queue: BlockingQueue[FetchedDataChunk], consumerTimeoutMs: Int)
-   extends Iterable[Message] with java.lang.Iterable[Message]{
+  extends Iterable[Message] with java.lang.Iterable[Message]{
 
   private val logger = LoggerFactory.getLogger(getClass())
   private val iter: ConsumerIterator = new ConsumerIterator(queue, consumerTimeoutMs)
-    
+
   /**
    *  Create an iterator over messages in the stream.
    */
-   def iterator(): ConsumerIterator = iter
+  def iterator(): ConsumerIterator = iter
 }

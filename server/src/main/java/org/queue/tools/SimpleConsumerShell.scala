@@ -16,7 +16,7 @@
 
 package org.queue.tools
 
-import jdk.internal.joptsimple.OptionParser
+import joptsimple.OptionParser
 import org.queue.api.FetchRequest
 import org.queue.consumer.SimpleConsumer
 import org.queue.utils.Utils

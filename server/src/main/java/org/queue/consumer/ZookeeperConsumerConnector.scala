@@ -148,7 +148,7 @@ private[queue] class ZookeeperConsumerConnector(val config: ConsumerConfig,
       throw new RuntimeException("topicCountMap is null")
 
     val dirs = new ZKGroupDirs(config.groupId)
-    var ret = new mutable.HashMap[String,List[KafkaMessageStream]]
+    val ret = new mutable.HashMap[String, List[KafkaMessageStream]]
 
     var consumerUuid : String = null
     config.consumerId match {
@@ -406,7 +406,7 @@ private[queue] class ZookeeperConsumerConnector(val config: ConsumerConfig,
     }
 
     private def getTopicCount(consumerId: String) : TopicCount = {
-      val topicCountJson = ZkUtils.readData(zkClient, dirs.consumerRegistryDir + "/" + consumerId)
+      val topicCountJson = ZkUtils.readDataMaybeNull(zkClient, dirs.consumerRegistryDir + "/" + consumerId)
       TopicCount.constructTopicCount(consumerId, topicCountJson)
     }
 
@@ -450,8 +450,8 @@ private[queue] class ZookeeperConsumerConnector(val config: ConsumerConfig,
       //  logger.info("sleeping " + consumerIdString)
       //  Thread.sleep(20)
       //}
-
-      val myTopicThreadIdsMap = getTopicCount(consumerIdString).getConsumerThreadIdsPerTopic
+      val count = getTopicCount(consumerIdString)
+      val myTopicThreadIdsMap = count.getConsumerThreadIdsPerTopic
       val cluster = ZkUtils.getCluster(zkClient)
       val consumersPerTopicMap = getConsumersPerTopic(group)
       val partitionsPerTopicMap = ZkUtils.getPartitionsForTopics(zkClient, myTopicThreadIdsMap.keys.iterator)

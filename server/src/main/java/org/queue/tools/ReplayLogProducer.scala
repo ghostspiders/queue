@@ -1,6 +1,6 @@
 package org.queue.tools
 
-import jdk.internal.joptsimple.OptionParser
+import joptsimple.OptionParser
 import org.I0Itec.zkclient.ZkClient
 import org.queue.api.OffsetRequest
 import org.queue.consumer.{Consumer, ConsumerConfig, ConsumerConnector, ConsumerTimeoutException, KafkaMessageStream}
