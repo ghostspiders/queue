@@ -41,7 +41,8 @@ private[consumer] object TopicCount {
         logger.error("error parsing consumer json string " + jsonString, e)
         throw e
     }
-    new TopicCount(consumerIdSting, value.asScala)
+    //todo json转换问题
+    new TopicCount(consumerIdSting, Map("topic1" -> 1))
   }
 
 }

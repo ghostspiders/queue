@@ -429,7 +429,7 @@ private[queue] class ZookeeperConsumerConnector(val config: ConsumerConfig,
               // occasionally, we may hit a ZK exception because the ZK state is changing while we are iterating.
               // For example, a ZK node can disappear between the time we get all children and the time we try to get
               // the value of a child. Just let this go since another rebalance will be triggered.
-              logger.info("exception during rebalance " + e)
+              logger.error("exception during rebalance ",  e)
           }
           logger.info("end rebalancing consumer " + consumerIdString + " try #" + i)
           if (done)
