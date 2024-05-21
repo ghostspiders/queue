@@ -12,41 +12,44 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class Cluster {
+
     private Map<Integer, Broker> brokers = new HashMap<>();
 
-
+    // 构造函数，接受一个Broker的Iterable集合
     public Cluster(Iterable<Broker> brokerList) {
         for (Broker broker : brokerList) {
             brokers.put(broker.getId(), broker);
         }
     }
 
+    // 默认构造函数
+    private Cluster() {
 
-    public Broker getBroker(int id) {
-        return brokers.get(id); // In Java, get() can return null, so you may want to handle this case
     }
 
+    // 获取指定ID的Broker
+    public Broker getBroker(int id) {
+        return brokers.get(id); // Java中get方法返回null，而不是抛出异常
+    }
 
+    // 添加Broker
     public void add(Broker broker) {
         brokers.put(broker.getId(), broker);
     }
 
-
-    public boolean remove(int id) {
-        return brokers.remove(id) != null;
+    // 移除指定ID的Broker
+    public void remove(int id) {
+        brokers.remove(id);
     }
 
-
+    // 获取集群大小
     public int size() {
         return brokers.size();
     }
 
+    // 重写toString方法
     @Override
     public String toString() {
-        String  brokersStr = brokers.values().stream()
-                .map(r -> r.toString())
-                .collect(Collectors.joining(","));
-
-        return "Cluster(" + String.join(", ", brokersStr) + ")";
+        return "Cluster{" + brokers.values().toString() + "}";
     }
 }

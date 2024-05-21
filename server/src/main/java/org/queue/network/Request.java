@@ -11,15 +11,15 @@ import java.nio.ByteBuffer;
 
 
 public abstract class Request {
-    private final short id;
+    private final int id;
 
 
-    public Request(short id) {
+    public Request(int id) {
         this.id = id;
     }
 
 
-    public short getId() {
+    public int getId() {
         return id;
     }
 
