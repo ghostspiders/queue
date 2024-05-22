@@ -1,17 +1,9 @@
 package org.queue.api;
-
-import org.queue.common.ErrorMapping;
-import org.queue.network.Request;
-import org.queue.network.RequestKeys;
 import org.queue.utils.Utils;
-
-import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.WritableByteChannel;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
+public class OffsetRequest {
 
-public class OffsetRequest extends Request {
     public static final String SmallestTimeString = "smallest";
     public static final String LargestTimeString = "largest";
     public static final long LatestTime = -1L;
@@ -22,14 +14,15 @@ public class OffsetRequest extends Request {
     private long time;
     private int maxNumOffsets;
 
+    // OffsetRequest构造函数
     public OffsetRequest(String topic, int partition, long time, int maxNumOffsets) {
-        super(RequestKeys.Offsets);
         this.topic = topic;
         this.partition = partition;
         this.time = time;
         this.maxNumOffsets = maxNumOffsets;
     }
 
+    // 从ByteBuffer中读取数据并创建OffsetRequest对象
     public static OffsetRequest readFrom(ByteBuffer buffer) {
         String topic = Utils.readShortString(buffer, StandardCharsets.UTF_8);
         int partition = buffer.getInt();
@@ -38,6 +31,7 @@ public class OffsetRequest extends Request {
         return new OffsetRequest(topic, partition, offset, maxNumOffsets);
     }
 
+    // 序列化长整型数组为ByteBuffer
     public static ByteBuffer serializeOffsetArray(long[] offsets) {
         int size = 4 + 8 * offsets.length;
         ByteBuffer buffer = ByteBuffer.allocate(size);
@@ -49,6 +43,7 @@ public class OffsetRequest extends Request {
         return buffer;
     }
 
+    // 反序列化ByteBuffer为长整型数组
     public static long[] deserializeOffsetArray(ByteBuffer buffer) {
         int size = buffer.getInt();
         long[] offsets = new long[size];
@@ -58,7 +53,7 @@ public class OffsetRequest extends Request {
         return offsets;
     }
 
-    @Override
+    // 将OffsetRequest对象的数据写入ByteBuffer中
     public void writeTo(ByteBuffer buffer) {
         Utils.writeShortString(buffer, topic, StandardCharsets.UTF_8);
         buffer.putInt(partition);
@@ -66,65 +61,15 @@ public class OffsetRequest extends Request {
         buffer.putInt(maxNumOffsets);
     }
 
+    // 计算OffsetRequest对象的字节大小
     public int sizeInBytes() {
         return 2 + topic.length() + 4 + 8 + 4;
     }
 
+    // 返回OffsetRequest对象的字符串表示
     @Override
     public String toString() {
         return "OffsetRequest(topic:" + topic + ", part:" + partition + ", time:" + time +
                 ", maxNumOffsets:" + maxNumOffsets + ")";
-    }
-}
-
-// 假设有一个Send类可以被扩展
-class OffsetArraySend extends Send {
-    private long[] offsets;
-    private long size;
-    private ByteBuffer header;
-    private ByteBuffer contentBuffer;
-    private boolean complete;
-
-    public OffsetArraySend(long[] offsets) {
-        super(); // 假设构造函数需要调用父类构造函数
-        this.offsets = offsets;
-        this.size = offsets.length > 0 ? 4 + 8 * offsets.length : 0;
-        this.header = ByteBuffer.allocate(6);
-        this.header.putInt((int)(size + 2));
-        this.header.putShort(ErrorMapping.NoError);
-        this.header.rewind();
-        this.contentBuffer = serializeOffsetArray(offsets);
-        this.complete = false;
-    }
-
-    private ByteBuffer serializeOffsetArray(long[] offsets) {
-        ByteBuffer buffer = ByteBuffer.allocate(8 * offsets.length);
-        for (long offset : offsets) {
-            buffer.putLong(offset);
-        }
-        buffer.rewind();
-        return buffer;
-    }
-
-    public int writeTo(WritableByteChannel channel) throws IOException {
-        checkExpectIncomplete();
-        int written = 0;
-        if (header.hasRemaining()) {
-            written += channel.write(header);
-        }
-        if (!header.hasRemaining() && contentBuffer.hasRemaining()) {
-            written += channel.write(contentBuffer);
-        }
-
-        if (!contentBuffer.hasRemaining()) {
-            complete = true;
-        }
-        return written;
-    }
-
-    private void checkExpectIncomplete() {
-        if (complete) {
-            throw new IllegalStateException("Write operation is already complete.");
-        }
     }
 }

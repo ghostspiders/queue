@@ -10,7 +10,7 @@ public class MultiProducerRequest extends Request {
     private List<ProducerRequest> produces;
 
     public MultiProducerRequest(ProducerRequest[] produces) {
-        super(RequestKeys.MultiProduce);
+        super(RequestKeys.multiProduce);
         this.produces = new ArrayList<>(Arrays.asList(produces));
     }
 
