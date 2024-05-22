@@ -1,4 +1,4 @@
-package org.queue.log1;
+package org.queue.log;
 
 /**
  * 日志统计管理Bean接口，用于提供日志统计信息。

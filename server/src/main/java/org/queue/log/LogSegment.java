@@ -1,4 +1,4 @@
-package org.queue.log1;
+package org.queue.log;
 
 import org.queue.utils.Range;
 

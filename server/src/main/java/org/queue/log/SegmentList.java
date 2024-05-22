@@ -1,4 +1,4 @@
-package org.queue.log1;
+package org.queue.log;
 
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicReference;

@@ -1,4 +1,4 @@
-package org.queue.log1;
+package org.queue.log;
 import java.io.File;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
