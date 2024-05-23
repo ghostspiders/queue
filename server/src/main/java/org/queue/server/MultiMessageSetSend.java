@@ -1,5 +1,6 @@
 package org.queue.server;
 
+import org.queue.network.ByteBufferSend;
 import org.queue.network.MultiSend;
 
 import java.nio.ByteBuffer;
