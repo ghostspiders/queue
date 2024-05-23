@@ -16,8 +16,6 @@ package org.queue.server;
  * limitations under the License.
  */
 
-package org.queue.server;
-
 import org.queue.log.LogManager;
 import org.queue.network.SocketServer;
 import org.queue.network.SocketServerStats;
@@ -50,9 +48,9 @@ public class QueueServer {
     private QueueScheduler scheduler;
 
     // Kafka服务器配置
-    private KafkaConfig config;
+    private QueueConfig config;
 
-    public QueueServer(KafkaConfig config) {
+    public QueueServer(QueueConfig config) {
         this.config = config;
         this.scheduler = new QueueScheduler(1, "kafka-logcleaner-", false);
     }
@@ -76,7 +74,7 @@ public class QueueServer {
                     1000L * 60 * 60 * config.getLogRetentionHours(),
                     needRecovery);
             // 创建请求处理器实例（需要根据实际情况实现KafkaRequestHandlers类）
-            KafkaRequestHandlers handlers = new KafkaRequestHandlers(logManager);
+            QueueRequestHandlers handlers = new QueueRequestHandlers(logManager);
             // 创建套接字服务器实例
             socketServer = new SocketServer(config.getPort(), config.getNumThreads(),
                     config.getMonitoringPeriodSecs(), handlers.getHandler());
