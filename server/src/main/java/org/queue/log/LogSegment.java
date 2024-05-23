@@ -75,19 +75,3 @@ public class LogSegment implements Range {
         return "(file=" + file + ", start=" + start + ", size=" + size() + ")";
     }
 }
-
-/**
- * 假设 FileMessageSet 是一个类，代表文件消息集合，
- * 你需要根据实际的实现来定义这个类。
- */
-class FileMessageSet {
-    /**
-     * 假设的实现，你需要根据实际的Scala代码逻辑来实现这个方法。
-     * 获取消息集的高水位标记。
-     * @return 高水位标记值。
-     */
-    public long highWaterMark() {
-        // 实现获取高水位标记的逻辑
-        return 0;
-    }
-}
