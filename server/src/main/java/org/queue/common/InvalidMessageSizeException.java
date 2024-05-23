@@ -3,7 +3,7 @@ package org.queue.common;
 /**
  * @author gaoyvfeng
  * @ClassName InvalidMessageSizeException
- * @description: TODO
+ * @description:
  * @datetime 2024年 05月 22日 09:46
  * @version: 1.0
  */

@@ -3,7 +3,7 @@ package org.queue.common;
 /**
  * @author gaoyvfeng
  * @ClassName OffsetOutOfRangeException
- * @description: TODO
+ * @description:
  * @datetime 2024年 05月 22日 09:48
  * @version: 1.0
  */

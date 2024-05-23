@@ -3,7 +3,7 @@ package org.queue.common;
 /**
  * @author gaoyvfeng
  * @ClassName UnavailableProducerException
- * @description: TODO
+ * @description:
  * @datetime 2024年 05月 22日 09:49
  * @version: 1.0
  */
