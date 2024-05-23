@@ -33,11 +33,7 @@ public interface EventHandler<T> {
      */
     public void init(Properties props);
 
-    /**
-     * Callback to dispatch the batched data and send it to a Kafka server
-     * @param events the data sent to the producer
-     * @param producer the low-level producer used to send the data
-     */
+
     public void handle(List<QueueItem<T>> events, SyncProducer producer, Encoder<T> encoder);
 
     /**

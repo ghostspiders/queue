@@ -39,7 +39,7 @@ public class QueueServer {
     // 关闭时的同步锁
     private final CountDownLatch shutdownLatch = new CountDownLatch(1);
     // Socket服务器统计信息的MBean名称
-    private final String statsMBeanName = "kafka:type=kafka.SocketServerStats";
+    private final String statsMBeanName = "queue:type=queue.SocketServerStats";
     // 日志管理器的引用
     private LogManager logManager;
     // 套接字服务器的引用
@@ -52,16 +52,16 @@ public class QueueServer {
 
     public QueueServer(QueueConfig config) {
         this.config = config;
-        this.scheduler = new QueueScheduler(1, "kafka-logcleaner-", false);
+        this.scheduler = new QueueScheduler(1, "queue-logcleaner-", false);
     }
 
     /**
      * 启动Kafka服务器的API。
-     * 实例化LogManager、SocketServer和请求处理器-KafkaRequestHandlers。
+     * 实例化LogManager、SocketServer和请求处理器-queueRequestHandlers。
      */
     public void startup() {
         try {
-            logger.info("Starting Kafka server...");
+            logger.info("Starting queue server...");
             boolean needRecovery = true;
             File cleanShutDownFile = new File(new File(config.getLogDir()), CLEAN_SHUTDOWN_FILE);
             if (cleanShutDownFile.exists()) {
