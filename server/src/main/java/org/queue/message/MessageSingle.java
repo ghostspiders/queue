@@ -3,7 +3,7 @@ package org.queue.message;
 /**
  * @author gaoyvfeng
  * @ClassName MessageSingle
- * @description: TODO
+ * @description:
  * @datetime 2024年 05月 23日 15:15
  * @version: 1.0
  */

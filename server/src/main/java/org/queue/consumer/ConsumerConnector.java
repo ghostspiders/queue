@@ -5,7 +5,7 @@ import java.util.Map;
 /**
  * @author gaoyvfeng
  * @ClassName ConsumerConnector
- * @description: TODO
+ * @description:
  * @datetime 2024年 05月 22日 17:39
  * @version: 1.0
  */

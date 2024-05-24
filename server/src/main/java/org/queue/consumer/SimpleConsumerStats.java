@@ -36,29 +36,3 @@ public class SimpleConsumerStats implements SimpleConsumerStatsMBean {
         return fetchRequestStats.getThroughput();
     }
 }
-
-// 静态内部类用于处理日志和MBean注册
-public class SimpleConsumerStatsManager {
-    private static final Logger logger = LoggerFactory.getLogger(SimpleConsumerStatsManager.class);
-    private static final String simpleConsumerStatsMBeanName = "queue:type=queue.SimpleConsumerStats";
-    private static SimpleConsumerStats stats = new SimpleConsumerStats();
-
-    static {
-        try {
-            // 注册MBean，这里需要使用Java的JMX（Java Management Extensions）API
-            MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
-            ObjectName objectName = new ObjectName(simpleConsumerStatsMBeanName);
-            mbs.registerMBean(stats, objectName);
-        } catch (Exception e) {
-            logger.error("Error registering MBean", e);
-        }
-    }
-
-    public static void recordFetchRequest(long requestMs) {
-        stats.recordFetchRequest(requestMs);
-    }
-
-    public static void recordConsumptionThroughput(long data) {
-        stats.recordConsumptionThroughput(data);
-    }
-}

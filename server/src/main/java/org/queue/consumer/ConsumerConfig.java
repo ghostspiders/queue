@@ -3,7 +3,7 @@ package org.queue.consumer;
 /**
  * @author gaoyvfeng
  * @ClassName ConsumerConfig
- * @description: TODO
+ * @description:
  * @datetime 2024年 05月 22日 17:03
  * @version: 1.0
  */

@@ -3,7 +3,7 @@ package org.queue.consumer;
 /**
  * @author gaoyvfeng
  * @ClassName ConsoleConsumer
- * @description: 控制台消费者 TODO
+ * @description: 控制台消费者
  * @datetime 2024年 05月 22日 17:37
  * @version: 1.0
  */
