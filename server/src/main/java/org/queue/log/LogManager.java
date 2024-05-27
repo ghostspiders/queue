@@ -10,6 +10,8 @@ package org.queue.log;
 
 import akka.actor.ActorSystem;
 import akka.actor.Props;
+import org.queue.common.InvalidPartitionException;
+import org.queue.common.InvalidTopicException;
 import org.queue.server.QueueConfig;
 import org.queue.server.QueueZooKeeper;
 import org.queue.utils.Pool;

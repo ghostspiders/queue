@@ -9,7 +9,7 @@ public class QueueMessageStream implements Iterable<Message> {
     private  BlockingQueue<FetchedDataChunk> queue; // 阻塞队列，用于存储获取的数据块
     private  int consumerTimeoutMs; // 消费者超时时间（毫秒）
     private final Logger logger = LoggerFactory.getLogger(QueueMessageStream.class); // 日志记录器
-    private final ConsumerIterator<Message> iter; // 消息迭代器
+    private final ConsumerIterator iter; // 消息迭代器
 
     /**
      * 构造函数。

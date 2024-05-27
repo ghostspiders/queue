@@ -1,5 +1,10 @@
 package org.queue.network;
 
+import org.queue.api.RequestKeys;
+import org.queue.utils.SnapshotStats;
+import org.queue.utils.SystemTime;
+import org.queue.utils.Time;
+
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -29,14 +34,14 @@ public class SocketServerStats implements SocketServerStatsMBean {
     }
 
     // 记录请求的处理时间和类型
-    public void recordRequest(short requestTypeId, long durationNs) {
+    public void recordRequest(int requestTypeId, long durationNs) {
         switch (requestTypeId) {
-            case RequestKeys.PRODUCE:
-            case RequestKeys.MULTI_PRODUCE:
+            case RequestKeys.produce:
+            case RequestKeys.multiProduce:
                 produceTimeStats.recordRequestMetric(durationNs);
                 break;
-            case RequestKeys.FETCH:
-            case RequestKeys.MULTI_FETCH:
+            case RequestKeys.fetch:
+            case RequestKeys.multiFetch:
                 fetchTimeStats.recordRequestMetric(durationNs);
                 break;
             default:

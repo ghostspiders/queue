@@ -1,9 +1,14 @@
 package org.queue.server;
 
+import org.queue.api.RequestKeys;
 import org.queue.consumer.Consumer;
 import org.queue.consumer.ConsumerConfig;
 import org.queue.consumer.ConsumerConnector;
-import org.apache.logging.log4j.LogManager;
+import org.queue.consumer.QueueMessageStream;
+import org.queue.log.Log;
+import org.queue.log.LogManager;
+import org.queue.message.ByteBufferMessageSet;
+import org.queue.message.NoCompressionCodec;
 import org.queue.network.SocketServerStats;
 import org.queue.utils.SystemTime;
 import org.queue.utils.Utils;
@@ -15,43 +20,41 @@ import java.util.List;
 import java.util.Map;
 
 public class EmbeddedConsumer {
-    private  ConsumerConfig consumerConfig;
     private  QueueServer queueServer;
     private ConsumerConnector consumerConnector;
+    Map<String, List<QueueMessageStream>> topicMessageStreams;
     private final Logger logger = LoggerFactory.getLogger(EmbeddedConsumer.class);
 
     public EmbeddedConsumer(ConsumerConfig consumerConfig, QueueServer queueServer) {
-        this.consumerConfig = consumerConfig;
         this.queueServer = queueServer;
         this.consumerConnector = Consumer.create(consumerConfig);
-        // 这里需要根据consumerConfig中的配置创建消息流
-        // this.topicMessageStreams = consumerConnector.createMessageStreams(consumerConfig.embeddedConsumerTopicMap);
+        this.topicMessageStreams = consumerConnector.createMessageStreams(consumerConfig.getEmbeddedConsumerTopicMap());
     }
 
     public void startup() {
         List<Thread> threadList = new ArrayList<>();
         // 假设topicMessageStreams已经创建
-        Map<TopicPartition, List<ConsumerRecord>> topicMessageStreams = consumerConnector.createMessageStreams(...); // 需要根据实际情况实现
-        for (Map.Entry<TopicPartition, List<ConsumerRecord>> entry : topicMessageStreams.entrySet()) {
-            TopicPartition topicPartition = entry.getKey();
-            List<ConsumerRecord> streamList = entry.getValue();
+        for (Map.Entry<String, List<QueueMessageStream>> entry : topicMessageStreams.entrySet()) {
+            String topic = entry.getKey();
+            List<QueueMessageStream> streamList = entry.getValue();
             for (int i = 0; i < streamList.size(); i++) {
+                int finalI = i;
                 Thread thread = new Thread(new Runnable() {
                     public void run() {
-                        logger.info("starting consumer thread " + i + " for topic " + topicPartition.topic());
+                        logger.info("starting consumer thread " + finalI + " for topic " + topic);
                         LogManager logManager = queueServer.getLogManager();
                         SocketServerStats stats = queueServer.getStats();
                         try {
-                            for (ConsumerRecord message : streamList) {
-                                int partition = logManager.chooseRandomPartition(topicPartition.topic());
-                                long start = SystemTime.nanoseconds();
-                                Log log = logManager.getOrCreateLog(topicPartition.topic(), partition);
-                                log.append(new ByteBufferMessageSet(/* 需要根据实际情况实现参数 */));
-                                stats.recordRequest(RequestKeys.Produce, SystemTime.nanoseconds() - start);
+                            for (QueueMessageStream message : streamList) {
+                                int partition = logManager.chooseRandomPartition(topic);
+                                long start = SystemTime.getInstance().nanoseconds();
+                                Log log = logManager.getOrCreateLog(topic, partition);
+                                log.append(new ByteBufferMessageSet(new NoCompressionCodec(), message));
+                                stats.recordRequest(RequestKeys.produce, SystemTime.getInstance().nanoseconds() - start);
                             }
                         } catch (Throwable e) {
                             logger.error(e + Utils.stackTrace(e));
-                            logger.error(topicPartition.topic() + " stream " + i + " unexpectedly exited");
+                            logger.error(topic + " stream " + finalI + " unexpectedly exited");
                         }
                     }
                 });

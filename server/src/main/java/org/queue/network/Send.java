@@ -30,7 +30,7 @@ public abstract class Send extends Transmission {
      * @param channel 要写入的通道。
      * @return 写入的总字节数。
      */
-    public int writeCompletely(WritableByteChannel channel) {
+    public int writeCompletely(WritableByteChannel channel) throws IOException {
         int totalWritten = 0; // 用于记录总共写入的字节数
         while (!complete()) { // 循环直到传输完成
             int written = writeTo(channel); // 写入数据到通道

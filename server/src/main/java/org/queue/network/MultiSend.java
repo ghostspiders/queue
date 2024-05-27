@@ -7,6 +7,7 @@ package org.queue.network;
  * @datetime 2024年 05月 22日 10:56
  * @version: 1.0
  */
+import java.io.IOException;
 import java.nio.channels.WritableByteChannel;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,18 +17,16 @@ import java.util.List;
  * @param <S> 发送对象的类型，S是Send的子类。
  */
 public abstract class MultiSend<S extends Send> extends Send {
-    private  List<S> sends = new ArrayList<>(); // 存储Send对象的列表
-    private  int expectedBytesToWrite; // 预期要写入的总字节数
-    private List<S> current = new ArrayList<>(); // 当前要发送的Send对象列表
+    protected int expectedBytesToWrite; // 预期要写入的总字节数
+    protected List<S> current = new ArrayList<>(); // 当前要发送的Send对象列表
     private int totalWritten = 0; // 已写入的总字节数
 
-    public MultiSend(List<S> sends, int expectedBytesToWrite) {
-        this.sends = sends;
-        this.expectedBytesToWrite = expectedBytesToWrite;
+    public MultiSend(List<S> sends) {
+        this.current = sends;
     }
 
     @Override
-    public int writeTo(WritableByteChannel channel) {
+    public int writeTo(WritableByteChannel channel) throws IOException {
         expectIncomplete();
         S head = current.get(0); // 获取当前列表的第一个Send对象
         int written = head.writeTo(channel); // 调用其writeTo方法写入数据

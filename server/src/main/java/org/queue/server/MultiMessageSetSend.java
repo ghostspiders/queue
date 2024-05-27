@@ -2,6 +2,7 @@ package org.queue.server;
 
 import org.queue.network.ByteBufferSend;
 import org.queue.network.MultiSend;
+import org.queue.network.Send;
 
 import java.nio.ByteBuffer;
 import java.util.List;
@@ -11,14 +12,14 @@ public class MultiMessageSetSend extends MultiSend {
     private int allMessageSetSize;
     private int expectedBytesToWrite;
 
-    public MultiMessageSetSend(List<MessageSetSend> sets) {
+    public MultiMessageSetSend(List<Send> sends) {
         // 创建一个ByteBufferSend对象，并将其添加到sets列表的开头
-        super(sets);
+        super(sends);
         ByteBufferSend bufferSend = new ByteBufferSend(6);
         sends.add(0, bufferSend); // 将bufferSend添加到列表的开头
         this.buffer = bufferSend.getBuffer();
         // 计算所有MessageSetSend对象的总大小
-        this.allMessageSetSize = calculateTotalSize(sets);
+        this.allMessageSetSize = calculateTotalSize(sends);
         // 计算预期需要写入的总字节数，包括头部信息（4字节消息集合大小 + 2字节保留字段）
         this.expectedBytesToWrite = 4 + 2 + allMessageSetSize;
         // 设置头部信息：消息集合大小（不包括头部自身的6字节）
@@ -30,9 +31,10 @@ public class MultiMessageSetSend extends MultiSend {
     }
 
     // 辅助方法，用于计算所有MessageSetSend对象的总大小
-    private int calculateTotalSize(List<MessageSetSend> sets) {
+    private int calculateTotalSize(List<Send> sets) {
         int totalSize = 0;
-        for (MessageSetSend set : sets) {
+        for (Send send : sets) {
+            MessageSetSend set = (MessageSetSend) send;
             totalSize += set.sendSize();
         }
         return totalSize;

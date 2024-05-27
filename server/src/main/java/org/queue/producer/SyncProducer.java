@@ -7,6 +7,8 @@ package org.queue.producer;
  * @datetime 2024年 05月 24日 17:43
  * @version: 1.0
  */
+import org.queue.network.BoundedByteBufferSend;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
@@ -68,7 +70,7 @@ public class SyncProducer {
     }
 
     // 公共发送逻辑
-    private void send(BoundedByteBufferSend send) {
+    private void send(BoundedByteBufferSend send) throws IOException {
         synchronized (lock) {
             verifySendBuffer(send.getBuffer().slice());
             long startTime = System.nanoTime(); // 发送开始时间

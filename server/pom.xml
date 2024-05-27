@@ -69,6 +69,11 @@
             <artifactId>jopt-simple</artifactId>
             <version>6.0-alpha-3</version>
         </dependency>
+        <dependency>
+            <groupId>cn.hutool</groupId>
+            <artifactId>hutool-all</artifactId>
+            <version>5.7.16</version> <!-- 请使用您需要的版本 -->
+        </dependency>
 <!--        <dependency>-->
 <!--            <groupId>org.apache.kafka</groupId>-->
 <!--            <artifactId>kafka-clients</artifactId>-->

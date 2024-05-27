@@ -7,10 +7,16 @@ package org.queue.consumer;
  * @datetime 2024年 05月 24日 09:47
  * @version: 1.0
  */
+import org.queue.network.BoundedByteBufferReceive;
+import org.queue.network.BoundedByteBufferSend;
+import org.queue.network.Receive;
+import org.queue.network.Request;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -153,7 +159,7 @@ public class SimpleConsumer {
      * 从服务器接收响应。
      * @return 包含接收到的数据和错误码的元组
      */
-    private Tuple2<Receive, Integer> getResponse() {
+    private Map<Receive, Integer> getResponse() {
         BoundedByteBufferReceive response = new BoundedByteBufferReceive();
         try {
             response.readCompletely(channel); // 从通道完全读取响应
@@ -161,7 +167,7 @@ public class SimpleConsumer {
             // 设置buffer的初始位置
             ByteBuffer buffer = response.getBuffer();
             int errorCode = buffer.getShort(); // 获取错误码
-            return new Tuple2<>(response, errorCode); // 返回接收对象和错误码
+            return new Map(response, errorCode); // 返回接收对象和错误码
         } catch (IOException e) {
             // 日志记录或异常处理
             return null;

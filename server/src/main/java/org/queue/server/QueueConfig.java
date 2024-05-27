@@ -7,6 +7,7 @@ package org.queue.server;
  * @datetime 2024年 05月 23日 15:58
  * @version: 1.0
  */
+import cn.hutool.core.util.ArrayUtil;
 import org.queue.message.Message;
 import org.queue.message.MessageSingle;
 import org.queue.utils.Utils;
@@ -66,16 +67,16 @@ public class QueueConfig extends ZKConfig {
         this.brokerId = Utils.getInt(props, "brokerid");
         this.socketSendBuffer = Utils.getInt(props, "socket.send.buffer", 100 * 1024);
         this.socketReceiveBuffer = Utils.getInt(props, "socket.receive.buffer", 100 * 1024);
-        this.maxSocketRequestSize = Utils.getIntInRange(props, "max.socket.request.bytes", 100 * 1024 * 1024, 1, Integer.MAX_VALUE);
-        this.numThreads = Utils.getIntInRange(props, "num.threads", Runtime.getRuntime().availableProcessors(), 1, Integer.MAX_VALUE);
-        this.monitoringPeriodSecs = Utils.getIntInRange(props, "monitoring.period.secs", 600, 1, Integer.MAX_VALUE);
-        this.numPartitions = Utils.getIntInRange(props, "num.partitions", 1, 1, Integer.MAX_VALUE);
+        this.maxSocketRequestSize = Utils.getIntInRange(props, "max.socket.request.bytes", 100 * 1024 * 1024, new int[]{1, Integer.MAX_VALUE});
+        this.numThreads = Utils.getIntInRange(props, "num.threads", Runtime.getRuntime().availableProcessors(),new int[]{1, Integer.MAX_VALUE});
+        this.monitoringPeriodSecs = Utils.getIntInRange(props, "monitoring.period.secs", 600, new int[]{1, Integer.MAX_VALUE});
+        this.numPartitions = Utils.getIntInRange(props, "num.partitions", 1, new int[]{1, Integer.MAX_VALUE});
         this.logDir = getString(props, "log.dir");
-        this.logFileSize = Utils.getIntInRange(props, "log.file.size", 1 * 1024 * 1024 * 1024, MessageSingle.min_header_size, Integer.MAX_VALUE);
-        this.flushInterval = Utils.getIntInRange(props, "log.flush.interval", 500, 1, Integer.MAX_VALUE);
-        this.logRetentionHours = Utils.getIntInRange(props, "log.retention.hours", 24 * 7, 1, Integer.MAX_VALUE);
+        this.logFileSize = Utils.getIntInRange(props, "log.file.size", 1 * 1024 * 1024 * 1024, new int[]{MessageSingle.min_header_size, Integer.MAX_VALUE});
+        this.flushInterval = Utils.getIntInRange(props, "log.flush.interval", 500, new int[]{1, Integer.MAX_VALUE});
+        this.logRetentionHours = Utils.getIntInRange(props, "log.retention.hours", 24 * 7, new int[]{1, Integer.MAX_VALUE});
         this.logRetentionHoursMap = Utils.getTopicRentionHours(getString(props, "topic.log.retention.hours", ""));
-        this.logCleanupIntervalMinutes = Utils.getIntInRange(props, "log.cleanup.interval.mins", 10, 1, Integer.MAX_VALUE);
+        this.logCleanupIntervalMinutes = Utils.getIntInRange(props, "log.cleanup.interval.mins", 10, new int[]{1, Integer.MAX_VALUE});
         this.enableZookeeper = Utils.getBoolean(props, "enable.zookeeper", true);
         this.flushIntervalMap = Utils.getTopicFlushIntervals(getString(props, "topic.flush.intervals.ms", ""));
         this.flushSchedulerThreadRate = Utils.getInt(props, "log.default.flush.scheduler.interval.ms", 3000);

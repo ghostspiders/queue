@@ -1,12 +1,12 @@
 package org.queue;
 
+import cn.hutool.core.util.ArrayUtil;
 import org.queue.consumer.ConsumerConfig;
 import org.queue.server.QueueConfig;
 import org.queue.server.QueueServerStartable;
 import org.queue.utils.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.util.Properties;
 
 public class Queue {
@@ -14,7 +14,6 @@ public class Queue {
 
     public static void main(String[] args) {
         // Utils.swallow(Level.WARN, () -> Utils.registerMBean(LoggerFactory.getLogger(""), queueLog4jMBeanName));
-
         boolean embeddedConsumer = false;
         String serverPath = System.getProperty("server.config");
         if (serverPath == null || serverPath.isBlank()) {

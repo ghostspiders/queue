@@ -36,4 +36,8 @@ public class ByteBufferSend extends Send {
     public boolean complete() {
         return this.complete ;
     }
+
+    public ByteBuffer getBuffer() {
+        return buffer;
+    }
 }
