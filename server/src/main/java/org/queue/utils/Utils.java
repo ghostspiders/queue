@@ -319,10 +319,15 @@ public class Utils {
     }
 
     // ByteBuffer转换为字符串的方法
-    public static String toString(ByteBuffer buffer, Charset encoding) {
+    public static String toString(ByteBuffer buffer, String encoding) {
         byte[] bytes = new byte[buffer.remaining()];
         buffer.duplicate().get(bytes); // 使用duplicate避免改变原始buffer的位置
-        return new String(bytes, encoding);
+        try {
+            return new String(bytes, encoding);
+        } catch (UnsupportedEncodingException e) {
+            logger.error("Unsupported encoding: " + encoding, e);
+            return null;
+        }
     }
 
     // 打印错误消息并退出JVM的方法
@@ -534,38 +539,4 @@ public class Utils {
             return CompressionCodec.getCompressionCodec(Integer.parseInt(codecValueString));
         }
     }
-
-    public static Map<String, List<String>> getPartitionsForTopics(ZkClient zkClient, Iterator<String> topics) throws ZkException {
-        Map<String, List<String>> ret = new HashMap<>();
-        while (topics.hasNext()) {
-            String topic = topics.next();
-            List<String> partList = new ArrayList<>();
-            List<String> brokers = getChildrenParentMayNotExist(zkClient, BrokerTopicsPath + "/" + topic);
-            for (String broker : brokers) {
-                int nParts = Integer.parseInt(readData(zkClient, BrokerTopicsPath + "/" + topic + "/" + broker));
-                for (int part = 0; part < nParts; part++) {
-                    partList.add(broker + "-" + part);
-                }
-            }
-            Collections.sort(partList);
-            ret.put(topic, partList);
-        }
-        return ret;
-    }
-
-    public static void setupPartition(ZkClient zkClient, int brokerId, String host, int port, String topic, int nParts) throws ZkException {
-        String brokerIdPath = BrokerIdsPath + "/" + brokerId;
-        Broker broker = new Broker(brokerId, String.valueOf(brokerId), host, port);
-        createEphemeralPathExpectConflict(zkClient, brokerIdPath, broker.getZKString());
-        String brokerPartTopicPath = BrokerTopicsPath + "/" + topic + "/" + brokerId;
-        createEphemeralPathExpectConflict(zkClient, brokerPartTopicPath, String.valueOf(nParts));
-    }
-
-    public static void deletePartition(ZkClient zkClient, int brokerId, String topic) throws ZkException {
-        String brokerIdPath = BrokerIdsPath + "/" + brokerId;
-        zkClient.delete(brokerIdPath);
-        String brokerPartTopicPath = BrokerTopicsPath + "/" + topic + "/" + brokerId;
-        zkClient.delete(brokerPartTopicPath);
-    }
-
 }
