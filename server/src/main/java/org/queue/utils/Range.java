@@ -37,13 +37,4 @@ public interface Range {
             return false;
         }
     }
-
-    /**
-     * 返回范围的字符串表示形式。
-     * @return 范围的字符串描述
-     */
-    @Override
-    default String toString() {
-        return "(start=" + start() + ", size=" + size() + ")";
-    }
 }

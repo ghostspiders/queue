@@ -5,7 +5,6 @@ import io.netty.channel.socket.SocketChannel;
 import org.queue.common.ErrorMapping;
 import org.queue.message.MessageSet;
 import org.queue.network.Send;
-import org.queue.utils.nonthreadsafe;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,10 +59,10 @@ public class MessageSetSend extends Send {
         }
 
         // 如果日志记录器启用了trace级别，记录发送的字节数和目标地址
-        if (logger.isLoggable(java.util.logging.Level.FINER)) {
+        if (logger.isTraceEnabled()) {
             if (channel instanceof SocketChannel) {
                 SocketChannel socketChannel = (SocketChannel)channel;
-                logger.finer(sent + " bytes written to " + socketChannel.socket().getRemoteSocketAddress() +
+                logger.trace(sent + " bytes written to " + socketChannel.remoteAddress().toString() +
                         " expecting to send " + size + " bytes");
             }
         }

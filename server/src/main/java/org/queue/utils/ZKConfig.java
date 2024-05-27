@@ -1,7 +1,6 @@
 package org.queue.utils;
 
 import java.util.Properties;
-import org.queue.utils.Utils;
 
 /**
  * Zookeeper配置类。
@@ -11,10 +10,10 @@ public class ZKConfig {
     private String zkConnect;
 
     /** Zookeeper会话超时时间 */
-    private long zkSessionTimeoutMs;
+    private int zkSessionTimeoutMs;
 
     /** 客户端等待建立Zookeeper连接的最大时间 */
-    private long zkConnectionTimeoutMs;
+    private int zkConnectionTimeoutMs;
 
     /** ZK跟随者可以落后ZK领导者的最大时间 */
     private long zkSyncTimeMs;
@@ -42,11 +41,11 @@ public class ZKConfig {
         return zkConnect;
     }
 
-    public long getZkSessionTimeoutMs() {
+    public int getZkSessionTimeoutMs() {
         return zkSessionTimeoutMs;
     }
 
-    public long getZkConnectionTimeoutMs() {
+    public int getZkConnectionTimeoutMs() {
         return zkConnectionTimeoutMs;
     }
 

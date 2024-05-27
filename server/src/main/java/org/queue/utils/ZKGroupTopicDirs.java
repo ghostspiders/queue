@@ -14,8 +14,8 @@ public class ZKGroupTopicDirs extends ZKGroupDirs {
      */
     public ZKGroupTopicDirs(String group, String topic) {
         super(group); // 调用父类构造函数初始化消费者组目录
-        this.consumerOffsetDir = consumerGroupDir + "/offsets/" + topic;
-        this.consumerOwnerDir = consumerGroupDir + "/owners/" + topic;
+        this.consumerOffsetDir =  super.getConsumerDir() + "/offsets/" + topic;
+        this.consumerOwnerDir =  super.getConsumerGroupDir() + "/owners/" + topic;
     }
 
     /**

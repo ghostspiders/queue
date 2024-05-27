@@ -30,7 +30,7 @@ public class SystemTime implements Time {
     // 1天等于多少分钟
     public static final long MinsPerDay = MinsPerHour * HoursPerDay;
     // 单例实例
-    private static final SystemTime INSTANCE = new SystemTime();
+    public static final SystemTime INSTANCE = new SystemTime();
 
     // 私有构造函数，防止外部创建实例
     private SystemTime() {

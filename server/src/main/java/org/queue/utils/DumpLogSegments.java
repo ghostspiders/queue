@@ -42,7 +42,7 @@ public class DumpLogSegments {
                         System.out.println("payload:\t" + Utils.toString(messageAndOffset.getMessage().payload(), StandardCharsets.UTF_8));
                     }
                     // 更新 offset
-                    offset += messageAndOffset.offset();
+                    offset += messageAndOffset.getOffset();
                 }
             }
         }

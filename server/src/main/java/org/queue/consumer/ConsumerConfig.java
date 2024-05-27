@@ -7,9 +7,11 @@ package org.queue.consumer;
  * @datetime 2024年 05月 22日 17:03
  * @version: 1.0
  */
-import org.apache.zookeeper.common.ZKConfig;
 import org.queue.api.OffsetRequest;
 import org.queue.utils.Utils;
+import org.queue.utils.ZKConfig;
+
+import java.util.Map;
 import java.util.Properties;
 
 public class ConsumerConfig extends ZKConfig {
@@ -18,7 +20,7 @@ public class ConsumerConfig extends ZKConfig {
     private static final int SocketBufferSize = 64 * 1024;
     private static final int FetchSize = 300 * 1024;
     private static final int MaxFetchSize = 10 * FetchSize;
-    private static final long BackoffIncrementMs = 1000;
+    private static final int BackoffIncrementMs = 1000;
     private static final boolean AutoCommit = true;
     private static final int AutoCommitInterval = 10 * 1000;
     private static final int MaxQueuedChunks = 100;
@@ -39,7 +41,7 @@ public class ConsumerConfig extends ZKConfig {
     private int maxQueuedChunks;
     private String autoOffsetReset;
     private int consumerTimeoutMs;
-    private Properties embeddedConsumerTopicMap;
+    private Map<String, Integer> embeddedConsumerTopicMap;
 
     public ConsumerConfig(Properties props) {
         super(props);
@@ -50,13 +52,13 @@ public class ConsumerConfig extends ZKConfig {
         this.socketBufferSize = Utils.getInt(props, "socket.buffersize", SocketBufferSize);
         this.fetchSize = Utils.getInt(props, "fetch.size", FetchSize);
         this.maxFetchSize = Utils.getInt(props, "max.fetch.size", MaxFetchSize);
-        this.backoffIncrementMs = Utils.getLong(props, "backoff.increment.ms", BackoffIncrementMs);
+        this.backoffIncrementMs = Utils.getInt(props, "backoff.increment.ms", BackoffIncrementMs);
         this.autoCommit = Utils.getBoolean(props, "autocommit.enable", AutoCommit);
         this.autoCommitIntervalMs = Utils.getInt(props, "autocommit.interval.ms", AutoCommitInterval);
         this.maxQueuedChunks = Utils.getInt(props, "queuedchunks.max", MaxQueuedChunks);
         this.autoOffsetReset = Utils.getString(props, "autooffset.reset", AutoOffsetReset);
         this.consumerTimeoutMs = Utils.getInt(props, "consumer.timeout.ms", ConsumerTimeoutMs);
-        this.embeddedConsumerTopicMap = Utils.getProperties(props, "embeddedconsumer.topics", EmbeddedConsumerTopics);
+        this.embeddedConsumerTopicMap = Utils.getConsumerTopicMap(Utils.getString(props, "embeddedconsumer.topics",EmbeddedConsumerTopics));
     }
 
     // Getters for all fields
@@ -108,7 +110,7 @@ public class ConsumerConfig extends ZKConfig {
         return consumerTimeoutMs;
     }
 
-    public Properties getEmbeddedConsumerTopicMap() {
+    public Map<String, Integer>  getEmbeddedConsumerTopicMap() {
         return embeddedConsumerTopicMap;
     }
 }

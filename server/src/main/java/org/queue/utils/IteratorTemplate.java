@@ -3,11 +3,6 @@ package org.queue.utils;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-// 定义状态枚举
-enum State {
-    DONE, READY, NOT_READY, FAILED
-}
-
 // 泛型迭代器模板
 public abstract class IteratorTemplate<T> implements Iterator<T> {
 

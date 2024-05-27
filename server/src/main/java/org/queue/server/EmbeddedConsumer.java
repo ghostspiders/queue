@@ -4,8 +4,9 @@ import org.queue.consumer.Consumer;
 import org.queue.consumer.ConsumerConfig;
 import org.queue.consumer.ConsumerConnector;
 import org.apache.logging.log4j.LogManager;
-import org.queue.consumer.ConsumerIterator;
 import org.queue.network.SocketServerStats;
+import org.queue.utils.SystemTime;
+import org.queue.utils.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,8 +50,8 @@ public class EmbeddedConsumer {
                                 stats.recordRequest(RequestKeys.Produce, SystemTime.nanoseconds() - start);
                             }
                         } catch (Throwable e) {
-                            logger.fatal(e + Utils.stackTrace(e));
-                            logger.fatal(topicPartition.topic() + " stream " + i + " unexpectedly exited");
+                            logger.error(e + Utils.stackTrace(e));
+                            logger.error(topicPartition.topic() + " stream " + i + " unexpectedly exited");
                         }
                     }
                 });

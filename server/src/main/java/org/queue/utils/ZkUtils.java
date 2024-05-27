@@ -8,10 +8,10 @@ package org.queue.utils;
  * @version: 1.0
  */
 import org.I0Itec.zkclient.ZkClient;
-import org.I0Itec.zkclient.exception.ZkException;
 import org.I0Itec.zkclient.exception.ZkNoNodeException;
 import org.I0Itec.zkclient.exception.ZkNodeExistsException;
 import org.queue.cluster.Broker;
+import org.queue.cluster.Cluster;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -182,7 +182,7 @@ public class ZkUtils {
         List<String> nodes = getChildrenParentMayNotExist(zkClient, BrokerIdsPath);
         for (String node : nodes) {
             String brokerZKString = readData(zkClient, BrokerIdsPath + "/" + node);
-            cluster.add(Broker.createBroker(node, brokerZKString));
+            cluster.add(Broker.createBroker(Integer.parseInt(node), brokerZKString));
         }
         return cluster;
     }
@@ -209,7 +209,7 @@ public class ZkUtils {
     // 设置分区的方法
     public static void setupPartition(ZkClient zkClient, int brokerId, String host, int port, String topic, int nParts) {
         String brokerIdPath = BrokerIdsPath + "/" + brokerId;
-        Broker broker = new Broker(brokerId, brokerId.toString(), host, port);
+        Broker broker = new Broker(brokerId, String.valueOf(brokerId), host, port);
         createEphemeralPathExpectConflict(zkClient, brokerIdPath, broker.getZKString());
         String brokerPartTopicPath = BrokerTopicsPath + "/" + topic + "/" + brokerId;
         createEphemeralPathExpectConflict(zkClient, brokerPartTopicPath, String.valueOf(nParts));

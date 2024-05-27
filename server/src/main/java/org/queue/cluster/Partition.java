@@ -12,7 +12,7 @@ public class Partition implements Comparable<Partition> {
     }
 
     // 使用字符串解析为Partition
-    public  Partition parse(String str) {
+    public static Partition parse(String str) {
         String[] pieces = str.split("-");
         if (pieces.length != 2) {
             throw new IllegalArgumentException("Expected name in the form x-y.");
@@ -56,5 +56,13 @@ public class Partition implements Comparable<Partition> {
     @Override
     public int hashCode() {
         return 31 * (17 + brokerId) + partId;
+    }
+
+    public int getBrokerId() {
+        return brokerId;
+    }
+
+    public int getPartId() {
+        return partId;
     }
 }

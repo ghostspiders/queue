@@ -14,7 +14,7 @@ public class SnapshotStats {
     // 构造函数，可指定监控持续时间，默认为600秒
     public SnapshotStats(long monitorDurationNs) {
         this.monitorDurationNs = monitorDurationNs;
-        this.time = new SystemTime(); // 使用SystemTime作为时间提供者
+        this.time = SystemTime.getInstance(); // 使用SystemTime作为时间提供者
         this.complete = new AtomicReference<>(new Stats());
         this.current = new AtomicReference<>(new Stats());
         this.numCumulatedRequests = new AtomicLong(0);

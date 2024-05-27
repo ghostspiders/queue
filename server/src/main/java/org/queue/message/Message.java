@@ -7,6 +7,8 @@ package org.queue.message;
  * @datetime 2024年 05月 23日 15:03
  * @version: 1.0
  */
+import org.queue.utils.Utils;
+
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 

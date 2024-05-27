@@ -18,15 +18,15 @@ import java.util.Arrays;
 public class MessageSingle {
 
     // 定义消息魔术字节的版本和相关常量
-    public static final byte MAGIC_VERSION_1 = 0;
-    public static final byte MAGIC_VERSION_2 = 1;
-    public static final byte CURRENT_MAGIC_VALUE = 1;
-    private static final int MAGIC_OFFSET = 0;
-    private static final int MAGIC_LENGTH = 1;
-    private static final int ATTRIBUTE_OFFSET = MAGIC_OFFSET + MAGIC_LENGTH;
-    private static final int ATTRIBUTE_LENGTH = 1;
-    private static final int COMPRESSION_CODE_MASK = 0x03;  // 用于压缩代码的掩码，2位用于表示压缩编解码器
-    public static final int NO_COMPRESSION = 0;
+    public static final byte magic_version_1 = 0;
+    public static final byte magic_version_2 = 1;
+    public static final byte current_magic_value = 1;
+    private static final int magic_offset = 0;
+    private static final int magic_length = 1;
+    private static final int attribute_offset = magic_offset + magic_length;
+    private static final int attribute_length = 1;
+    private static final int compression_code_mask = 0x03;  // 用于压缩代码的掩码，2位用于表示压缩编解码器
+    public static final int no_compression = 0;
 
     // CRC长度
     private static final int CRC_LENGTH = 4;
@@ -39,10 +39,10 @@ public class MessageSingle {
      */
     public static int crcOffset(byte magic) {
         switch (magic) {
-            case MAGIC_VERSION_1:
-                return MAGIC_OFFSET + MAGIC_LENGTH;
-            case MAGIC_VERSION_2:
-                return ATTRIBUTE_OFFSET + ATTRIBUTE_LENGTH;
+            case magic_version_1:
+                return magic_offset + magic_length;
+            case magic_version_2:
+                return attribute_offset + attribute_length;
             default:
                 throw new UnknownMagicByteException("Magic byte value of " + magic + " is unknown");
         }
@@ -69,6 +69,6 @@ public class MessageSingle {
     }
 
     // 魔术字节0的消息头最小大小
-    public static final int MIN_HEADER_SIZE = headerSize(MAGIC_VERSION_1);
+    public static final int min_header_size = headerSize(magic_version_1);
 
 }

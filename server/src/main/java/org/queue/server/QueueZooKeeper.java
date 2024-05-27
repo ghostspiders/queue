@@ -3,7 +3,11 @@ package org.queue.server;
 import akka.serialization.StringSerializer;
 import org.I0Itec.zkclient.ZkClient;
 import org.I0Itec.zkclient.ZkConnection;
+import org.apache.zookeeper.Watcher;
+import org.queue.cluster.Broker;
 import org.queue.log.LogManager;
+import org.queue.utils.ZkUtils;
+
 import java.net.InetAddress;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -80,9 +84,10 @@ public class QueueZooKeeper {
 
     // ZooKeeper会话过期监听器
     private class SessionExpireListener implements org.I0Itec.zkclient.IZkStateListener {
+
         @Override
-        public void handleStateChanged(org.I0Itec.zkclient.ZkState state) {
-            // 状态变化时不执行任何操作，因为zkclient会自动尝试重新连接
+        public void handleStateChanged(Watcher.Event.KeeperState keeperState){
+
         }
 
         @Override
@@ -111,13 +116,8 @@ public class QueueZooKeeper {
     // 关闭ZooKeeper客户端连接
     public void close() {
         if (zkClient != null) {
-            try {
-                logger.info("Closing zookeeper client...");
-                zkClient.close();
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                logger.severe("Failed to close ZK client: " + e.getMessage());
-            }
+            logger.info("Closing zookeeper client...");
+            zkClient.close();
         }
     }
 }

@@ -8,11 +8,13 @@ package org.queue.producer;
  * @version: 1.0
  */
 import org.I0Itec.zkclient.IZkChildListener;
+import org.queue.utils.ZkUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 public class BrokerTopicsListener implements IZkChildListener {
     private final Map<String, SortedSet<Partition>> originalBrokerTopicsPartitionsMap;

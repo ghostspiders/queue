@@ -100,7 +100,6 @@ public class Pool<K, V> implements Iterable<AbstractMap.SimpleEntry<K, V>> {
      * 返回池中元素的数量。
      * @return 元素数量
      */
-    @Override
     public int size() {
         return pool.size();
     }

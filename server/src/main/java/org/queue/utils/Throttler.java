@@ -1,9 +1,10 @@
 package org.queue.utils;
 
-import java.util.concurrent.TimeUnit;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.logging.Logger;
 
 /**
  * 用于测量和限制某个过程速率的类。
@@ -11,7 +12,7 @@ import java.util.logging.Logger;
  * 并在调用maybeThrottle()时适当地休眠以达到期望速率。
  */
 public class Throttler {
-    private final static Logger logger = Logger.getLogger(Throttler.class);
+    private final static Logger logger = LoggerFactory.getLogger(Throttler.class);
     private final static long DefaultCheckIntervalMs = 100L;
     private final double desiredRatePerSec;
     private final long checkIntervalMs;
@@ -66,13 +67,13 @@ public class Throttler {
             long now = time.nanoseconds();
             long ellapsedNs = now - periodStartNs;
             // 如果我们完成了一个间隔并且我们观察到了一些内容，也许我们应该小睡片刻
-            if (ellapsedNs > checkIntervalMs * Time.NsPerMs && observedSoFar > 0) {
-                double rateInSecs = (observedSoFar * Time.NsPerSec) / ellapsedNs;
+            if (ellapsedNs > checkIntervalMs * SystemTime.NsPerMs && observedSoFar > 0) {
+                double rateInSecs = (observedSoFar * SystemTime.NsPerSec) / ellapsedNs;
                 boolean needAdjustment = !(throttleDown ^ (rateInSecs > desiredRatePerSec));
                 if (needAdjustment) {
                     // 解出我们需要休眠多长时间以达到期望速率
-                    double desiredRateMs = desiredRatePerSec / Time.MsPerSec;
-                    long ellapsedMs = ellapsedNs / Time.NsPerMs;
+                    double desiredRateMs = desiredRatePerSec / SystemTime.MsPerSec;
+                    long ellapsedMs = ellapsedNs / SystemTime.NsPerMs;
                     long sleepTime = Math.round(observedSoFar / desiredRateMs - ellapsedMs);
                     if (sleepTime > 0) {
                         if (logger.isDebugEnabled()) {

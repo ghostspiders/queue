@@ -13,12 +13,16 @@ import akka.actor.Props;
 import org.queue.server.QueueConfig;
 import org.queue.server.QueueZooKeeper;
 import org.queue.utils.Pool;
+import org.queue.utils.QueueScheduler;
+import org.queue.utils.Utils;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.sql.Time;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ScheduledExecutorService;
 
 /**
@@ -31,12 +35,13 @@ public class LogManager {
     private final long logCleanupIntervalMs;
     private final long logCleanupDefaultAgeMs;
     private final boolean needRecovery;
-
     private File logDir;
     private int numPartitions;
     private long maxSize;
     private long flushInterval;
     private Map<String, Integer> topicPartitionsMap;
+    private CountDownLatch startupLatch;
+
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger(LogManager.class);
 
     // 使用ConcurrentHashMap保证线程安全
@@ -57,8 +62,12 @@ public class LogManager {
         this.maxSize = config.getLogFileSize();
         this.flushInterval = config.getFlushInterval();
         this.topicPartitionsMap = config.getTopicPartitionsMap();
-
-        // 初始化日志目录
+        if (config.isEnableZookeeper()){
+            this.startupLatch = new CountDownLatch(1);
+        }else {
+            this.startupLatch = null;
+        }
+            // 初始化日志目录
         initLogDir();
         scheduleCleanupTask();
         initZookeeperIfNeeded();
@@ -138,9 +147,9 @@ public class LogManager {
     public void startup() {
         if (config.isEnableZookeeper()) {
             // 注册Broker和主题
-            queueZookeeper.registerBrokerInZk();
+            queueZooKeeper.registerBrokerInZk();
             for (String topic : getAllTopics()) {
-                queueZookeeper.registerTopicInZk(topic);
+                queueZooKeeper.registerTopicInZk(topic);
             }
             startupLatch.countDown();
         }

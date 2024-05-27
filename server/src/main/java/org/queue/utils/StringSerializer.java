@@ -12,13 +12,16 @@ public class StringSerializer implements ZkSerializer {
      * 序列化给定的数据对象到字节数组。
      * @param data 要序列化的对象，期望为String类型。
      * @return 返回序列化后的字节数组。
-     * @throws UnsupportedEncodingException 如果编码不支持时抛出异常，虽然UTF-8编码通常不会抛出此异常。
      */
     @Override
-    public byte[] serialize(Object data) throws UnsupportedEncodingException {
+    public byte[] serialize(Object data){
         // 确保传入的数据是String类型
         if (data instanceof String) {
-            return ((String) data).getBytes("UTF-8");
+            try {
+                return ((String) data).getBytes("UTF-8");
+            } catch (UnsupportedEncodingException e) {
+                throw new RuntimeException(e);
+            }
         } else {
             throw new IllegalArgumentException("Data object is not a String: " + data.getClass().getName());
         }

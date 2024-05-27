@@ -22,7 +22,7 @@ public class Cluster {
     }
 
     // 默认构造函数
-    private Cluster() {
+    public Cluster() {
 
     }
 

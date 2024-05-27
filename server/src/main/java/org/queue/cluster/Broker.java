@@ -25,7 +25,7 @@ public class Broker {
         return zkStr;
     }
 
-    public  Broker createBroker(int id, String brokerInfoString) {
+    public  static Broker createBroker(int id, String brokerInfoString) {
         String[] brokerInfo = brokerInfoString.split(":");
         return new Broker(id, brokerInfo[0], brokerInfo[1], Integer.parseInt(brokerInfo[2]));
     }
@@ -52,4 +52,15 @@ public class Broker {
         return this.id;
     }
 
+    public String getCreatorId() {
+        return creatorId;
+    }
+
+    public String getHost() {
+        return host;
+    }
+
+    public int getPort() {
+        return port;
+    }
 }

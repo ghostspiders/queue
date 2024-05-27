@@ -10,9 +10,9 @@ package org.queue.consumer;
 
 import org.I0Itec.zkclient.ZkClient;
 import org.queue.api.OffsetRequest;
+import org.queue.cluster.Cluster;
 import org.queue.cluster.Partition;
-import org.queue.utils.Pool;
-import org.queue.utils.ZKGroupDirs;
+import org.queue.utils.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.net.UnknownHostException;
@@ -142,8 +142,8 @@ public class ZookeeperConsumerConnector extends ZkConsumerConnector implements Z
 
     // 向所有队列发送关闭命令
     private void sendShutdownToAllQueues() {
-        Set<Map.Entry<Tuple2<String, String>, BlockingQueue<FetchedDataChunk>>> entries = queues.entrySet();
-        for (Map.Entry<Tuple2<String, String>, BlockingQueue<FetchedDataChunk>> entry : entries) {
+        Set<Map.Entry<Map<String, String>, BlockingQueue<FetchedDataChunk>>> entries = queues.entrySet();
+        for (Map.Entry<Map<String, String>, BlockingQueue<FetchedDataChunk>> entry : entries) {
             BlockingQueue<FetchedDataChunk> queue = entry.getValue();
             logger.debug("Clearing up queue");
             // 清空队列并发送关闭命令

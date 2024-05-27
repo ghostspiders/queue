@@ -10,8 +10,11 @@ package org.queue.producer;
 import org.I0Itec.zkclient.IZkStateListener;
 import org.I0Itec.zkclient.ZkClient;
 import org.apache.zookeeper.Watcher;
+import org.queue.utils.ZkUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Set;
 
 public class ZKSessionExpirationListener implements IZkStateListener {
     private final BrokerTopicsListener brokerTopicsListener;
