@@ -1,11 +1,13 @@
 package org.queue.javaapi.consumer;
 
+import org.queue.consumer.ConsumerConfig;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Kafka消费者连接器，使用Zookeeper进行协调。
+ * 消费者连接器，使用Zookeeper进行协调。
  */
 public class ZookeeperConsumerConnector extends ConsumerConnector {
     private final org.queue.consumer.ZookeeperConsumerConnector underlying;
@@ -40,25 +42,17 @@ public class ZookeeperConsumerConnector extends ConsumerConnector {
      * @param topicCountMap 主题到消费数量的映射表。
      * @return Java风格的消息流映射表。
      */
-    public Map<String, List<KafkaMessageStream>> createMessageStreams(Map<String, Integer> topicCountMap) {
-        // 将Java的Map转换为Scala的Map，并把Integer转换为Int，这里假设已有相应的方法
+    public Map<String, List<QueueMessageStream>> createMessageStreams(Map<String, Integer> topicCountMap) {
+
         Map<String, Integer> topicCountMap2 = new HashMap<>();
         for (Map.Entry<String, Integer> entry : topicCountMap.entrySet()) {
             topicCountMap2.put(entry.getKey(), entry.getValue());
         }
 
         // 调用底层的consume方法
-        Map<String, List<KafkaStream>> scalaReturn = underlying.consume(topicCountMap2);
-        Map<String, List<KafkaMessageStream>> ret = new HashMap<>();
+        Map<String, List<QueueStream>> result = underlying.consume(topicCountMap2);
+        Map<String, List<QueueMessageStream>> ret = new HashMap<>();
 
-        // 将Scala的返回结果转换为Java的Map
-        for (Map.Entry<String, List<KafkaStream>> entry : scalaReturn.entrySet()) {
-            List<KafkaMessageStream> javaStreamList = new ArrayList<>();
-            for (KafkaStream stream : entry.getValue()) {
-                javaStreamList.add(new KafkaMessageStream(stream)); // 假设KafkaMessageStream有相应的构造函数
-            }
-            ret.put(entry.getKey(), javaStreamList);
-        }
         return ret;
     }
 

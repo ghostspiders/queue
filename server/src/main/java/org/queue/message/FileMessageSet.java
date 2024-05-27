@@ -5,24 +5,23 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.WritableByteChannel;
-import java.nio.file.StandardOpenOption;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
-
+import org.queue.utils.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class FileMessageSet extends MessageSet {
-    private final FileChannel channel; // 文件通道
-    private final long offset; // 偏移量
-    private final long limit; // 限制大小
-    private final boolean mutable; // 是否可变
-    private final AtomicBoolean needRecover; // 是否需要恢复
+    private  FileChannel channel; // 文件通道
+    private long offset; // 偏移量
+    private  long limit; // 限制大小
+    private  boolean mutable; // 是否可变
+    private  AtomicBoolean needRecover; // 是否需要恢复
 
-    private final AtomicLong setSize; // 设置的大小
-    private final AtomicLong setHighWaterMark; // 设置的高水位标记
+    private  AtomicLong setSize; // 设置的大小
+    private  AtomicLong setHighWaterMark; // 设置的高水位标记
     private static final Logger logger = LoggerFactory.getLogger(FileMessageSet.class);
 
     // 构造函数
@@ -86,7 +85,7 @@ public class FileMessageSet extends MessageSet {
      * @param mutable 是否可变。
      * @throws IOException 如果文件打开失败。
      */
-    public FileMessageSet(File file, boolean mutable) throws IOException {
+    public FileMessageSet(File file, boolean mutable){
         this(Utils.openChannel(file, mutable), mutable);
     }
 

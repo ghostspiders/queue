@@ -8,17 +8,18 @@ package org.queue.producer;
  * @version: 1.0
  */
 import org.queue.cluster.Broker;
+import org.queue.cluster.Partition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.*;
 
 /**
- * 基于配置信息维护Kafka代理分区的类。
+ * 基于配置信息维护代理分区的类。
  */
 public class ConfigBrokerPartitionInfo implements BrokerPartitionInfo {
     // 日志记录器
     private static final Logger logger = LoggerFactory.getLogger(ConfigBrokerPartitionInfo.class);
-    // Kafka生产者配置
+    // 生产者配置
     private final ProducerConfig config;
     // 存储代理分区信息的有序集合
     private final SortedSet<Partition> brokerPartitions;
@@ -27,7 +28,7 @@ public class ConfigBrokerPartitionInfo implements BrokerPartitionInfo {
 
     /**
      * 构造函数，初始化代理分区信息。
-     * @param config Kafka生产者配置。
+     * @param config 生产者配置。
      */
     public ConfigBrokerPartitionInfo(ProducerConfig config) {
         this.config = config;

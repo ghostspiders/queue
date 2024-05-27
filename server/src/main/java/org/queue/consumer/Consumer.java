@@ -1,5 +1,6 @@
 package org.queue.consumer;
 
+import org.queue.utils.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.event.Level;
@@ -20,7 +21,7 @@ public class Consumer {
      * 创建ConsumerConnector。
      *
      * @param config 配置信息，至少需要指定消费者的groupid和zookeeper连接字符串zk.connect。
-     * @return Kafka的消费者连接器。
+     * @return 的消费者连接器。
      */
     public static ConsumerConnector create(ConsumerConfig config) {
         ConsumerConnector consumerConnect = new ZookeeperConsumerConnector(config);

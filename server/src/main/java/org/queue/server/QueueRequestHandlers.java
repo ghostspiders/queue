@@ -2,7 +2,7 @@ package org.queue.server;
 
 /**
  * @author gaoyvfeng
- * @ClassName KafkaRequestHandlers
+ * @ClassName QueueRequestHandlers
  * @description:
  * @datetime 2024年 05月 23日 16:08
  * @version: 1.0

@@ -1,5 +1,6 @@
 package org.queue.consumer;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -13,9 +14,9 @@ public interface ConsumerConnector {
     /**
      * 创建消息流。
      * @param topicCountMap 主题到分区数的映射。
-     * @return 按主题分组的Kafka消息流列表。
+     * @return 按主题分组的消息流列表。
      */
-    Map<String, List<KafkaMessageStream>> createMessageStreams(Map<String, Integer> topicCountMap);
+    Map<String, List<QueueMessageStream>> createMessageStreams(Map<String, Integer> topicCountMap);
 
     /**
      * 提交此连接器连接的所有代理分区的偏移量。

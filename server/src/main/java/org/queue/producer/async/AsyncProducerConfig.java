@@ -17,7 +17,6 @@ public class AsyncProducerConfig extends SyncProducerConfig {
         return props;
     }
 
-    // 默认方法代替Scala中的val，用于获取queueTime的值
     public int getQueueTime() {
         return Utils.getInt(getProps(), "queue.time", 5000);
     }

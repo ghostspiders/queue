@@ -5,7 +5,10 @@ import org.queue.api.OffsetRequest;
 import org.queue.cluster.Broker;
 import org.queue.cluster.Partition;
 import org.queue.javaapi.consumer.SimpleConsumer;
+import org.queue.utils.ZKGroupTopicDirs;
+import org.queue.utils.ZkUtils;
 
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.logging.Logger;
 import java.io.IOException;
@@ -14,7 +17,7 @@ public class FetcherRunnable extends Thread {
     private final String name; // 线程名称
     private final ZkClient zkClient; // Zookeeper客户端
     private final ConsumerConfig config; // 消费者配置
-    private final Broker broker; // Kafka代理
+    private final Broker broker; // broker
     private final List<PartitionTopicInfo> partitionTopicInfos; // 分区主题信息列表
     private final SimpleConsumer simpleConsumer; // 简单消费者客户端
     private final Logger logger = Logger.getLogger(FetcherRunnable.class.getName()); // 日志记录器

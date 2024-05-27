@@ -25,6 +25,7 @@ public class DelayedItem<T> implements Delayed {
      * @param unit 时间单位
      * @return 返回剩余的延迟时间
      */
+    @Override
     public long getDelay(TimeUnit unit) {
         long elapsedMs = (System.currentTimeMillis() - createdMs);
         long timeLeftMs = Math.max(delayMs - elapsedMs, 0);
@@ -47,12 +48,6 @@ public class DelayedItem<T> implements Delayed {
             long yourDelay = d.getDelay(TimeUnit.NANOSECONDS);
             return Long.compare(myDelay, yourDelay);
         }
-    }
-
-    // 实现Delayed接口的getDelay方法，返回剩余延迟时间（纳秒）
-    @Override
-    public long getDelay(TimeUnit unit) {
-        return TimeUnit.NANOSECONDS.convert(getDelay(TimeUnit.MILLISECONDS), TimeUnit.MILLISECONDS);
     }
 
     // 泛型类型参数T的getter方法

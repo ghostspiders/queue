@@ -3,26 +3,28 @@ package org.queue.utils;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.concurrent.Executors;
 
 /**
  * 用于后台运行任务的调度器
  * 注意：ScheduledThreadPoolExecutor 臭名昭著地会吞掉异常
  */
-public class KafkaScheduler {
-    private final int numThreads;
-    private final String baseThreadName;
-    private final boolean isDaemon;
-    private final Logger logger;
-    private final AtomicLong threadId;
-    private final ScheduledThreadPoolExecutor executor;
+public class QueueScheduler {
+    private  int numThreads;
+    private  String baseThreadName;
+    private  boolean isDaemon;
+    private  Logger logger;
+    private  AtomicLong threadId;
+    private  ScheduledThreadPoolExecutor executor;
 
-    public KafkaScheduler(int numThreads, String baseThreadName, boolean isDaemon) {
+    public QueueScheduler(int numThreads, String baseThreadName, boolean isDaemon) {
         this.numThreads = numThreads;
         this.baseThreadName = baseThreadName;
         this.isDaemon = isDaemon;
-        this.logger = Logger.getLogger(KafkaScheduler.class);
+        this.logger = LoggerFactory.getLogger(QueueScheduler.class);
         this.threadId = new AtomicLong(0);
         this.executor = new ScheduledThreadPoolExecutor(numThreads, new ThreadFactory());
     }

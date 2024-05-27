@@ -8,13 +8,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import org.I0Itec.zkclient.ZkClient;
 import org.I0Itec.zkclient.serialize.StringSerializer;
-import kafka.consumer.ConsumerConfig;
-import kafka.cluster.Cluster;
-import kafka.javaapi.consumer.SimpleConsumer;
-import kafka.utils.ZkUtils;
-import kafka.common.Partition;
-import kafka.common.OffsetRequest;
-import kafka.zookeeper.ZKGroupTopicDirs;
+import org.queue.api.OffsetRequest;
+import org.queue.consumer.ConsumerConfig;
+import org.queue.cluster.Cluster;
+import org.queue.javaapi.consumer.SimpleConsumer;
+import org.queue.utils.ZkUtils;
+import org.queue.common.Partition;
+import org.queue.common.OffsetRequest;
+import org.queue.zookeeper.ZKGroupTopicDirs;
 
 public class UpdateOffsetsInZK {
 

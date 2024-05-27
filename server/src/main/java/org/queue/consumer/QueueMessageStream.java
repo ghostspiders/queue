@@ -4,11 +4,11 @@ import java.util.Iterator;
 import java.util.concurrent.BlockingQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-public class KafkaMessageStream implements Iterable<Message> {
-    private final BlockingQueue<FetchedDataChunk> queue; // 阻塞队列，用于存储获取的数据块
-    private final int consumerTimeoutMs; // 消费者超时时间（毫秒）
-    private final Logger logger = LoggerFactory.getLogger(KafkaMessageStream.class); // 日志记录器
+import org.queue.message.Message;
+public class QueueMessageStream implements Iterable<Message> {
+    private  BlockingQueue<FetchedDataChunk> queue; // 阻塞队列，用于存储获取的数据块
+    private  int consumerTimeoutMs; // 消费者超时时间（毫秒）
+    private final Logger logger = LoggerFactory.getLogger(QueueMessageStream.class); // 日志记录器
     private final ConsumerIterator<Message> iter; // 消息迭代器
 
     /**
@@ -16,10 +16,10 @@ public class KafkaMessageStream implements Iterable<Message> {
      * @param queue 阻塞队列，用于存储获取的数据块。
      * @param consumerTimeoutMs 消费者超时时间（毫秒）。
      */
-    public KafkaMessageStream(BlockingQueue<FetchedDataChunk> queue, int consumerTimeoutMs) {
+    public QueueMessageStream(BlockingQueue<FetchedDataChunk> queue, int consumerTimeoutMs) {
         this.queue = queue;
         this.consumerTimeoutMs = consumerTimeoutMs;
-        this.iter = new ConsumerIterator<>(queue, consumerTimeoutMs); // 初始化消息迭代器
+        this.iter = new ConsumerIterator(queue, consumerTimeoutMs); // 初始化消息迭代器
     }
 
     /**

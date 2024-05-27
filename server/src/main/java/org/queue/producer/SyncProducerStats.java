@@ -7,6 +7,8 @@ package org.queue.producer;
  * @datetime 2024年 05月 24日 17:31
  * @version: 1.0
  */
+import org.queue.utils.SnapshotStats;
+import org.queue.utils.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,12 +17,12 @@ import org.slf4j.LoggerFactory;
  */
 public class SyncProducerStats implements SyncProducerStatsMBean {
     private SnapshotStats produceRequestStats = new SnapshotStats();
-    private static final String kafkaProducerStatsMBeanName = "queue:type=queue.queueProducerStats";
+    private static final String queueProducerStatsMBeanName = "queue:type=queue.queueProducerStats";
     private static final SyncProducerStats stats = new SyncProducerStats();
     private static final Logger logger = LoggerFactory.getLogger(SyncProducerStats.class);
     static {
         // 注册JMX管理Bean，以下方法需要根据实际情况实现
-        Utils.swallow(Utils.Level.WARN, () -> Utils.registerMBean(stats, kafkaProducerStatsMBeanName));
+        Utils.swallow(Utils.Level.WARN, () -> Utils.registerMBean(stats, QueueProducerStatsMBeanName));
     }
 
     /**

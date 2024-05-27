@@ -16,14 +16,14 @@
 
 package org.queue.javaapi.consumer;
 
-import org.queue.consumer.KafkaMessageStream;
+import org.queue.consumer.QueueMessageStream;
 
 import java.util.List;
 import java.util.Map;
 
 public interface ConsumerConnector {
 
-    public Map<String, List<KafkaMessageStream>> createMessageStreams(Map<String, Integer> topicCountMap);
+    public Map<String, List<QueueMessageStream>> createMessageStreams(Map<String, Integer> topicCountMap);
 
     /**
      *  Commit the offsets of all broker partitions connected by this connector.

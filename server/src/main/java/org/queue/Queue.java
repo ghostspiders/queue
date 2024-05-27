@@ -1,18 +1,19 @@
 package org.queue;
 
 import org.queue.consumer.ConsumerConfig;
-import org.queue.server.KafkaConfig;
-import org.queue.server.KafkaServerStartable;
+import org.queue.server.QueueConfig;
+import org.queue.server.QueueServerStartable;
 import org.queue.utils.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Properties;
 
 public class Queue {
     private static final Logger logger = LoggerFactory.getLogger(Queue.class);
 
     public static void main(String[] args) {
-        // 注释掉的代码是关于Kafka的Log4j MBean的注册，具体用途需要结合项目情况
-        // Utils.swallow(Level.WARN, () -> Utils.registerMBean(LoggerFactory.getLogger(""), kafkaLog4jMBeanName));
+        // Utils.swallow(Level.WARN, () -> Utils.registerMBean(LoggerFactory.getLogger(""), queueLog4jMBeanName));
 
         boolean embeddedConsumer = false;
         String serverPath = System.getProperty("server.config");
@@ -27,26 +28,27 @@ public class Queue {
         }
 
         try {
-            KafkaServerStartable kafkaServerStartable = null;
+            QueueServerStartable queueServerStartable = null;
             Properties props = Utils.loadProps(serverPath);
-            KafkaConfig serverConfig = new KafkaConfig(props);
+            QueueConfig serverConfig = new QueueConfig(props);
             if (embeddedConsumer) {
                 ConsumerConfig consumerConfig = new ConsumerConfig(Utils.loadProps(consumerPath));
-                kafkaServerStartable = new KafkaServerStartable(serverConfig, consumerConfig);
+                queueServerStartable = new QueueServerStartable(serverConfig, consumerConfig);
             } else {
-                kafkaServerStartable = new KafkaServerStartable(serverConfig);
+                queueServerStartable = new QueueServerStartable(serverConfig);
             }
 
             // 添加关闭钩子，以便捕获Ctrl-C等中断信号
+            QueueServerStartable finalQueueServerStartable = queueServerStartable;
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-                kafkaServerStartable.shutdown();
-                kafkaServerStartable.awaitShutdown();
+                finalQueueServerStartable.shutdown();
+                finalQueueServerStartable.awaitShutdown();
             }));
 
-            kafkaServerStartable.startup();
-            kafkaServerStartable.awaitShutdown();
+            queueServerStartable.startup();
+            queueServerStartable.awaitShutdown();
         } catch (Throwable e) {
-            logger.error("Error occurred while starting Kafka server", e);
+            logger.error("Error occurred while starting queue server", e);
         }
         System.exit(0);
     }

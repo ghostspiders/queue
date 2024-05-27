@@ -11,6 +11,8 @@ package org.queue.log;
 import akka.actor.ActorSystem;
 import akka.actor.Props;
 import org.queue.server.QueueConfig;
+import org.queue.server.QueueZooKeeper;
+import org.queue.utils.Pool;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
@@ -103,7 +105,7 @@ public class LogManager {
     }
 
     /**
-     * 如果配置启用了Zookeeper，初始化KafkaZooKeeper并启动。
+     * 如果配置启用了Zookeeper，初始化ZooKeeper并启动。
      */
     public void initZookeeperIfNeeded() {
         if (config.isEnableZookeeper()) {
@@ -136,9 +138,9 @@ public class LogManager {
     public void startup() {
         if (config.isEnableZookeeper()) {
             // 注册Broker和主题
-            kafkaZookeeper.registerBrokerInZk();
+            queueZookeeper.registerBrokerInZk();
             for (String topic : getAllTopics()) {
-                kafkaZookeeper.registerTopicInZk(topic);
+                queueZookeeper.registerTopicInZk(topic);
             }
             startupLatch.countDown();
         }
@@ -254,7 +256,7 @@ public class LogManager {
         }
         if (config.isEnableZookeeper()) {
             zkActor.send(StopActor);
-            kafkaZookeeper.close();
+            queueZookeeper.close();
         }
     }
 

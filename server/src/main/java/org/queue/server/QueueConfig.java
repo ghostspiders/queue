@@ -2,7 +2,7 @@ package org.queue.server;
 
 /**
  * @author gaoyvfeng
- * @ClassName KafkaConfig
+ * @ClassName QueueConfig
  * @description:
  * @datetime 2024年 05月 23日 15:58
  * @version: 1.0

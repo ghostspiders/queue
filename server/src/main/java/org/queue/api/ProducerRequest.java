@@ -9,6 +9,7 @@ package org.queue.api;
  */
 import org.queue.message.ByteBufferMessageSet;
 import org.queue.network.Request;
+import org.queue.utils.Utils;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;

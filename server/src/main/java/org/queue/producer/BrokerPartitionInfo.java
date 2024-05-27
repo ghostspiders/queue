@@ -16,7 +16,7 @@ import java.util.Optional;
 import java.util.SortedSet;
 
 /**
- * 维护有关Kafka代理分区信息的特质。
+ * 维护有关代理分区信息的特质。
  */
 public interface BrokerPartitionInfo {
 

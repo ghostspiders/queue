@@ -31,7 +31,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class QueueServer {
     // 干净关闭文件的名称
-    private static final String CLEAN_SHUTDOWN_FILE = ".kafka_cleanshutdown";
+    private static final String CLEAN_SHUTDOWN_FILE = ".queue_cleanshutdown";
     // 用于指示是否正在关闭的原子布尔变量
     private final AtomicBoolean isShuttingDown = new AtomicBoolean(false);
     // 日志记录器
@@ -47,7 +47,7 @@ public class QueueServer {
     // 日志清理调度器
     private QueueScheduler scheduler;
 
-    // Kafka服务器配置
+    // 服务器配置
     private QueueConfig config;
 
     public QueueServer(QueueConfig config) {
@@ -56,7 +56,7 @@ public class QueueServer {
     }
 
     /**
-     * 启动Kafka服务器的API。
+     * 启动服务器的API。
      * 实例化LogManager、SocketServer和请求处理器-queueRequestHandlers。
      */
     public void startup() {
@@ -73,7 +73,7 @@ public class QueueServer {
                     1000L * 60 * config.getLogCleanupIntervalMinutes(),
                     1000L * 60 * 60 * config.getLogRetentionHours(),
                     needRecovery);
-            // 创建请求处理器实例（需要根据实际情况实现KafkaRequestHandlers类）
+            // 创建请求处理器实例（需要根据实际情况实现RequestHandlers类）
             QueueRequestHandlers handlers = new QueueRequestHandlers(logManager);
             // 创建套接字服务器实例
             socketServer = new SocketServer(config.getPort(), config.getNumThreads(),
@@ -92,7 +92,7 @@ public class QueueServer {
     }
 
     /**
-     * 关闭Kafka服务器单个实例的API。
+     * 关闭服务器单个实例的API。
      * 关闭LogManager、SocketServer和日志清理调度线程。
      */
     public void shutdown() {

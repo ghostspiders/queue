@@ -12,7 +12,7 @@ import java.util.logging.Logger;
 public class QueueZooKeeper {
     // 日志记录器
     private static final Logger logger = Logger.getLogger(QueueZooKeeper.class.getName());
-    // Kafka配置对象
+    // Queue配置对象
     private QueueConfig config;
     // 日志管理器
     private LogManager logManager;
@@ -24,7 +24,7 @@ public class QueueZooKeeper {
     private final Object lock = new Object();
 
     // 构造函数
-    public KafkaZooKeeper(QueueConfig config, LogManager logManager) {
+    public QueueZooKeeper(QueueConfig config, LogManager logManager) {
         this.config = config;
         this.logManager = logManager;
         this.topics = new CopyOnWriteArrayList<>();

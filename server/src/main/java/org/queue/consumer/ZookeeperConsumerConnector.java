@@ -10,14 +10,15 @@ package org.queue.consumer;
 
 import org.I0Itec.zkclient.ZkClient;
 import org.queue.api.OffsetRequest;
+import org.queue.cluster.Partition;
+import org.queue.utils.Pool;
+import org.queue.utils.ZKGroupDirs;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import scala.Tuple2;
-
 import java.net.UnknownHostException;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class ZookeeperConsumerConnector extends ZkConsumerConnector implements ZookeeperConsumerConnectorMBean {
@@ -27,8 +28,8 @@ public class ZookeeperConsumerConnector extends ZkConsumerConnector implements Z
     private Fetcher fetcher; // Assuming Fetcher is a class you have implemented
     private ZkClient zkClient;
     private Pool<String, Pool<Partition, PartitionTopicInfo>> topicRegistry;
-    private Pool<Tuple2<String, String>, BlockingQueue<FetchedDataChunk>> queues;
-    private KafkaScheduler scheduler;
+    private Pool<Map<String, String>, BlockingQueue<FetchedDataChunk>> queues;
+    private QueueScheduler scheduler;
     private boolean enableFetcher;
 
     public ZookeeperConsumerConnector(ConsumerConfig config, boolean enableFetcher) {
@@ -62,8 +63,7 @@ public class ZookeeperConsumerConnector extends ZkConsumerConnector implements Z
     }
 
     private void startAutoCommitter() {
-        // You need to implement KafkaScheduler or use an existing class
-        scheduler = new KafkaScheduler(1, "queue-consumer-autocommit-", false);
+        scheduler = new QueueScheduler(1, "queue-consumer-autocommit-", false);
         long autoCommitIntervalMs = config.autoCommitIntervalMs();
         logger.info("starting auto committer every " + autoCommitIntervalMs + " ms");
         scheduler.scheduleWithRate(this::autoCommit, autoCommitIntervalMs, autoCommitIntervalMs);
@@ -93,13 +93,13 @@ public class ZookeeperConsumerConnector extends ZkConsumerConnector implements Z
     }
 
     // 消费消息的方法
-    public Map<String, List<KafkaMessageStream>> consume(Map<String, Integer> topicCountMap) {
+    public Map<String, List<QueueMessageStream>> consume(Map<String, Integer> topicCountMap) {
         logger.debug("entering consume");
         if (topicCountMap == null)
             throw new RuntimeException("topicCountMap is null");
 
         ZKGroupDirs dirs = new ZKGroupDirs(config.groupId());
-        Map<String, List<KafkaMessageStream>> ret = new HashMap<>();
+        Map<String, List<QueueMessageStream>> ret = new HashMap<>();
 
         try {
             String consumerUuid = config.consumerId() != null ? config.consumerId() : InetAddress.getLocalHost().getHostName() + "-" + System.currentTimeMillis();
@@ -114,11 +114,11 @@ public class ZookeeperConsumerConnector extends ZkConsumerConnector implements Z
             for (Map.Entry<String, Set<String>> entry : consumerThreadIdsPerTopic.entrySet()) {
                 String topic = entry.getKey();
                 Set<String> threadIdSet = entry.getValue();
-                List<KafkaMessageStream> streamList = new ArrayList<>();
+                List<QueueMessageStream> streamList = new ArrayList<>();
                 for (String threadId : threadIdSet) {
                     BlockingQueue<FetchedDataChunk> stream = new LinkedBlockingQueue<>(/* 需要指定容量 */);
-                    queues.put(new Tuple2<>(topic, threadId), stream);
-                    streamList.add(new KafkaMessageStream(stream, config.consumerTimeoutMs()));
+                    queues.put(new HashMap(topic, threadId), stream);
+                    streamList.add(new QueueMessageStream(stream, config.consumerTimeoutMs()));
                 }
                 ret.put(topic, streamList);
                 logger.debug("adding topic " + topic + " and stream to map...");

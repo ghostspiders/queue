@@ -59,16 +59,6 @@ public class Producer<K, V> {
         underlying.close();
     }
 
-    // 辅助方法，用于将Java List转换为Scala Seq
-    private <T> scala.collection.Seq<T> convertToSeq(List<T> list) {
-        return scala.collection.JavaConverters.asScalaIteratorConverter(list.iterator()).asScala().toSeq();
-    }
-
-    // 辅助方法，用于将Scala Seq转换为Java List
-    private <T> List<T> convertToList(scala.collection.Seq<T> seq) {
-        return scala.collection.JavaConverters.seqAsJavaListConverter(seq).asJava();
-    }
-
     // 内部接口，用于事件处理
     public interface EventHandler<V> {
         void init(Properties props);

@@ -4,7 +4,7 @@ import java.util.*;
 import java.util.logging.Logger;
 
 public class Fetcher {
-    private final ConsumerConfig config; // Kafka消费者配置
+    private final ConsumerConfig config; //
     private final ZkClient zkClient; // Zookeeper客户端
     private static final FetcherRunnable[] EMPTY_FETCHER_THREADS = new FetcherRunnable[0];
     private volatile FetcherRunnable[] fetcherThreads = EMPTY_FETCHER_THREADS; // 获取线程数组

@@ -7,12 +7,9 @@ package org.queue.message;
  * @datetime 2024年 05月 22日 11:01
  * @version: 1.0
  */
-/**
- * Java类，对应于Scala中的MessageAndOffset案例类。
- */
 public class MessageAndOffset {
-    private final Message message; // 消息对象
-    private final long offset;    // 偏移量
+    private  Message message; // 消息对象
+    private  long offset;    // 偏移量
 
     /**
      * 构造函数。

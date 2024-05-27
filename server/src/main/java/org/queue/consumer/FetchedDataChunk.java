@@ -10,7 +10,7 @@ package org.queue.consumer;
 import org.queue.message.ByteBufferMessageSet;
 
 /**
- * 表示从Kafka代理获取的数据块的类。
+ * 表示从代理获取的数据块的类。
  */
 public class FetchedDataChunk {
     // 假设ByteBufferMessageSet是一个包含ByteBuffer消息集合的类

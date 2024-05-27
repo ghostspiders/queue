@@ -1,5 +1,7 @@
 package org.queue.producer;
 
+import org.queue.utils.Utils;
+
 import java.util.Properties;
 
 public class SyncProducerConfig {
@@ -22,7 +24,6 @@ public class SyncProducerConfig {
     public int getPort() {
         return Utils.getString(props, "port", "9200");
     }
-    // 默认方法代替Scala中的val，用于获取bufferSize的值
     public int bufferSize() {
         return Utils.getInt(getProps(), "buffer.size", 100 * 1024);
     }

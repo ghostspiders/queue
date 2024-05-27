@@ -32,14 +32,14 @@ public class DumpLogSegments {
                 FileMessageSet messageSet = new FileMessageSet(file, false);
                 for (MessageAndOffset messageAndOffset : messageSet) {
                     System.out.println("----------------------------------------------");
-                    if (messageAndOffset.message.isValid()) {
+                    if (messageAndOffset.getMessage().isValid()) {
                         System.out.println("offset:\t" + offset);
                     } else {
                         System.out.println("offset:\t " + offset + "\t invalid");
                     }
                     if (!isNoPrint) {
                         // 假设 Utils.toString 是一个工具方法，用于将字节数组转换为字符串
-                        System.out.println("payload:\t" + Utils.toString(messageAndOffset.message.payload(), StandardCharsets.UTF_8));
+                        System.out.println("payload:\t" + Utils.toString(messageAndOffset.getMessage().payload(), StandardCharsets.UTF_8));
                     }
                     // 更新 offset
                     offset += messageAndOffset.offset();
