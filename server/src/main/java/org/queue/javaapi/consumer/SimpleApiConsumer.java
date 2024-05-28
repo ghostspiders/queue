@@ -1,20 +1,18 @@
 package org.queue.javaapi.consumer;
-import org.queue.consumer.SimpleConsumer;
-import org.queue.message.ByteBufferMessageSet;
-import org.queue.network.FetchRequest;
-import org.queue.network.MultiFetchResponse;
-import java.nio.ByteBuffer;
+import org.queue.api.FetchRequest;
+import org.queue.javaapi. MultiFetchResponse;
+import org.queue.javaapi.message.ByteBufferMessageSet;
 import java.util.List;
 
 /**
  * 消息队列消息的消费者
  */
-public class SimpleConsumer {
-    private final String host;           // 队列服务器的主机名
-    private final int port;              // 队列服务器的端口号
-    private final int soTimeout;         // Socket超时时间（毫秒）
-    private final int bufferSize;        // 缓冲区大小
-    private final SimpleConsumer underlying;  // 底层的SimpleConsumer实例
+public class SimpleApiConsumer {
+    private  String host;           // 队列服务器的主机名
+    private  int port;              // 队列服务器的端口号
+    private  int soTimeout;         // Socket超时时间（毫秒）
+    private  int bufferSize;        // 缓冲区大小
+    private final SimpleApiConsumer underlying;  // 底层的SimpleConsumer实例
 
     /**
      * 构造一个新的SimpleConsumer。
@@ -24,12 +22,12 @@ public class SimpleConsumer {
      * @param soTimeout Socket超时时间（毫秒）
      * @param bufferSize 缓冲区大小
      */
-    public SimpleConsumer(String host, int port, int soTimeout, int bufferSize) {
+    public SimpleApiConsumer(String host, int port, int soTimeout, int bufferSize) {
         this.host = host;
         this.port = port;
         this.soTimeout = soTimeout;
         this.bufferSize = bufferSize;
-        this.underlying = new SimpleConsumer(host, port, soTimeout, bufferSize);
+        this.underlying = new SimpleApiConsumer(host, port, soTimeout, bufferSize);
     }
 
     /**

@@ -4,14 +4,14 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.channels.*;
 import java.util.Iterator;
-import java.util.logging.Level;
 
 public class Acceptor extends AbstractServerThread {
 
     private final int port; // 监听端口
     private final Processor[] processors; // 处理器数组
 
-    public Acceptor(int port, Processor[] processors) {
+    public Acceptor(int port, Processor[] processors) throws IOException {
+        super();
         this.port = port;
         this.processors = processors;
     }
@@ -21,8 +21,9 @@ public class Acceptor extends AbstractServerThread {
      */
     @Override
     public void run() {
+        ServerSocketChannel serverChannel = null;
         try {
-            ServerSocketChannel serverChannel = ServerSocketChannel.open();
+            serverChannel = ServerSocketChannel.open();
             serverChannel.configureBlocking(false);
             serverChannel.socket().bind(new InetSocketAddress(port));
             serverChannel.register(selector, SelectionKey.OP_ACCEPT);
@@ -55,7 +56,7 @@ public class Acceptor extends AbstractServerThread {
                         }
                     }
                 } catch (IOException e) {
-                    logger.log(Level.SEVERE, "Selector select failed", e);
+                    logger.error("Selector select failed", e);
                 }
             }
         } catch (Exception e) {
@@ -81,7 +82,7 @@ public class Acceptor extends AbstractServerThread {
      */
     private void accept(SelectionKey key, Processor processor) throws IOException {
         SocketChannel socketChannel = ((ServerSocketChannel) key.channel()).accept();
-        if (logger.isLoggable(Level.INFO)) {
+        if (logger.isInfoEnabled()) {
             logger.info("Accepted connection from " + socketChannel.socket().getInetAddress() +
                     " on " + socketChannel.socket().getLocalSocketAddress());
         }

@@ -6,7 +6,6 @@ import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
 import java.io.IOException;
 
-// 假设ErrorMapping和OffsetRequest类已经定义在其他地方
 public class OffsetArraySend extends Send {
     private long[] offsets; // 存储偏移量的数组
     private int size; // 数据包的总大小

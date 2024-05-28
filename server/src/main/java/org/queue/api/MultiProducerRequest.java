@@ -14,7 +14,7 @@ public class MultiProducerRequest extends Request {
         this.produces = new ArrayList<>(Arrays.asList(produces));
     }
 
-    public  MultiProducerRequest readFrom(ByteBuffer buffer) {
+    public static MultiProducerRequest readFrom(ByteBuffer buffer) {
         int count = buffer.getShort() & 0xFFFF; // Convert short to int and apply mask to handle sign extension
         List<ProducerRequest> producesList = new ArrayList<>();
         for (int i = 0; i < count; i++) {
@@ -53,5 +53,9 @@ public class MultiProducerRequest extends Request {
             buffer.deleteCharAt(buffer.length() - 1);
         }
         return "MultiProducerRequest{" + buffer.toString() + "}";
+    }
+
+    public List<ProducerRequest> getProduces() {
+        return produces;
     }
 }

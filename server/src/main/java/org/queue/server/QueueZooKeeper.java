@@ -1,11 +1,11 @@
 package org.queue.server;
 
-import akka.serialization.StringSerializer;
 import org.I0Itec.zkclient.ZkClient;
 import org.I0Itec.zkclient.ZkConnection;
 import org.apache.zookeeper.Watcher;
 import org.queue.cluster.Broker;
 import org.queue.log.LogManager;
+import org.queue.utils.StringSerializer;
 import org.queue.utils.ZkUtils;
 
 import java.net.InetAddress;
@@ -39,8 +39,8 @@ public class QueueZooKeeper {
         try {
             logger.info("Connecting to ZK: " + config.getZkConnect());
             // 创建ZooKeeper连接
-            ZkConnection zkConnection = new ZkConnection(config.getZkConnect(), config.getZkSessionTimeoutMs(), config.getZkConnectionTimeoutMs());
-            zkClient = new ZkClient(zkConnection, config.getZkSessionTimeoutMs(), config.getZkConnectionTimeoutMs(), new StringSerializer());
+            ZkConnection zkConnection = new ZkConnection(config.getZkConnect(), config.getZkSessionTimeoutMs());
+            zkClient = new ZkClient(zkConnection, config.getZkConnectionTimeoutMs(), new StringSerializer());
             // 注册状态变化监听器
             zkClient.subscribeStateChanges(new SessionExpireListener());
         } catch (Exception e) {

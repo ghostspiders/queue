@@ -15,7 +15,7 @@ public class Handler {
      * 定义一个处理器（Handler），它将传入的请求转换为传出的响应。
      * 使用Java的Function接口来表示这个函数关系。
      */
-    public interface Handler1 {
+    public interface HandlerType {
         // 将接收到的请求转换为可选的发送响应
         Optional<Send> handleRequest(Receive receive);
     }
@@ -26,6 +26,6 @@ public class Handler {
      */
     public interface HandlerMapping {
         // 根据short类型的标识符和接收到的请求找到对应的处理器
-        Handler getHandler(short identifier, Receive receive);
+        Handler getHandler(int identifier, Receive receive);
     }
 }

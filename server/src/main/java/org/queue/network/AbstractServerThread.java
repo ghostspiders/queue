@@ -1,5 +1,6 @@
 package org.queue.network;
 
+import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.nio.channels.Selector;
@@ -12,14 +13,13 @@ import org.slf4j.LoggerFactory;
 public abstract class AbstractServerThread implements Runnable {
 
     protected Selector selector; // 用于非阻塞I/O操作的选择器
-    protected Logger logger; // 日志记录器
+    protected Logger logger = LoggerFactory.getLogger(getClass());
     private CountDownLatch startupLatch; // 启动完成信号量
     private CountDownLatch shutdownLatch; // 关闭完成信号量
     private AtomicBoolean alive; // 服务器线程是否存活的标志
 
-    public AbstractServerThread() {
+    public AbstractServerThread() throws IOException {
         this.selector = Selector.open(); // 打开选择器
-        this.logger = LoggerFactory.getLogger(getClass()); // 获取当前类的日志记录器
         this.startupLatch = new CountDownLatch(1); // 初始化启动信号量为1
         this.shutdownLatch = new CountDownLatch(1); // 初始化关闭信号量为1
         this.alive = new AtomicBoolean(false); // 初始化服务器线程为非存活状态
@@ -79,7 +79,6 @@ public abstract class AbstractServerThread implements Runnable {
     }
 
     @Override
-    public abstract void run(); // 抽象方法，必须由子类实现
+    public abstract void run();
 
-    // 在这里可以添加其他需要的抽象方法或具体实现
 }

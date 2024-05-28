@@ -1,5 +1,9 @@
 package org.queue.network;
 
+import org.queue.utils.SystemTime;
+import org.queue.utils.Utils;
+
+import java.io.IOException;
 import java.util.logging.Logger;
 
 public class SocketServer {
@@ -12,7 +16,7 @@ public class SocketServer {
     private Processor[] processors; // 处理器数组
     private static final Logger logger = Logger.getLogger(SocketServer.class.getName());
 
-    public SocketServer(int port, int numProcessorThreads, int monitoringPeriodSecs, Handler.HandlerMapping handlerFactory) {
+    public SocketServer(int port, int numProcessorThreads, int monitoringPeriodSecs, Handler.HandlerMapping handlerFactory) throws IOException {
         this.port = port;
         this.numProcessorThreads = numProcessorThreads;
         this.monitoringPeriodSecs = monitoringPeriodSecs;
@@ -25,18 +29,13 @@ public class SocketServer {
     /**
      * 启动套接字服务器
      */
-    public void startup() {
+    public void startup() throws IOException {
         for (int i = 0; i < numProcessorThreads; i++) {
-            processors[i] = new Processor(handlerFactory, new SystemTime(), stats);
+            processors[i] = new Processor(handlerFactory, SystemTime.getInstance(), stats);
             Utils.newThread("queue-processor-" + i, processors[i], false).start();
         }
         Utils.newThread("queue-acceptor", acceptor, false).start();
-        try {
-            acceptor.awaitStartup();
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt(); // 恢复中断状态
-            logger.severe("Acceptor startup await interrupted: " + e.getMessage());
-        }
+        acceptor.awaitStartup();
     }
 
     /**
@@ -48,5 +47,7 @@ public class SocketServer {
             processor.shutdown();
         }
     }
-
+    public SocketServerStats getStats() {
+        return stats;
+    }
 }

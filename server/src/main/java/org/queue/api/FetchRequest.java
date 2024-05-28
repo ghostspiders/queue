@@ -25,7 +25,7 @@ public class FetchRequest extends Request {
     }
 
     //从ByteBuffer中读取数据创建FetchRequest对象
-    public  FetchRequest readFrom(ByteBuffer buffer) {
+    public static FetchRequest readFrom(ByteBuffer buffer) {
         String topic = Utils.readShortString(buffer, StandardCharsets.UTF_8);
         int partition = buffer.getInt();
         long offset = buffer.getLong();
@@ -52,5 +52,21 @@ public class FetchRequest extends Request {
     public String toString() {
         return "FetchRequest(topic:" + topic + ", part:" + partition + ", offset:" + offset +
                 ", maxSize:" + maxSize + ")";
+    }
+
+    public String getTopic() {
+        return topic;
+    }
+
+    public int getPartition() {
+        return partition;
+    }
+
+    public long getOffset() {
+        return offset;
+    }
+
+    public int getMaxSize() {
+        return maxSize;
     }
 }

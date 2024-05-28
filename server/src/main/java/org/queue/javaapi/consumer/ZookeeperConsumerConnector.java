@@ -9,7 +9,7 @@ import java.util.Map;
 /**
  * 消费者连接器，使用Zookeeper进行协调。
  */
-public class ZookeeperConsumerConnector extends ConsumerConnector {
+public class ZookeeperConsumerConnector implements ConsumerConnector {
     private final org.queue.consumer.ZookeeperConsumerConnector underlying;
     private final ConsumerConfig config;
     private final boolean enableFetcher;

@@ -7,9 +7,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.queue.api.OffsetRequest;
 import org.queue.common.OffsetOutOfRangeException;
+import org.queue.message.FileMessageSet;
 import org.queue.message.MessageSet;
 import org.queue.utils.Range;
+import org.queue.utils.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,7 +57,7 @@ public class Log {
      * @param flushInterval 刷新间隔。
      * @param needRecovery 是否需要恢复。
      */
-    public Log(File dir, long maxSize, int flushInterval, boolean needRecovery) {
+    public Log(File dir, long maxSize, int flushInterval, boolean needRecovery) throws IOException {
         this.dir = dir;
         this.maxSize = maxSize;
         this.flushInterval = flushInterval;
@@ -260,6 +263,21 @@ public class Log {
         return last.getStart() + last.getSize();
     }
 
+    /**
+     * 获取最后一个Segment的高水位标记。
+     * @param segments Segment列表
+     * @return 高水位标记的long值
+     */
+    public long getHighwaterMark(List<Segment> segments) {
+        if (segments == null || segments.isEmpty()) {
+            throw new IllegalArgumentException("Segment列表不能为空");
+        }
+
+        // 因为Java中的List是有序的，所以可以直接通过segments.size() - 1来访问最后一个元素
+        Segment lastSegment = segments.get(segments.size() - 1);
+        MessageSet messageSet = lastSegment.getMessageSet();
+        return messageSet.getHighWaterMark();
+    }
     private void maybeRoll(LogSegment segment) {
         if (segment.getMessageSet().sizeInBytes() > maxSize) {
             roll();
@@ -288,6 +306,87 @@ public class Log {
             unflushed.set(0);
             lastflushedTime.set(System.currentTimeMillis());
         }
+    }
+    /**
+     * 根据给定的OffsetRequest获取指定时间点之前的所有偏移量。
+     * @param request 包含时间点和最大偏移量数量的OffsetRequest。
+     * @return 一个长整型数组，包含请求的偏移量。
+     */
+    public long[] getOffsetsBefore(OffsetRequest request) {
+        List<Segment> segsArray = new ArrayList<>(segments); // 将segments转换为列表以支持索引操作
+        long[][] offsetTimeArray;
+        if (!segsArray.isEmpty() && segsArray.get(segsArray.size() - 1).size() > 0) {
+            offsetTimeArray = new long[segsArray.size() + 1][2];
+        } else {
+            offsetTimeArray = new long[segsArray.size()][2];
+        }
+
+        // 填充偏移量数组
+        for (int i = 0; i < segsArray.size(); i++) {
+            Segment segment = segsArray.get(i);
+            offsetTimeArray[i] = new long[]{segment.getStart(), segment.getFile().lastModified()};
+        }
+        // 如果最后一个Segment不为空，则添加额外的高水位标记
+        if (!segsArray.isEmpty() && segsArray.get(segsArray.size() - 1).size() > 0) {
+            long highWaterMark = segsArray.get(segsArray.size() - 1).getMessageSet().getHighWaterMark();
+            offsetTimeArray[segsArray.size()] = new long[]{segsArray.get(segsArray.size() - 1).getStart() + highWaterMark, SystemTime.milliseconds()};
+        }
+
+        // 根据请求的时间点找到起始索引
+        int startIndex = -1;
+        switch (request.getTime()) {
+            case OffsetRequest.LatestTime:
+                startIndex = offsetTimeArray.length - 1;
+                break;
+            case OffsetRequest.EarliestTime:
+                startIndex = 0;
+                break;
+            default:
+                boolean isFound = false;
+                if (logger.isLoggable(java.util.logging.Level.FINE)) {
+                    StringBuilder debugMessage = new StringBuilder("Offset time array = ");
+                    for (long[] o : offsetTimeArray) {
+                        debugMessage.append(String.format("%d, %d", o[0], o[1])).append(" ");
+                    }
+                    logger.fine(debugMessage.toString());
+                }
+                startIndex = offsetTimeArray.length - 1;
+                // 从数组末尾向前找到第一个小于等于请求时间的时间戳
+                while (startIndex >= 0 && !isFound) {
+                    if (offsetTimeArray[startIndex][1] <= request.getTime()) {
+                        isFound = true;
+                    } else {
+                        startIndex--;
+                    }
+                }
+        }
+
+        // 计算返回数组的大小，并根据请求的最大偏移量限制大小
+        int retSize = Math.min(request.getMaxNumOffsets(), startIndex + 1);
+        long[] ret = new long[retSize];
+        // 填充返回数组
+        for (int j = 0; j < retSize; j++) {
+            ret[j] = offsetTimeArray[startIndex][0];
+            startIndex--;
+        }
+        return ret;
+    }
+
+    /**
+     * 从类名中提取主题名称。
+     * @return 返回主题名称字符串。
+     */
+    public String getTopicName() {
+        int lastHyphenIndex = name.lastIndexOf("-");
+        return (lastHyphenIndex >= 0) ? name.substring(0, lastHyphenIndex) : name;
+    }
+
+    /**
+     * 获取最后一次刷新的时间。
+     * @return 返回最后一次刷新的时间为长整型值。
+     */
+    public long getLastFlushedTime() {
+        return lastflushedTime.get();
     }
 }
 

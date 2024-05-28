@@ -7,6 +7,8 @@ import java.io.UnsupportedEncodingException;
  * 字符串序列化器，实现了ZkSerializer接口，用于ZooKeeper的序列化和反序列化操作。
  */
 public class StringSerializer implements ZkSerializer {
+    public StringSerializer() {
+    }
 
     /**
      * 序列化给定的数据对象到字节数组。

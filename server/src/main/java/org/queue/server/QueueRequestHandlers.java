@@ -7,21 +7,22 @@ package org.queue.server;
  * @datetime 2024年 05月 23日 16:08
  * @version: 1.0
  */
-import org.queue.api.MultiProducerRequest;
-import org.queue.api.ProducerRequest;
-import org.queue.api.RequestKeys;
+import org.queue.api.*;
+import org.queue.common.ErrorMapping;
+import org.queue.log.Log;
 import org.queue.log.LogManager;
+import org.queue.message.MessageSet;
 import org.queue.network.Handler;
 import org.queue.network.Receive;
 import org.queue.network.Send;
 
+import java.io.IOException;
 import java.util.Optional;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-// 假设存在一个LogManager类，以及ProducerRequest等请求类和Send响应类
 public class QueueRequestHandlers {
     private LogManager logManager;
     private static final Logger logger = Logger.getLogger(QueueRequestHandlers.class.getName());
@@ -31,7 +32,7 @@ public class QueueRequestHandlers {
         this.logManager = logManager;
     }
 
-    public Handler handlerFor(short requestTypeId, Receive request) {
+    public Handler.HandlerType handlerFor(short requestTypeId, Receive receive) {
         switch (requestTypeId) {
             case RequestKeys.produce:
                 return this::handleProducerRequest;
@@ -72,9 +73,9 @@ public class QueueRequestHandlers {
     }
 
     private void handleProducerRequest(ProducerRequest request, String requestHandlerName) {
-        int partition = request.getTranslatedPartition(logManager.chooseRandomPartition());
+        int partition = request.getTranslatedPartition(String.valueOf(logManager.chooseRandomPartition(null)));
         try {
-            LogManager.Log log = logManager.getOrCreateLog(request.getTopic(), partition);
+            Log log = logManager.getOrCreateLog(request.getTopic(), partition);
             log.append(request.getMessages());
             if (logger.isLoggable(Level.FINER)) {
                 logger.finer(request.getMessages().sizeInBytes() + " bytes written to logs.");
@@ -111,11 +112,10 @@ public class QueueRequestHandlers {
     }
 
     private MessageSetSend readMessageSet(FetchRequest fetchRequest) {
-        // 假设存在MessageSetSend和LogManager.Log类
         MessageSetSend response = null;
         try {
             logger.fine("Fetching log segment for topic = " + fetchRequest.getTopic() + " and partition = " + fetchRequest.getPartition());
-            LogManager.Log log = logManager.getOrCreateLog(fetchRequest.getTopic(), fetchRequest.getPartition());
+            Log log = logManager.getOrCreateLog(fetchRequest.getTopic(), fetchRequest.getPartition());
             response = new MessageSetSend(log.read(fetchRequest.getOffset(), fetchRequest.getMaxSize()));
         } catch (Throwable e) {
             logger.severe("error when processing request " + fetchRequest);
@@ -129,7 +129,7 @@ public class QueueRequestHandlers {
         if (requestLogger.isLoggable(Level.FINER)) {
             requestLogger.fine("Offset request " + offsetRequest.toString());
         }
-        LogManager.Log log = logManager.getOrCreateLog(offsetRequest.getTopic(), offsetRequest.getPartition());
+        Log log = logManager.getOrCreateLog(offsetRequest.getTopic(), offsetRequest.getPartition());
         long[] offsets = log.getOffsetsBefore(offsetRequest);
         OffsetArraySend response = new OffsetArraySend(offsets);
         return Optional.of(response);

@@ -7,6 +7,7 @@ package org.queue.network;
  * @datetime 2024年 05月 22日 10:54
  * @version: 1.0
  */
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
 
@@ -28,7 +29,7 @@ public abstract class Receive extends Transmission {
      * @param channel 要读取的通道。
      * @return 读取的字节数。
      */
-    public abstract int readFrom(ReadableByteChannel channel);
+    public abstract int readFrom(ReadableByteChannel channel) throws IOException;
 
     /**
      * 具体方法，用于从给定的ReadableByteChannel完全读取数据，直到传输完成。
@@ -36,7 +37,7 @@ public abstract class Receive extends Transmission {
      * @param channel 要读取的通道。
      * @return 读取的总字节数。
      */
-    public int readCompletely(ReadableByteChannel channel) {
+    public int readCompletely(ReadableByteChannel channel) throws IOException {
         int totalRead = 0; // 用于记录总共读取的字节数
         while (!complete()) { // 循环直到传输完成
             int read = readFrom(channel); // 从通道读取数据
@@ -47,4 +48,5 @@ public abstract class Receive extends Transmission {
         }
         return totalRead; // 返回总共读取的字节数
     }
+
 }

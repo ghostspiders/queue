@@ -4,7 +4,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
 import java.io.IOException;
 
-public class BoundedByteBufferReceive {
+public class BoundedByteBufferReceive extends Receive{
 
     private final int maxSize; // 最大消息大小
     private ByteBuffer sizeBuffer; // 用于存储消息大小的缓冲区
@@ -73,17 +73,28 @@ public class BoundedByteBufferReceive {
      * 确保消息已经完整接收
      * 如果消息不完整，抛出异常
      */
-    private void expectComplete() {
-        if (!complete) {
+    public void expectComplete() {
+        if (!complete()) {
             throw new IllegalStateException("Message is not complete");
         }
+    }
+
+    /**
+     * 抽象方法，用于检查传输是否已经完成。
+     * 需要在子类中具体实现。
+     *
+     * @return 如果传输完成返回true，否则返回false。
+     */
+    @Override
+    public boolean complete() {
+        return complete;
     }
 
     /**
      * 确保消息尚未完整接收
      * 如果消息已经完整接收，抛出异常
      */
-    private void expectIncomplete() {
+    public void expectIncomplete() {
         if (complete) {
             throw new IllegalStateException("Message has already been completed");
         }

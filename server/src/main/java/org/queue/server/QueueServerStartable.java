@@ -51,7 +51,7 @@ public class QueueServerStartable {
         server.shutdown();
     }
 
-    public void awaitShutdown() {
+    public void awaitShutdown() throws InterruptedException {
         server.awaitShutdown();
     }
 }

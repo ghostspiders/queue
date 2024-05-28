@@ -4,6 +4,7 @@ import org.queue.message.ByteBufferMessageSet;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 public class MultiFetchResponse implements Iterable<ByteBufferMessageSet> {
     private ByteBuffer buffer;

@@ -103,20 +103,16 @@ public class Utils {
     /**
      * 写入一个由2字节短整型大小前缀的字符串
      */
-    public static void writeShortString(ByteBuffer buffer, String string, String encoding) {
+    public static void writeShortString(ByteBuffer buffer, String string, Charset encoding) {
         if (string == null) {
             buffer.putShort((short) -1);
         } else {
-            try {
-                byte[] bytes = string.getBytes(encoding);
-                if (bytes.length > Short.MAX_VALUE) {
-                    throw new IllegalArgumentException("String exceeds maximum size of " + Short.MAX_VALUE + ".");
-                }
-                buffer.putShort((short) bytes.length);
-                buffer.put(bytes);
-            } catch (UnsupportedEncodingException e) {
-                logger.error("Unsupported encoding: " + encoding, e);
+            byte[] bytes = string.getBytes(encoding);
+            if (bytes.length > Short.MAX_VALUE) {
+                throw new IllegalArgumentException("String exceeds maximum size of " + Short.MAX_VALUE + ".");
             }
+            buffer.putShort((short) bytes.length);
+            buffer.put(bytes);
         }
     }
 
@@ -280,29 +276,25 @@ public class Utils {
     /**
      * 执行给定操作并吞下（不抛出）任何异常，但记录它们
      */
-    public static void swallow(Level logLevel, Runnable action) {
-        try {
-            action.run();
-        } catch (Throwable e) {
-            switch (logLevel) {
-                case ERROR:
-                    logger.error(e.getMessage(), e);
-                    break;
-                case WARN:
-                    logger.warn(e.getMessage(), e);
-                    break;
-                case INFO:
-                    logger.info(e.getMessage(), e);
-                    break;
-                case DEBUG:
-                    logger.debug(e.getMessage(), e);
-                    break;
-                case TRACE:
-                    logger.trace(e.getMessage(), e);
-                    break;
-                default:
-                    break;
-            }
+    public static void swallow(Level logLevel, Throwable e) {
+        switch (logLevel) {
+            case ERROR:
+                logger.error(e.getMessage(), e);
+                break;
+            case WARN:
+                logger.warn(e.getMessage(), e);
+                break;
+            case INFO:
+                logger.info(e.getMessage(), e);
+                break;
+            case DEBUG:
+                logger.debug(e.getMessage(), e);
+                break;
+            case TRACE:
+                logger.trace(e.getMessage(), e);
+                break;
+            default:
+                break;
         }
     }
     // ByteBuffer比较方法

@@ -17,7 +17,7 @@ public class MultiFetchRequest extends Request {
     }
 
     //从ByteBuffer中读取数据创建MultiFetchRequest对象
-    public  MultiFetchRequest readFrom(ByteBuffer buffer) {
+    public static MultiFetchRequest readFrom(ByteBuffer buffer) {
         int count = buffer.getShort() & 0xFFFF; // 将short转换为int
         List<FetchRequest> fetchList = new ArrayList<>();
         for (int i = 0; i < count; i++) {
@@ -59,5 +59,9 @@ public class MultiFetchRequest extends Request {
             buffer.deleteCharAt(buffer.length() - 1);
         }
         return "MultiFetchRequest{" + buffer.toString() + "}";
+    }
+
+    public List<FetchRequest> getFetches() {
+        return fetches;
     }
 }

@@ -72,4 +72,12 @@ public class OffsetRequest {
         return "OffsetRequest(topic:" + topic + ", part:" + partition + ", time:" + time +
                 ", maxNumOffsets:" + maxNumOffsets + ")";
     }
+
+    public String getTopic() {
+        return topic;
+    }
+
+    public int getPartition() {
+        return partition;
+    }
 }

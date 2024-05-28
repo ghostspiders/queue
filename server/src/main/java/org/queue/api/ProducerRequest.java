@@ -7,6 +7,7 @@ package org.queue.api;
  * @datetime 2024年 05月 22日 10:27
  * @version: 1.0
  */
+import org.queue.common.ErrorMapping;
 import org.queue.message.ByteBufferMessageSet;
 import org.queue.network.Request;
 import org.queue.utils.Utils;
@@ -47,14 +48,14 @@ public class ProducerRequest extends Request {
      * @param buffer ByteBuffer对象
      * @return 生成的ProducerRequest对象
      */
-    public  ProducerRequest readFrom(ByteBuffer buffer) {
+    public static ProducerRequest readFrom(ByteBuffer buffer) {
         String topic = Utils.readShortString(buffer, StandardCharsets.UTF_8);
         int partition = buffer.getInt();
         int messageSetSize = buffer.getInt();
         ByteBuffer messageSetBuffer = buffer.slice();
         messageSetBuffer.limit(messageSetSize);
         buffer.position(buffer.position() + messageSetSize);
-        return new ProducerRequest(topic, partition, new ByteBufferMessageSet(messageSetBuffer));
+        return new ProducerRequest(topic, partition, new ByteBufferMessageSet(messageSetBuffer,0, ErrorMapping.NoError));
     }
 
     /**
@@ -77,18 +78,18 @@ public class ProducerRequest extends Request {
      */
     @Override
     public int sizeInBytes() {
-        int size = 2 + topic.length() + 4 + 4 + messages.sizeInBytes();
+        int size = 2 + topic.length() + 4 + 4 + (int)messages.sizeInBytes();
         return size;
     }
 
     /**
      * 获取翻译后的分区编号，如果是随机分区则使用选择器函数。
-     * @param randomSelector 分区选择器函数
+     * @param partitionStr 分区选择器函数
      * @return 分区编号
      */
-    public int getTranslatedPartition(java.util.function.Function<String, Integer> randomSelector) {
+    public int getTranslatedPartition(String partitionStr) {
         if (partition == RandomPartition) {
-            return randomSelector.apply(topic);
+            return Integer.parseInt(partitionStr);
         } else {
             return partition;
         }
@@ -133,4 +134,16 @@ public class ProducerRequest extends Request {
     public int hashCode() {
         return 31 + (17 * partition) + Objects.hash(topic, messages);
     }
+
+    public String getTopic() {
+        return topic;
+    }
+
+    public int getPartition() {
+        return partition;
+    }
+    public ByteBufferMessageSet getMessages() {
+        return messages;
+    }
+
 }
