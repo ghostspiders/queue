@@ -9,6 +9,6 @@ import org.queue.message.Message;
  * @datetime 2024年 05月 23日 15:46
  * @version: 1.0
  */
-interface Encoder<T> {
+public interface Encoder<T> {
     Message toMessage(T event);
 }

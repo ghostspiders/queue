@@ -24,6 +24,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class QueueRequestHandlers {
+
     private LogManager logManager;
     private static final Logger logger = Logger.getLogger(QueueRequestHandlers.class.getName());
     private static final Logger requestLogger = Logger.getLogger("org.queue.request.logger");

@@ -18,7 +18,7 @@ import java.util.logging.Logger;
 
 public class SyncProducer {
     // 同步生产者配置
-    private final SyncProducerConfig config;
+    private final ProducerConfig config;
     // 日志记录器
     private final Logger logger = Logger.getLogger(SyncProducer.class.getName());
     // 最大连接回退时间（毫秒）
@@ -32,7 +32,7 @@ public class SyncProducer {
     // 标记是否已关闭
     private volatile boolean shutdown = false;
 
-    public SyncProducer(SyncProducerConfig config) {
+    public SyncProducer(ProducerConfig config) {
         this.config = config;
         // 记录实例化信息
         logger.fine("Instantiating Java Sync Producer");

@@ -7,11 +7,13 @@ package org.queue.producer.async;
  * @datetime 2024年 05月 24日 15:22
  * @version: 1.0
  */
+import org.queue.javaapi.producer.ProducerRequest;
+import org.queue.message.ByteBufferMessageSet;
 import org.queue.producer.ProducerConfig;
-import java.util.List;
-import java.util.Properties;
-import java.util.Map;
-import java.util.HashMap;
+import org.queue.producer.SyncProducer;
+import org.queue.serializer.Encoder;
+
+import java.util.*;
 import java.nio.ByteBuffer;
 import java.util.logging.Logger;
 
@@ -40,7 +42,7 @@ public class DefaultEventHandler<T> implements EventHandler<T> {
         if (cbkHandler != null) {
             processedEvents = cbkHandler.beforeSendingData(processedEvents);
         }
-        send(collate(processedEvents), serializer, syncProducer);
+        send(serialize(collate(processedEvents), serializer), syncProducer);
     }
 
     /**

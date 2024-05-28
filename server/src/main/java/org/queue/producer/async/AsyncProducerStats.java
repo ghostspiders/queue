@@ -7,6 +7,7 @@ package org.queue.producer.async;
  * @datetime 2024年 05月 24日 15:13
  * @version: 1.0
  */
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**

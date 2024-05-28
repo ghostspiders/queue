@@ -23,15 +23,15 @@ import java.util.Map;
 
 public interface ConsumerConnector {
 
-    public Map<String, List<QueueMessageStream>> createMessageStreams(Map<String, Integer> topicCountMap);
+     Map<String, List<QueueMessageStream>> createMessageStreams(Map<String, Integer> topicCountMap);
 
     /**
      *  Commit the offsets of all broker partitions connected by this connector.
      */
-    public void commitOffsets();
+     void commitOffsets();
 
     /**
      *  Shut down the connector
      */
-    public void shutdown();
+     void shutdown();
 }

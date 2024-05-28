@@ -7,6 +7,10 @@ package org.queue.producer;
  * @datetime 2024年 05月 24日 16:55
  * @version: 1.0
  */
+import org.queue.javaapi.producer.async.EventHandler;
+import org.queue.producer.async.AsyncProducer;
+import org.queue.producer.async.CallbackHandler;
+import org.queue.serializer.Encoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -112,8 +116,8 @@ public class ProducerPool<V> {
             props.put("queue.size", String.valueOf(config.getQueueSize())); // 设置队列大小
             props.put("batch.size", String.valueOf(config.getBatchSize())); // 设置批处理大小
             props.put("serializer.class", config.getSerializerClass()); // 设置序列化类
-            SyncProducerConfig syncConfig = new SyncProducerConfig(props);
-            AsyncProducerConfig asyncConfig = new AsyncProducerConfig(props);
+            ProducerConfig syncConfig = new ProducerConfig(props);
+            ProducerConfig asyncConfig = new ProducerConfig(props);
             SyncProducer syncProducer = new SyncProducer(syncConfig);
             AsyncProducer<V> producer = new AsyncProducer<>(asyncConfig, syncProducer, serializer,
                     eventHandler, config.getEventHandlerProps(),

@@ -8,8 +8,8 @@ package org.queue.producer.async;
  * @version: 1.0
  */
 
-import java.util.Properties;
 import java.util.List;
+import java.util.Properties;
 import org.queue.producer.SyncProducer;
 import org.queue.serializer.Encoder;
 /**
