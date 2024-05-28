@@ -58,22 +58,4 @@ public class Producer<K, V> {
     public void close() {
         underlying.close();
     }
-
-    // 内部接口，用于事件处理
-    public interface EventHandler<V> {
-        void init(Properties props);
-        void handle(List<QueueItem<V>> events, SyncProducer producer, Encoder<V> encoder);
-        void close();
-    }
-
-    // 内部接口，用于回调处理
-    public interface CallbackHandler<V> {
-        void init(Properties props);
-        QueueItem<V> beforeEnqueue(QueueItem<V> data);
-        void afterEnqueue(QueueItem<V> data, boolean added);
-        List<QueueItem<V>> afterDequeuingExistingData(QueueItem<V> data);
-        List<QueueItem<V>> beforeSendingData(List<QueueItem<V>> data);
-        List<QueueItem<V>> lastBatchBeforeClose();
-        void close();
-    }
 }

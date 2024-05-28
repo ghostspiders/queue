@@ -1,5 +1,6 @@
 package org.queue.javaapi;
 
+import org.queue.api.RequestKeys;
 import org.queue.javaapi.message.ByteBufferMessageSet;
 import org.queue.network.Request;
 
@@ -15,7 +16,7 @@ public class ProducerRequest extends Request {
     private final org.queue.api.ProducerRequest underlying;
 
     public ProducerRequest(String topic, int partition, ByteBufferMessageSet messages) {
-        super(RequestKeys.PRODUCE); // 调用父类构造函数，设置请求类型
+        super(RequestKeys.produce); // 调用父类构造函数，设置请求类型
         this.topic = topic;
         this.partition = partition;
         this.messages = messages;
