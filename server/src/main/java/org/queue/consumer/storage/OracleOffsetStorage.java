@@ -7,6 +7,7 @@ package org.queue.consumer.storage;
  * @datetime 2024年 05月 22日 16:31
  * @version: 1.0
  */
+import org.queue.utils.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.event.Level;
@@ -70,7 +71,11 @@ public class OracleOffsetStorage implements OffsetStorage {
      */
     public void close() {
         // 此处假设Utils.swallow方法可以正确关闭资源并处理可能的异常
-        Utils.swallow(Level.ERROR, () -> connection.close());
+        try {
+            connection.close();
+        } catch (SQLException e) {
+            Utils.swallow(Level.ERROR, e);
+        }
     }
 
     /**

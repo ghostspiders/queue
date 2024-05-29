@@ -12,12 +12,12 @@ import org.queue.cluster.Broker;
 import org.queue.cluster.Partition;
 import org.queue.common.InvalidConfigException;
 import org.queue.common.UnavailableProducerException;
-import org.queue.javaapi.producer.async.EventHandler;
 import org.queue.message.ByteBufferMessageSet;
 import org.queue.message.NoCompressionCodec;
 import org.queue.producer.async.AsyncProducer;
 import org.queue.producer.async.CallbackHandler;
 import org.queue.producer.async.DefaultEventHandler;
+import org.queue.producer.async.EventHandler;
 import org.queue.serializer.Encoder;
 import org.queue.utils.Utils;
 import org.slf4j.Logger;
@@ -149,14 +149,14 @@ public class ProducerPool<V> {
         // 转换数组为列表以使用Java 8 Stream API
         List<ProducerPoolData<V>> poolDataList = Arrays.asList(poolDataArray);
         List<Integer> distinctBrokers = poolDataList.stream()
-                .map(pd -> pd.getBidPid().brokerId)
+                .map(pd -> pd.getBidPid().getBrokerId())
                 .distinct()
                 .collect(Collectors.toList());
 
         // 按代理ID分区请求
         for (Integer bid : distinctBrokers) {
             List<ProducerPoolData<V>> requestsForThisBid = poolDataList.stream()
-                    .filter(pd -> pd.getBidPid().brokerId == bid)
+                    .filter(pd -> pd.getBidPid().getBrokerId() == bid)
                     .collect(Collectors.toList());
 
             if (sync) {
@@ -164,9 +164,9 @@ public class ProducerPool<V> {
                 List<ProducerRequest> producerRequests = requestsForThisBid.stream()
                         .map(req -> new ProducerRequest(
                                 req.getTopic(),
-                                req.getBidPid().partId,
+                                req.getBidPid().getPartId(),
                                 new ByteBufferMessageSet(
-                                        config.compressionCodec,
+                                        config.getCompressionCodec(),
                                         req.getData().stream()
                                                 .map(d -> serializer.toMessage(d))
                                                 .toArray()

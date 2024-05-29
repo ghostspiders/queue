@@ -18,6 +18,8 @@ import java.util.Arrays;
 
 public class Message {
     // 消息的头部大小常量，需要根据实际情况定义
+    val MagicVersion1: Byte = 0
+    val MagicVersion2: Byte = 1
     private static final int MagicOffset = 0;
     private static final int AttributeOffset = 1;
     private static final int CurrentMagicValue = 1; // 假设当前魔数值为1
@@ -42,7 +44,7 @@ public class Message {
 
     // 构造函数重载，用于不指定压缩编解码器时使用默认NoCompressionCodec
     public Message(long checksum, byte[] bytes) {
-        this(checksum, bytes, NoCompressionCodec.INSTANCE);
+        this(checksum, bytes, new NoCompressionCodec());
     }
 
     // 构造函数重载，用于指定压缩编解码器
@@ -52,7 +54,7 @@ public class Message {
 
     // 构造函数重载，用于不指定压缩编解码器时使用默认NoCompressionCodec
     public Message(byte[] bytes) {
-        this(bytes, NoCompressionCodec.INSTANCE);
+        this(bytes, new NoCompressionCodec());
     }
 
     // 获取整个消息的大小
@@ -79,7 +81,7 @@ public class Message {
     public CompressionCodec compressionCodec() {
         switch (magic()) {
             case 0:
-                return NoCompressionCodec.INSTANCE;
+                return new NoCompressionCodec();
             case 1:
                 return CompressionCodec.getCompressionCodec(attributes() & CompressionCodeMask);
             default:
@@ -141,19 +143,22 @@ public class Message {
         return buffer.hashCode();
     }
 
-    // 辅助方法，需要根据实际情况进行定义
-    private int headerSize(int magic) {
-        // 实现获取头部大小的逻辑
-        return 0; // 这里只是一个示例，需要根据实际情况实现
+    public static int crcOffset(byte magic) {
+        switch (magic) {
+            case MagicVersion1:
+                return MagicOffset + MagicLength;
+            case MagicVersion2:
+                return AttributeOffset + AttributeLength;
+            default:
+                throw new IllegalArgumentException(String.format("Magic byte value of %d is unknown", magic));
+        }
     }
 
-    private int crcOffset(byte magic) {
-        // 实现获取crc校验和偏移量的逻辑
-        return 0; // 这里只是一个示例，需要根据实际情况实现
+    public static int payloadOffset(byte magic) {
+        return crcOffset(magic) + CrcLength;
     }
 
-    private int payloadOffset(byte magic) {
-        // 实现获取负载偏移量的逻辑
-        return 0; // 这里只是一个示例，需要根据实际情况实现
+    public static int headerSize(byte magic) {
+        return payloadOffset(magic);
     }
 }

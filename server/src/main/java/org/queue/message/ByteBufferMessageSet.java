@@ -37,7 +37,7 @@ public class ByteBufferMessageSet extends MessageSet {
 
     // 构造函数，从消息列表创建（不压缩）
     public ByteBufferMessageSet(Message... messages) {
-        this(NoCompressionCodec.INSTANCE, messages);
+        this(new NoCompressionCodec(), messages);
     }
 
     // 获取初始偏移量
