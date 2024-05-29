@@ -9,6 +9,7 @@ package org.queue.producer.async;
  */
 import org.queue.javaapi.producer.ProducerRequest;
 import org.queue.message.ByteBufferMessageSet;
+import org.queue.message.NoCompressionCodec;
 import org.queue.producer.ProducerConfig;
 import org.queue.producer.SyncProducer;
 import org.queue.serializer.Encoder;
@@ -100,12 +101,12 @@ public class DefaultEventHandler<T> implements EventHandler<T> {
      */
     private ByteBufferMessageSet createMessageSet(List<ByteBuffer> messageList) {
         // 根据配置决定是否启用压缩等
-        if (config.isCompressionEnabled() && config.getCompressedTopics().containsAll(topics)) {
+        if (config.getCompressionCodec() != null) {
             // 启用压缩
             return new ByteBufferMessageSet(config.getCompressionCodec(), messageList);
         } else {
             // 不启用压缩
-            return new ByteBufferMessageSet(NoCompressionCodec, messageList);
+            return new ByteBufferMessageSet(new NoCompressionCodec(), messageList);
         }
     }
 

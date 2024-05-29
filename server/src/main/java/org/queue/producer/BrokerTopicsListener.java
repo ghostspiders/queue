@@ -8,13 +8,19 @@ package org.queue.producer;
  * @version: 1.0
  */
 import org.I0Itec.zkclient.IZkChildListener;
+import org.I0Itec.zkclient.ZkClient;
+import org.queue.cluster.Broker;
+import org.queue.cluster.Partition;
 import org.queue.utils.ZkUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class BrokerTopicsListener implements IZkChildListener {
     private final Map<String, SortedSet<Partition>> originalBrokerTopicsPartitionsMap;
@@ -22,13 +28,25 @@ public class BrokerTopicsListener implements IZkChildListener {
     private final Map<Integer, Broker> originalBrokerIdMap;
     private Map<Integer, Broker> oldBrokerIdMap;
     private static final Logger logger = LoggerFactory.getLogger(BrokerTopicsListener.class);
-
+    private ReentrantLock zkWatcherLock;
+    private ZkClient zkClient;
+    private Map<String, SortedSet<Partition>> topicBrokerPartitions;
+    private Map<Integer, Broker> allBrokers;
+    private boolean populateProducerPool;
+    private ProducerPool producerPool;
     public BrokerTopicsListener(Map<String, SortedSet<Partition>> originalBrokerTopicsPartitionsMap,
-                                Map<Integer, Broker> originalBrokerIdMap) {
+                                Map<Integer, Broker> originalBrokerIdMap, ReentrantLock zkWatcherLock, ZkClient zkClient, Map<String, SortedSet<Partition>> topicBrokerPartitions, Map<Integer, Broker> allBrokers,
+            boolean populateProducerPool, ProducerPool producerPool) {
         this.originalBrokerTopicsPartitionsMap = new ConcurrentHashMap<>(originalBrokerTopicsPartitionsMap);
         this.oldBrokerTopicPartitionsMap = new ConcurrentHashMap<>(this.originalBrokerTopicsPartitionsMap);
         this.originalBrokerIdMap = new ConcurrentHashMap<>(originalBrokerIdMap);
         this.oldBrokerIdMap = new ConcurrentHashMap<>(this.originalBrokerIdMap);
+        this.zkWatcherLock = zkWatcherLock;
+        this.zkClient = zkClient;
+        this.topicBrokerPartitions = topicBrokerPartitions;
+        this.allBrokers = allBrokers;
+        this.populateProducerPool = populateProducerPool;
+        this.producerPool = producerPool;
         logger.debug("[BrokerTopicsListener] Creating broker topics listener to watch the following paths - \n" +
                 "/broker/topics, /broker/topics/topic, /broker/ids");
         logger.debug("[BrokerTopicsListener] Initialized this broker topics listener with initial mapping of broker id to " +
@@ -43,7 +61,7 @@ public class BrokerTopicsListener implements IZkChildListener {
     public void handleChildChange(String parentPath, List<String> currentChilds) {
         zkWatcherLock.lock();
         try {
-            logger.finest("Watcher fired for path: " + parentPath);
+            logger.info("Watcher fired for path: " + parentPath);
 
             switch (parentPath) {
                 case "/brokers/topics": // 这是/broker/topics路径的监听器
@@ -95,8 +113,8 @@ public class BrokerTopicsListener implements IZkChildListener {
      */
     public void processBrokerChange(String parentPath, List<String> curChilds) {
         if (ZkUtils.BrokerIdsPath.equals(parentPath)) {
-            Set<Integer> updatedBrokerList = curChilds.stream().mapToInt(Integer::parseInt).collect(Collectors.toSet());
-            Set<Integer> newBrokers = updatedBrokerList.stream().filter(bid -> !oldBrokerIdMap.contains(bid)).collect(Collectors.toSet());
+            Set<Integer> updatedBrokerList = curChilds.stream().map(Integer::parseInt).collect(Collectors.toSet());
+            Set<Integer> newBrokers = updatedBrokerList.stream().filter(bid -> !oldBrokerIdMap.containsKey(bid)).collect(Collectors.toSet());
             logger.debug("[BrokerTopicsListener] List of newly registered brokers: " + newBrokers.toString());
             for (Integer bid : newBrokers) {
                 String brokerInfo = ZkUtils.readData(zkClient, ZkUtils.BrokerIdsPath + "/" + bid);
@@ -107,7 +125,7 @@ public class BrokerTopicsListener implements IZkChildListener {
             }
 
             // 从内存中的活动代理列表中移除死亡的代理
-            Set<Integer> deadBrokers = oldBrokerIdMap.stream().filter(bid -> !updatedBrokerList.contains(bid)).collect(Collectors.toSet());
+            Set<Integer> deadBrokers = oldBrokerIdMap.keySet().stream().filter(bid -> !updatedBrokerList.contains(bid)).collect(Collectors.toSet());
             logger.debug("[BrokerTopicsListener] Deleting broker ids for dead brokers: " + deadBrokers.toString());
             for (Integer bid : deadBrokers) {
                 allBrokers.remove(bid);
@@ -125,6 +143,51 @@ public class BrokerTopicsListener implements IZkChildListener {
                 });
             }
         }
+    }
+    /**
+     * 回调函数，用于向生产者池中添加新的生产者。
+     * 通常由ZKBrokerPartitionInfo在ZooKeeper中注册新的代理时使用。
+     *
+     * @param bid 代理的ID
+     * @param host 代理的主机名
+     * @param port 代理的端口
+     */
+    private void producerCbk(int bid, String host, int port) {
+        // 如果populateProducerPool为true，则向生产者池中添加生产者
+        if (populateProducerPool) {
+            producerPool.addProducer(new Broker(bid, host, host,port));
+        } else {
+            // 如果populateProducerPool为false，则记录调试信息并跳过回调
+            logger.error("Skipping the callback since populateProducerPool = false");
+        }
+    }
+
+    /**
+     * 生成指定代理列表的映射，从代理ID映射到(代理ID, 分区数)。
+     * @param zkClient ZooKeeper客户端
+     * @param topic 主题
+     * @param brokerList 代理列表
+     * @return 代理列表的(代理ID, 分区数)序列
+     */
+    private static SortedSet<Partition> getBrokerPartitions(ZkClient zkClient, String topic, List<Integer> brokerList) {
+        String brokerTopicPath = ZkUtils.BrokerTopicsPath + "/" + topic;
+        List<Integer> numPartitions = brokerList.stream()
+                .mapToInt(bid -> {
+                    try {
+                        return Integer.valueOf(ZkUtils.readData(zkClient, brokerTopicPath + "/" + bid));
+                    } catch (Exception e) {
+                        logger.error("Error reading number of partitions for broker " + bid, e);
+                        return 0;
+                    }
+                }).boxed().collect(Collectors.toList());
+        Map<Integer, Integer> brokerPartitions = brokerList.stream()
+                .collect(Collectors.toMap(Function.identity(), bid -> numPartitions.get(brokerList.indexOf(bid))));
+
+        SortedSet<Partition> sortedBrokerPartitions = new TreeSet<>((o1, o2) -> o1.getBrokerId() - o2.getBrokerId());
+        sortedBrokerPartitions.addAll(brokerPartitions.entrySet().stream()
+                .flatMap(entry -> IntStream.rangeClosed(1, entry.getValue()).mapToObj(i -> new Partition(entry.getKey(), i)))
+                .collect(Collectors.toList()));
+        return sortedBrokerPartitions;
     }
     /**
      * 生成注册在某个主题下的新代理列表的(brokerId, numPartitions)映射。

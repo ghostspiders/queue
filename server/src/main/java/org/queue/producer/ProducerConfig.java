@@ -1,8 +1,11 @@
 package org.queue.producer;
 
+import org.queue.common.InvalidConfigException;
+import org.queue.message.CompressionCodec;
 import org.queue.utils.Utils;
 import org.queue.utils.ZKConfig;
 
+import java.util.List;
 import java.util.Properties;
 
 public class ProducerConfig extends ZKConfig {
@@ -24,23 +27,23 @@ public class ProducerConfig extends ZKConfig {
         return Utils.getInt(getProps(), "port", 9200);
     }
 
-    public int bufferSize() {
+    public int getBufferSize() {
         return Utils.getInt(getProps(), "buffer.size", 100 * 1024);
     }
 
-    public int connectTimeoutMs() {
+    public int getConnectTimeoutMs() {
         return Utils.getInt(getProps(), "connect.timeout.ms", 5000);
     }
 
-    public int socketTimeoutMs() {
+    public int getSocketTimeoutMs() {
         return Utils.getInt(getProps(), "socket.timeout.ms", 30000);
     }
 
-    public int reconnectInterval() {
+    public int getReconnectInterval() {
         return Utils.getInt(getProps(), "reconnect.interval", 30000);
     }
 
-    public int maxMessageSize() {
+    public int getMaxMessageSize() {
         return Utils.getInt(getProps(), "max.message.size", 1000000);
     }
     public int getQueueTime() {
@@ -81,10 +84,28 @@ public class ProducerConfig extends ZKConfig {
     public Properties getEventHandlerProps() {
         return Utils.getProps(getProps(), "event.handler.props", null);
     }
+    public String getBrokerPartitionInfo() {
+        final String brokerPartitionInfo = Utils.getString(getProps(), "broker.list", null);
+        // 检查如果 "broker.list" 和 "partitioner.class" 都不为 null，则抛出异常
+        if (brokerPartitionInfo != null && Utils.getString(getProps(), "partitioner.class", null) != null) {
+            throw new InvalidConfigException("partitioner.class cannot be used when broker.list is set");
+        }
+        return brokerPartitionInfo;
+    }
+    public String getPartitionerClass() {
+        return Utils.getString(getProps(), "partitioner.class", "org.queue.producer.DefaultPartitioner");
+    }
+    public String getProducerType() {
+        // 获取生产者类型，默认为 "sync"（同步发送）
+        return Utils.getString(getProps(), "producer.type", "sync");
+    }
+    // 获取压缩编解码器，默认为 NoCompressionCodec
+    public CompressionCodec getCompressionCodec() {
+        return  Utils.getCompressionCodec(getProps(), "compression.codec");
+    }
 
-
-
-
-
-
+    // 获取压缩主题列表，如果没有设置则返回空列表
+    public List<String> getCompressedTopics() {
+        return  Utils.getCSVList(Utils.getString(getProps(), "compressed.topics", null));
+    }
 }

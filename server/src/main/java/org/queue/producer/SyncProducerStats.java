@@ -11,18 +11,19 @@ import org.queue.utils.SnapshotStats;
 import org.queue.utils.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.event.Level;
 
 /**
  * 同步生产者统计信息实现。
  */
 public class SyncProducerStats implements SyncProducerStatsMBean {
-    private SnapshotStats produceRequestStats = new SnapshotStats();
+    private SnapshotStats produceRequestStats = new SnapshotStats(600);
     private static final String queueProducerStatsMBeanName = "queue:type=queue.queueProducerStats";
     private static final SyncProducerStats stats = new SyncProducerStats();
     private static final Logger logger = LoggerFactory.getLogger(SyncProducerStats.class);
     static {
         // 注册JMX管理Bean，以下方法需要根据实际情况实现
-        Utils.swallow(Utils.Level.WARN, () -> Utils.registerMBean(stats, QueueProducerStatsMBeanName));
+        Utils.registerMBean(stats, queueProducerStatsMBeanName);
     }
 
     /**
@@ -52,14 +53,6 @@ public class SyncProducerStats implements SyncProducerStatsMBean {
     @Override
     public long getNumProduceRequests() {
         return produceRequestStats.getNumRequests();
-    }
-
-    /**
-     * 记录单次发送请求耗时（纳秒）。
-     * @param requestNs 请求耗时，单位为纳秒
-     */
-    public void recordProduceRequest(long requestNs) {
-        produceRequestStats.recordRequestMetric(requestNs);
     }
 
 }

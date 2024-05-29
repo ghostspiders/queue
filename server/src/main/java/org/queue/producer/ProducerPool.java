@@ -7,16 +7,29 @@ package org.queue.producer;
  * @datetime 2024年 05月 24日 16:55
  * @version: 1.0
  */
+import org.queue.api.ProducerRequest;
+import org.queue.cluster.Broker;
+import org.queue.cluster.Partition;
+import org.queue.common.InvalidConfigException;
+import org.queue.common.UnavailableProducerException;
 import org.queue.javaapi.producer.async.EventHandler;
+import org.queue.message.ByteBufferMessageSet;
+import org.queue.message.NoCompressionCodec;
 import org.queue.producer.async.AsyncProducer;
 import org.queue.producer.async.CallbackHandler;
+import org.queue.producer.async.DefaultEventHandler;
 import org.queue.serializer.Encoder;
+import org.queue.utils.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.stream.Collectors;
 
 public class ProducerPool<V> {
     // 日志记录器
@@ -54,7 +67,7 @@ public class ProducerPool<V> {
 
     private void initEventHandler() {
         if (eventHandler == null) {
-            eventHandler = new DefaultEventHandler<>(config, cbkHandler);
+            eventHandler = (EventHandler<V>) new DefaultEventHandler(config, cbkHandler);
         }
     }
 
@@ -65,7 +78,7 @@ public class ProducerPool<V> {
     }
 
     private void initSync() {
-        switch (config.producerType) {
+        switch (config.getProducerType()) {
             case "sync":
                 break;
             case "async":
@@ -86,8 +99,8 @@ public class ProducerPool<V> {
     // 重载构造函数，使用默认参数
     public ProducerPool(ProducerConfig config, Encoder<V> serializer) {
         this(config, serializer, new ConcurrentHashMap<>(),
-                new ConcurrentHashMap<>(), Utils.getObject(config.eventHandler),
-                Utils.getObject(config.cbkHandler));
+                new ConcurrentHashMap<>(), Utils.getObject(config.getEventHandler()),
+                Utils.getObject(config.getCbkHandler()));
     }
 
     /**
@@ -103,7 +116,7 @@ public class ProducerPool<V> {
             props.put("buffer.size", String.valueOf(config.getBufferSize())); // 设置缓冲区大小
             props.put("connect.timeout.ms", String.valueOf(config.getConnectTimeoutMs())); // 设置连接超时
             props.put("reconnect.interval", String.valueOf(config.getReconnectInterval())); // 设置重连间隔
-            SyncProducerConfig syncConfig = new SyncProducerConfig(props);
+            ProducerConfig syncConfig = new ProducerConfig(props);
             SyncProducer producer = new SyncProducer(syncConfig);
             logger.info("Creating sync producer for broker id = " + broker.getId() + " at " + broker.getHost() + ":" + broker.getPort());
             syncProducers.put(broker.getId(), producer);
@@ -166,7 +179,7 @@ public class ProducerPool<V> {
                     if (!producerRequests.isEmpty()) {
                         producer.multiSend(producerRequests.toArray(new ProducerRequest[0]));
                     }
-                    logger.debug(config.compressionCodec == NoCompressionCodec ?
+                    logger.debug(config.getCompressionCodec() == new NoCompressionCodec() ?
                             "Sending message to broker " + bid :
                             "Sending compressed messages to broker " + bid);
                 } else {
@@ -180,11 +193,11 @@ public class ProducerPool<V> {
                 if (producer != null) {
                     for (ProducerPoolData<V> req : requestsForThisBid) {
                         for (V dataItem : req.getData()) {
-                            producer.send(req.getTopic(), dataItem, req.getBidPid().partId);
+                            producer.send(req.getTopic(), dataItem, req.getBidPid().getPartId());
                         }
                     }
                     if (logger.isDebugEnabled()) {
-                        logger.debug(config.compressionCodec == NoCompressionCodec ?
+                        logger.debug(config.getCompressionCodec() == new NoCompressionCodec() ?
                                 "Sending message" :
                                 "Sending compressed messages");
                     }

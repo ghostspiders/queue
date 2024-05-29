@@ -7,6 +7,8 @@ package org.queue.producer.async;
  * @datetime 2024年 05月 24日 15:32
  * @version: 1.0
  */
+import org.queue.producer.SyncProducer;
+import org.queue.serializer.Encoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.concurrent.BlockingQueue;
@@ -82,8 +84,8 @@ public class ProducerSendThread<T> extends Thread {
     }
 
     // 等待线程关闭
-    public boolean awaitShutdown() throws InterruptedException {
-        return shutdownLatch.await();
+    public void awaitShutdown() throws InterruptedException {
+         shutdownLatch.await();
     }
 
     // 关闭线程，释放资源
@@ -109,7 +111,7 @@ public class ProducerSendThread<T> extends Thread {
 
                 // 添加回调处理
                 if (cbkHandler != null) {
-                    events.add(cbkHandler.afterDequeuingExistingData(currentQueueItem));
+                    events.addAll(cbkHandler.afterDequeuingExistingData(currentQueueItem));
                 } else {
                     events.add(currentQueueItem);
                 }

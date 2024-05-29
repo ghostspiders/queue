@@ -95,7 +95,7 @@ public class AsyncProducer<T> {
             logger.info("Closed the callback handler");
         }
         try {
-            queue.put(new QueueItem<>(Shutdown, null, -1)); // 添加关闭信号到队列
+            queue.put(new QueueItem<T>((T) Shutdown, null, -1)); // 添加关闭信号到队列
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }

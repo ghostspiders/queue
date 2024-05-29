@@ -9,9 +9,11 @@ package org.queue.producer;
  */
 import org.queue.cluster.Broker;
 import org.queue.cluster.Partition;
+import org.queue.common.InvalidConfigException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * 基于配置信息维护代理分区的类。
@@ -100,9 +102,17 @@ public class ConfigBrokerPartitionInfo implements BrokerPartitionInfo {
             brokerInfo.put(Integer.parseInt(brokerIdHostPort[0]),
                     new Broker(Integer.parseInt(brokerIdHostPort[0]),
                             brokerIdHostPort[1],
+                            brokerIdHostPort[1],
                             Integer.parseInt(brokerIdHostPort[2])));
         }
         return brokerInfo;
     }
+    public Map<Integer, Broker> getAllBrokerInfo() {
+        return allBrokers;
+    }
 
+    // 关闭资源的方法，当前为空实现
+    public void close() {
+        // 这里可以执行关闭资源的逻辑，当前为空实现
+    }
 }

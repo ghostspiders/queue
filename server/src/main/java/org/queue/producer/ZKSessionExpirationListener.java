@@ -10,27 +10,25 @@ package org.queue.producer;
 import org.I0Itec.zkclient.IZkStateListener;
 import org.I0Itec.zkclient.ZkClient;
 import org.apache.zookeeper.Watcher;
+import org.queue.cluster.Partition;
 import org.queue.utils.ZkUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Set;
+import java.util.List;
+import java.util.Map;
+import java.util.SortedSet;
+import java.util.stream.Collectors;
 
 public class ZKSessionExpirationListener implements IZkStateListener {
     private final BrokerTopicsListener brokerTopicsListener;
     private static final Logger logger = LoggerFactory.getLogger(ZKSessionExpirationListener.class);
-
-    public ZKSessionExpirationListener(BrokerTopicsListener brokerTopicsListener) {
+    private  ZKBrokerPartitionInfo zkBrokerPartitionInfo;
+    private  ZkClient zkClient;
+    public ZKSessionExpirationListener(BrokerTopicsListener brokerTopicsListener, ZKBrokerPartitionInfo zkBrokerPartitionInfo, ZkClient zkClient) {
         this.brokerTopicsListener = brokerTopicsListener;
-    }
-
-    /**
-     * 处理ZooKeeper会话状态变化事件。
-     * @param state ZooKeeper状态。
-     */
-    @Override
-    public void handleStateChanged(KeeperState state) {
-        // 什么也不做，因为zkclient会为我们重新连接。
+        this.zkBrokerPartitionInfo = zkBrokerPartitionInfo;
+        this.zkClient = zkClient;
     }
 
     @Override
@@ -50,14 +48,14 @@ public class ZKSessionExpirationListener implements IZkStateListener {
          */
         logger.info("ZK expired; release old list of broker partitions for topics");
         // 获取ZK上的topic-broker分区信息
-        Set<String> topicBrokerPartitions = getZKTopicPartitionInfo();
-        Map<Integer, BrokerInfo> allBrokers = getZKBrokerInfo().toMap();
+        zkBrokerPartitionInfo.refresh();
         brokerTopicsListener.resetState();
-
         // 为每个topic的brokers变化注册监听器以保持topicBrokerPartitions更新
         // 注意：这里可能不需要这样做。因为当我们从getZKTopicPartitionInfo()读取时，
         // 它自动在那里重新创建了监听器本身
-        for (String topic : topicBrokerPartitions) {
+        Map<String, SortedSet<Partition>> topicBrokerPartitions = zkBrokerPartitionInfo.getTopicBrokerPartitions();
+        List<String> topics = topicBrokerPartitions.keySet().stream().collect(Collectors.toList());
+        for (String topic : topics) {
             zkClient.subscribeChildChanges(ZkUtils.BrokerTopicsPath + "/" + topic, brokerTopicsListener);
         }
         // 没有必要重新注册其他监听器，因为它们监听的是永久节点的子变化

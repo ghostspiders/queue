@@ -7,20 +7,27 @@ package org.queue.producer;
  * @datetime 2024年 05月 24日 17:43
  * @version: 1.0
  */
+import org.queue.api.MultiProducerRequest;
+import org.queue.api.ProducerRequest;
+import org.queue.api.RequestKeys;
+import org.queue.common.MessageSizeTooLargeException;
+import org.queue.message.ByteBufferMessageSet;
+import org.queue.message.MessageAndOffset;
 import org.queue.network.BoundedByteBufferSend;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.Arrays;
 
 public class SyncProducer {
     // 同步生产者配置
     private final ProducerConfig config;
     // 日志记录器
-    private final Logger logger = Logger.getLogger(SyncProducer.class.getName());
+    private final Logger logger =  LoggerFactory.getLogger(SyncProducer.class);
     // 最大连接回退时间（毫秒）
     private static final int MaxConnectBackoffMs = 60000;
     // 用于发送数据的SocketChannel
@@ -35,7 +42,7 @@ public class SyncProducer {
     public SyncProducer(ProducerConfig config) {
         this.config = config;
         // 记录实例化信息
-        logger.fine("Instantiating Java Sync Producer");
+        logger.info("Instantiating Java Sync Producer");
     }
 
     /**
@@ -43,27 +50,27 @@ public class SyncProducer {
      * @param buffer 要验证的ByteBuffer对象。
      */
     private void verifySendBuffer(ByteBuffer buffer) {
-        if (logger.isLoggable(Level.FINER)) { // 检查是否启用了追踪日志
-            logger.finer("verifying send buffer of size " + buffer.limit()); // 记录缓冲区大小
+        if (logger.isTraceEnabled()) { // 检查是否启用了追踪日志
+            logger.trace("verifying send buffer of size " + buffer.limit()); // 记录缓冲区大小
             short requestTypeId = buffer.getShort(); // 获取请求类型ID
-            if (requestTypeId == RequestKeys.MultiProduce) { // 检查是否为多产生请求
+            if (requestTypeId == RequestKeys.multiProduce) { // 检查是否为多产生请求
                 try {
                     MultiProducerRequest request = MultiProducerRequest.readFrom(buffer); // 从ByteBuffer中读取请求
-                    for (Produce produce : request.produces) { // 遍历每个产生请求
+                    for (ProducerRequest produce : request.getProduces()) { // 遍历每个产生请求
                         try {
-                            for (MessageAndOffset messageAndOffset : produce.messages) { // 遍历消息
-                                if (!messageAndOffset.message.isValid()) { // 检查消息是否有效
-                                    logger.finer("topic " + produce.topic + " is invalid"); // 记录无效主题
+                            for (MessageAndOffset messageAndOffset : produce.getMessages()) { // 遍历消息
+                                if (!messageAndOffset.getMessage().isValid()) { // 检查消息是否有效
+                                    logger.info("topic " + produce.getTopic() + " is invalid"); // 记录无效主题
                                 }
                             }
                         } catch (Throwable e) {
                             // 记录消息迭代中的错误
-                            logger.log(Level.FINER, "error iterating messages ", e);
+                            logger.error( "error iterating messages ", e);
                         }
                     }
                 } catch (Throwable e) {
                     // 记录验证发送缓冲区中的错误
-                    logger.log(Level.FINER, "error verifying send buffer ", e);
+                    logger.error("error verifying send buffer ", e);
                 }
             }
         }
@@ -103,9 +110,9 @@ public class SyncProducer {
     public void send(String topic, int partition, ByteBufferMessageSet messages) {
         verifyMessageSize(messages); // 验证消息大小
         int setSize = (int) messages.sizeInBytes(); // 设置消息大小
-        if (logger.isLoggable(Level.FINE)) {
+        if (logger.isTraceEnabled()) {
             // 记录消息大小日志
-            logger.fine("Got message set with " + setSize + " bytes to send");
+            logger.trace("Got message set with " + setSize + " bytes to send");
         }
         send(new BoundedByteBufferSend(new ProducerRequest(topic, partition, messages))); // 发送请求
     }
@@ -121,9 +128,9 @@ public class SyncProducer {
             verifyMessageSize(request.getMessages()); // 验证每个请求的消息大小
         }
         long setSize = Arrays.stream(produces).mapToInt(p -> (int) p.getMessages().sizeInBytes()).sum(); // 计算总大小
-        if (logger.isLoggable(Level.FINE)) {
+        if (logger.isTraceEnabled()) {
             // 记录总消息大小日志
-            logger.fine("Got multi message sets with " + setSize + " bytes to send");
+            logger.trace("Got multi message sets with " + setSize + " bytes to send");
         }
         send(new BoundedByteBufferSend(new MultiProducerRequest(produces))); // 发送批量请求
     }
@@ -155,14 +162,14 @@ public class SyncProducer {
     private void disconnect() {
         try {
             if (channel != null) {
-                logger.log(Level.INFO, "Disconnecting from {0}:{1}", new Object[]{config.getHost(), config.getPort()});
-                Utils.swallow(Level.WARN, () -> channel.close());
+                logger.info("Disconnecting from {0}:{1}", new Object[]{config.getHost(), config.getPort()});
+                channel.close();
                 Socket socket = channel.socket();
-                Utils.swallow(Level.WARN, () -> socket.close());
+                socket.close();
                 channel = null; // 设置为null，表示已断开连接
             }
         } catch (Exception e) {
-            logger.log(Level.SEVERE, "Error on disconnect: ", e);
+            logger.error( "Error on disconnect: ", e);
         }
     }
     /**
@@ -187,10 +194,10 @@ public class SyncProducer {
                 disconnect();
                 long endTimeMs = System.currentTimeMillis();
                 if ((endTimeMs - beginTimeMs + connectBackoffMs) > config.getConnectTimeoutMs()) {
-                    logger.log(Level.SEVERE, "Producer connection timing out after " + config.getConnectTimeoutMs() + " ms", e);
+                    logger.info("Producer connection timing out after " + config.getConnectTimeoutMs() + " ms", e);
                     throw new RuntimeException("Failed to connect to the server", e);
                 }
-                logger.log(Level.SEVERE, "Connection attempt failed, next attempt in " + connectBackoffMs + " ms", e);
+                logger.info("Connection attempt failed, next attempt in " + connectBackoffMs + " ms", e);
                 try {
                     Thread.sleep(connectBackoffMs);
                 } catch (InterruptedException ie) {

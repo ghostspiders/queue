@@ -56,4 +56,8 @@ public class BoundedByteBufferSend extends Send {
     public boolean complete() {
         return this.complete ;
     }
+
+    public ByteBuffer getBuffer() {
+        return buffer;
+    }
 }

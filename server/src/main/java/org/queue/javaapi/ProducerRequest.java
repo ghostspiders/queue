@@ -51,6 +51,6 @@ public class ProducerRequest extends Request {
 
     @Override
     public int hashCode() {
-        return Objects.hash(topic, partition, messages); // 重写hashCode方法
+        return Objects.hash(topic, partition, messages);
     }
 }

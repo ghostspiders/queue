@@ -10,69 +10,45 @@ package org.queue.producer;
 import org.I0Itec.zkclient.ZkClient;
 import org.queue.cluster.Broker;
 import org.queue.cluster.Partition;
+import org.queue.utils.StringSerializer;
 import org.queue.utils.ZKConfig;
 import org.queue.utils.ZkUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-public class ZKBrokerPartitionInfo extends BrokerPartitionInfo {
+public class ZKBrokerPartitionInfo implements BrokerPartitionInfo {
     private static final Logger logger = LoggerFactory.getLogger(ZKBrokerPartitionInfo.class);
     private final ReentrantLock zkWatcherLock = new ReentrantLock();
     private final ZkClient zkClient;
-    private volatile Map<String, List<BrokerPartitionInfo>> topicBrokerPartitions;
+    private volatile Map<String, SortedSet<Partition>> topicBrokerPartitions;
     private volatile Map<Integer, Broker> allBrokers;
 
-    public ZKBrokerPartitionInfo(ZKConfig config, ProducerCallback producerCbk) {
-        super(config, producerCbk);
+    public ZKBrokerPartitionInfo(ZKConfig config,boolean populateProducerPool,ProducerPool producerPool) {
         // Assuming ZKConfig and BrokerPartitionInfo are defined elsewhere
         this.zkClient = new ZkClient(config.getZkConnect(), config.getZkSessionTimeoutMs(), config.getZkConnectionTimeoutMs(), new StringSerializer());
         this.topicBrokerPartitions = getZKTopicPartitionInfo();
         this.allBrokers = getZKBrokerInfo();
-        initializeListeners();
+        initializeListeners(topicBrokerPartitions,allBrokers,populateProducerPool,producerPool);
     }
 
+
     // Initialization and registration of listeners would be done in a method like this:
-    public void initializeListeners() {
-        BrokerTopicsListener listener = new BrokerTopicsListener(topicBrokerPartitions, allBrokers);
+    public void initializeListeners(Map<String, SortedSet<Partition>> topicBrokerPartitions, Map<Integer, Broker> allBrokers, boolean populateProducerPool, ProducerPool producerPool){
+        BrokerTopicsListener listener = new BrokerTopicsListener(topicBrokerPartitions, allBrokers,zkWatcherLock,zkClient,topicBrokerPartitions,allBrokers,populateProducerPool,producerPool);
         zkClient.subscribeChildChanges(ZkUtils.BrokerTopicsPath, listener);
         for (String topic : topicBrokerPartitions.keySet()) {
             zkClient.subscribeChildChanges(ZkUtils.BrokerTopicsPath + "/" + topic, listener);
             logger.debug("Registering listener on path: " + ZkUtils.BrokerTopicsPath + "/" + topic);
         }
         zkClient.subscribeChildChanges(ZkUtils.BrokerIdsPath, listener);
-        zkClient.subscribeStateChanges(new ZKSessionExpirationListener(listener));
+        zkClient.subscribeStateChanges(new ZKSessionExpirationListener(listener,this,zkClient));
     }
-    /**
-     * 生成指定代理列表的映射，从代理ID映射到(代理ID, 分区数)。
-     * @param zkClient ZooKeeper客户端
-     * @param topic 主题
-     * @param brokerList 代理列表
-     * @return 代理列表的(代理ID, 分区数)序列
-     */
-    private static SortedSet<Partition> getBrokerPartitions(ZkClient zkClient, String topic, List<Integer> brokerList) {
-        String brokerTopicPath = ZkUtils.BrokerTopicsPath + "/" + topic;
-        List<Integer> numPartitions = brokerList.stream()
-                .mapToDouble(bid -> {
-                    try {
-                        return Double.parseDouble(ZkUtils.readData(zkClient, brokerTopicPath + "/" + bid));
-                    } catch (Exception e) {
-                        logger.error("Error reading number of partitions for broker " + bid, e);
-                        return 0;
-                    }
-                }).boxed().collect(Collectors.toList());
-        Map<Integer, Integer> brokerPartitions = brokerList.stream()
-                .collect(Collectors.toMap(Map.Entry::getKey, bid -> numPartitions.get(brokerList.indexOf(bid))));
 
-        SortedSet<Partition> sortedBrokerPartitions = new TreeSet<>((o1, o2) -> o1.getBrokerId() - o2.getBrokerId());
-        sortedBrokerPartitions.addAll(brokerPartitions.entrySet().stream()
-                .flatMap(entry -> IntStream.rangeClosed(1, entry.getValue()).mapToObj(i -> new Partition(entry.getKey(), i)))
-                .collect(Collectors.toList()));
-        return sortedBrokerPartitions;
-    }
 
     /**
      * 根据topic获取Broker分区信息
@@ -181,5 +157,13 @@ public class ZKBrokerPartitionInfo extends BrokerPartitionInfo {
             brokers.put(brokerId, Broker.createBroker(brokerId, brokerInfo));
         }
         return brokers;
+    }
+    public void refresh() {
+        this.topicBrokerPartitions = getZKTopicPartitionInfo();
+        this.allBrokers = getZKBrokerInfo();
+    }
+
+    public Map<String, SortedSet<Partition>> getTopicBrokerPartitions() {
+        return topicBrokerPartitions;
     }
 }

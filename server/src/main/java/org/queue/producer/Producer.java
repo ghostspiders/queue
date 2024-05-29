@@ -7,6 +7,14 @@ package org.queue.producer;
  * @datetime 2024年 05月 24日 16:40
  * @version: 1.0
  */
+import org.queue.api.ProducerRequest;
+import org.queue.cluster.Broker;
+import org.queue.cluster.Partition;
+import org.queue.common.InvalidConfigException;
+import org.queue.common.InvalidPartitionException;
+import org.queue.common.NoBrokersForPartitionException;
+import org.queue.utils.Utils;
+import org.queue.utils.ZKConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.util.*;
@@ -33,9 +41,10 @@ public class Producer<K, V> {
     private final Partitioner<K> partitioner;
     private final ProducerPool<V> producerPool;
     private final boolean populateProducerPool;
-    private final BrokerPartitionInfo brokerPartitionInfo;
+    private BrokerPartitionInfo brokerPartitionInfo;
     private final AtomicBoolean hasShutdown = new AtomicBoolean(false);
     private final Random random = new Random();
+    private Boolean zkEnabled;
 
     public Producer(ProducerConfig config, Partitioner<K> partitioner, ProducerPool<V> producerPool,
                     boolean populateProducerPool, BrokerPartitionInfo brokerPartitionInfo) {
@@ -44,6 +53,7 @@ public class Producer<K, V> {
         this.producerPool = producerPool;
         this.populateProducerPool = populateProducerPool;
         this.brokerPartitionInfo = brokerPartitionInfo;
+        this.zkEnabled  = Utils.propertyExists(config.getZkConnect());
         checkConfig();
         if (brokerPartitionInfo == null) {
             initBrokerPartitionInfo();
@@ -55,7 +65,7 @@ public class Producer<K, V> {
 
     // 检查配置是否包含必要的属性
     private void checkConfig() {
-        if (!Utils.propertyExists(config.zkConnect) && !Utils.propertyExists(config.brokerPartitionInfo)) {
+        if (!Utils.propertyExists(config.getZkConnect()) && !Utils.propertyExists(config.getBrokerPartitionInfo())) {
             throw new InvalidConfigException("At least one of zk.connect or broker.list must be specified");
         }
     }
@@ -64,11 +74,11 @@ public class Producer<K, V> {
     private void initBrokerPartitionInfo() {
         // 根据是否启用ZK来初始化brokerPartitionInfo
         // 这里只是一个示例逻辑
-        if (Utils.propertyExists(config.zkConnect)) {
+        if (Utils.propertyExists(config.getZkConnect())) {
             Properties zkProps = new Properties();
-            zkProps.put("zk.connect", config.zkConnect);
+            zkProps.put("zk.connect", config.getZkConnect());
             // ... 其他ZK相关属性
-            brokerPartitionInfo = new ZKBrokerPartitionInfo(new ZKConfig(zkProps), this::producerCbk);
+            brokerPartitionInfo = new ZKBrokerPartitionInfo(new ZKConfig(zkProps),populateProducerPool,producerPool);
         } else {
             brokerPartitionInfo = new ConfigBrokerPartitionInfo(config);
         }
@@ -78,7 +88,7 @@ public class Producer<K, V> {
     private void populateProducerPool() {
         Map<Integer, Broker> allBrokers = brokerPartitionInfo.getAllBrokerInfo();
         for (Map.Entry<Integer, Broker> entry : allBrokers.entrySet()) {
-            producerPool.addProducer(new Broker(entry.getValue().getId(), entry.getValue().getHost(), entry.getValue().getPort()));
+            producerPool.addProducer(new Broker(entry.getValue().getId(), entry.getValue().getHost(),entry.getValue().getHost(),  entry.getValue().getPort()));
         }
     }
 
@@ -143,7 +153,7 @@ public class Producer<K, V> {
     // 添加新的生产者到生产者池的回调
     private void producerCbk(int bid, String host, int port) {
         if (populateProducerPool) {
-            producerPool.addProducer(new Broker(bid, host, port));
+            producerPool.addProducer(new Broker(bid, host, host,port));
         } else {
             logger.debug("Skipping the callback since populateProducerPool = false");
         }
