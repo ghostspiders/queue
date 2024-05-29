@@ -6,6 +6,7 @@ import org.queue.utils.IteratorTemplate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
 import java.util.Iterator;
@@ -22,6 +23,18 @@ public class ByteBufferMessageSet extends MessageSet {
     private ByteBuffer buffer;
     private long initialOffset;
     private int errorCode;
+
+    /**
+     * 浅层有效的字节计数，用于跟踪浅层验证过程中的字节数。
+     * 在Scala中初始化为-1L表示初始未定义状态。
+     */
+    private long shallowValidByteCount = -1L;
+
+    /**
+     * 深层有效的字节计数，用于跟踪深层验证过程中的字节数。
+     * 在Scala中初始化为-1L表示初始未定义状态。
+     */
+    private long deepValidByteCount = -1L;
 
     // 构造函数，从ByteBuffer创建
     public ByteBufferMessageSet(ByteBuffer buffer, long initialOffset, int errorCode) {
@@ -100,7 +113,7 @@ public class ByteBufferMessageSet extends MessageSet {
     }
 
     // 深层迭代器
-    private Iterator<MessageAndOffset> deepIterator() {
+    private Iterator<MessageAndOffset> deepIterator() throws Throwable {
         ErrorMapping.maybeThrowException(errorCode);
         return new IteratorTemplate<MessageAndOffset>() {
             ByteBuffer topIter = buffer.slice();
@@ -135,8 +148,8 @@ public class ByteBufferMessageSet extends MessageSet {
                 message.limit(size);
                 topIter.position(topIter.position() + size);
                 Message newMessage = new Message(message);
-                switch (newMessage.compressionCodec) {
-                    case NoCompressionCodec:
+                switch (newMessage.compressionCodec()) {
+                    case new NoCompressionCodec():
                         if (logger.isDebugEnabled())
                             logger.debug("Message is uncompressed. Valid byte count = " + currValidBytes);
                         innerIter = null;

@@ -11,6 +11,7 @@ package org.queue.message;
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * 消息集合。消息集合具有固定的序列化形式，尽管字节的容器可以是内存中的或磁盘上的。

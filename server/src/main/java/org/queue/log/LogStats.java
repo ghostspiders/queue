@@ -23,12 +23,12 @@ class LogStats implements LogStatsMBean {
 
     @Override
     public long getSize() {
-        return log.getSize(); // 获取日志大小
+        return log.size(); // 获取日志大小
     }
 
     @Override
     public int getNumberOfSegments() {
-        return log.getNumberOfSegments(); // 获取日志分段数量
+        return log.numberOfSegments(); // 获取日志分段数量
     }
 
     @Override

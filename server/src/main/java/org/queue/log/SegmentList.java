@@ -12,7 +12,8 @@ import java.util.concurrent.atomic.AtomicReference;
 class SegmentList<T> {
     // 写时复制的内容，使用AtomicReference保证线程安全
     private AtomicReference<T[]> contents;
-
+    // 最大尝试次数
+    public static final int MaxAttempts = 20;
     public SegmentList(java.util.List<T> seq) {
         // 使用序列创建SegmentList，并转换成数组
         this.contents = new AtomicReference<>(seq.toArray((T[])new Object[0]));
@@ -69,12 +70,4 @@ class SegmentList<T> {
     public String toString() {
         return Arrays.toString(view());
     }
-}
-
-/**
- * SegmentList类使用的常量
- */
-class SegmentListConstants {
-    // 最大尝试次数
-    public static final int MaxAttempts = 20;
 }

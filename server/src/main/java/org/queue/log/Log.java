@@ -6,12 +6,16 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Predicate;
 
 import org.queue.api.OffsetRequest;
 import org.queue.common.OffsetOutOfRangeException;
 import org.queue.message.FileMessageSet;
+import org.queue.message.InvalidMessageException;
+import org.queue.message.MessageAndOffset;
 import org.queue.message.MessageSet;
 import org.queue.utils.Range;
+import org.queue.utils.SystemTime;
 import org.queue.utils.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -85,12 +89,12 @@ public class Log {
         }
 
         // 检查是否越界
-        if (value < ranges[0].getStart() || value > ranges[arraySize - 1].getStart() + ranges[arraySize - 1].getSize()) {
+        if (value < ranges[0].start() || value > ranges[arraySize - 1].start() + ranges[arraySize - 1].size()) {
             throw new OffsetOutOfRangeException("offset " + value + " is out of range");
         }
 
         // 检查是否在最后一个范围的末尾
-        if (value == ranges[arraySize - 1].getStart() + ranges[arraySize - 1].getSize()) {
+        if (value == ranges[arraySize - 1].start() + ranges[arraySize - 1].size()) {
             return Optional.empty();
         }
 
@@ -101,7 +105,7 @@ public class Log {
             T found = ranges[mid];
             if (found.contains(value)) {
                 return Optional.of(found);
-            } else if (value < found.getStart()) {
+            } else if (value < found.start()) {
                 high = mid - 1;
             } else {
                 low = mid + 1;
@@ -149,7 +153,7 @@ public class Log {
                 throw new IOException("Cannot read file: " + file.getAbsolutePath());
             }
             String filename = file.getName();
-            long start = Long.parseLong(filename.substring(0, filename.length() - Log.FileSuffix.length));
+            long start = Long.parseLong(filename.substring(0, filename.length() - Log.FileSuffix.length()));
             FileMessageSet messageSet = new FileMessageSet(file, false);
             segments.add(new LogSegment(file, messageSet, start));
         }
@@ -159,7 +163,7 @@ public class Log {
             FileMessageSet set = new FileMessageSet(newFile, true);
             segments.add(new LogSegment(newFile, set, 0));
         } else {
-            Collections.sort(segments, Comparator.comparingLong(s -> s.getStart()));
+            Collections.sort(segments, Comparator.comparingLong(s -> s.start()));
             validateSegments(segments);
             LogSegment last = segments.remove(segments.size() - 1);
             last.getMessageSet().close();
@@ -168,7 +172,7 @@ public class Log {
             segments.add(mutable);
         }
 
-        return new SegmentList<>(segments.toArray(new LogSegment[0]));
+        return new SegmentList<>(segments);
     }
     // 验证日志分段的方法
     private void validateSegments(List<LogSegment> segments) {
@@ -176,7 +180,7 @@ public class Log {
             for (int i = 0; i < segments.size() - 1; i++) {
                 LogSegment curr = segments.get(i);
                 LogSegment next = segments.get(i + 1);
-                if (curr.getStart() + curr.getSize() != next.getStart()) {
+                if (curr.getStart() + curr.size() != next.getStart()) {
                     throw new IllegalStateException("Segments do not validate: "
                             + curr.getFile().getAbsolutePath() + " and "
                             + next.getFile().getAbsolutePath());
@@ -186,28 +190,39 @@ public class Log {
     }
     // 获取日志分段的数量
     public int numberOfSegments() {
-        return segments.size();
+        return segments.view().length;
     }
     // 关闭日志，释放资源
     public void close() {
         synchronized (lock) {
-            for (LogSegment segment : segments) {
+            for (LogSegment segment : segments.view()) {
                 segment.getMessageSet().close();
             }
         }
     }
-    // 追加消息集到日志
+    /**
+     * 追加消息集到日志中。
+     * @param messages 要追加的消息集。
+     */
     public void append(MessageSet messages) {
         // 验证消息
-        int numberOfMessages = messages.getMessageCount();
+        int numberOfMessages = 0;
+        for (MessageAndOffset messageAndOffset : messages) {
+            if (!messageAndOffset.getMessage().isValid()) {
+                throw new InvalidMessageException();
+            }
+            numberOfMessages++;
+        }
+
+        // 记录统计信息
         logStats.recordAppendedMessages(numberOfMessages);
 
-        // 追加消息到日志
+        // 它们是有效的，将它们插入到日志中
         synchronized (lock) {
-            LogSegment lastSegment = segments.last();
-            lastSegment.getMessageSet().append(messages);
+            LogSegment segment = segments.view()[segments.view().length - 1];
+            segment.getMessageSet().append(messages);
             maybeFlush(numberOfMessages);
-            maybeRoll(lastSegment);
+            maybeRoll(segment);
         }
     }
     // 从日志读取消息集
@@ -216,11 +231,11 @@ public class Log {
         if (segment != null) {
             return segment.getMessageSet().read((int) (offset - segment.getStart()), length);
         }
-        return MessageSet.empty();
+        return MessageSet.Empty;
     }
 
     private LogSegment findSegment(long offset) {
-        for (LogSegment segment : segments) {
+        for (LogSegment segment : segments.view()) {
             if (segment.contains(offset)) {
                 return segment;
             }
@@ -231,52 +246,47 @@ public class Log {
     public List<LogSegment> markDeletedWhile(Predicate<LogSegment> predicate) {
         synchronized (lock) {
             List<LogSegment> deletableSegments = new ArrayList<>();
-            for (LogSegment segment : segments) {
+            for (LogSegment segment : segments.view()) {
                 if (predicate.test(segment)) {
                     segment.setDeleted(true);
                     deletableSegments.add(segment);
                 }
             }
             int numToDelete = deletableSegments.size();
-            if (numToDelete == segments.size()) {
+            if (numToDelete == segments.view().length) {
                 roll();
             }
-            segments = new SegmentList<>(segments.toArray(new LogSegment[0]));
-            for (int i = numToDelete - 1; i >= 0; i--) {
-                segments = segments.remove(i);
-            }
-            return deletableSegments;
+            return Arrays.asList(segments.trunc(numToDelete));
         }
     }
     // 获取日志大小
     public long size() {
         long totalSize = 0;
-        for (LogSegment segment : segments) {
-            totalSize += segment.getSize();
+        for (LogSegment segment : segments.view()) {
+            totalSize += segment.size();
         }
         return totalSize;
     }
     // 获取下一次追加消息的字节偏移量
     public long nextAppendOffset() {
         flush();
-        LogSegment last = segments.last();
-        return last.getStart() + last.getSize();
+        LogSegment last = segments.view()[segments.view().length-1];
+        return last.getStart() + last.size();
     }
 
     /**
      * 获取最后一个Segment的高水位标记。
-     * @param segments Segment列表
      * @return 高水位标记的long值
      */
-    public long getHighwaterMark(List<Segment> segments) {
-        if (segments == null || segments.isEmpty()) {
+    public long getHighwaterMark() {
+        if (segments == null || segments.view().length == 0) {
             throw new IllegalArgumentException("Segment列表不能为空");
         }
 
         // 因为Java中的List是有序的，所以可以直接通过segments.size() - 1来访问最后一个元素
-        Segment lastSegment = segments.get(segments.size() - 1);
-        MessageSet messageSet = lastSegment.getMessageSet();
-        return messageSet.getHighWaterMark();
+        LogSegment lastSegment = segments.view()[segments.view().length-1];
+        FileMessageSet messageSet = lastSegment.getMessageSet();
+        return messageSet.highWaterMark();
     }
     private void maybeRoll(LogSegment segment) {
         if (segment.getMessageSet().sizeInBytes() > maxSize) {
@@ -301,7 +311,7 @@ public class Log {
     // 刷新日志，将内存中的数据写入到磁盘
     public void flush() {
         synchronized (lock) {
-            LogSegment lastSegment = segments.last();
+            LogSegment lastSegment = segments.view()[segments.view().length-1];
             lastSegment.getMessageSet().flush();
             unflushed.set(0);
             lastflushedTime.set(System.currentTimeMillis());
@@ -313,7 +323,7 @@ public class Log {
      * @return 一个长整型数组，包含请求的偏移量。
      */
     public long[] getOffsetsBefore(OffsetRequest request) {
-        List<Segment> segsArray = new ArrayList<>(segments); // 将segments转换为列表以支持索引操作
+        List<LogSegment> segsArray = List.of(segments.view()); // 将segments转换为列表以支持索引操作
         long[][] offsetTimeArray;
         if (!segsArray.isEmpty() && segsArray.get(segsArray.size() - 1).size() > 0) {
             offsetTimeArray = new long[segsArray.size() + 1][2];
@@ -323,32 +333,32 @@ public class Log {
 
         // 填充偏移量数组
         for (int i = 0; i < segsArray.size(); i++) {
-            Segment segment = segsArray.get(i);
+            LogSegment segment = segsArray.get(i);
             offsetTimeArray[i] = new long[]{segment.getStart(), segment.getFile().lastModified()};
         }
         // 如果最后一个Segment不为空，则添加额外的高水位标记
         if (!segsArray.isEmpty() && segsArray.get(segsArray.size() - 1).size() > 0) {
-            long highWaterMark = segsArray.get(segsArray.size() - 1).getMessageSet().getHighWaterMark();
-            offsetTimeArray[segsArray.size()] = new long[]{segsArray.get(segsArray.size() - 1).getStart() + highWaterMark, SystemTime.milliseconds()};
+            long highWaterMark = segsArray.get(segsArray.size() - 1).getMessageSet().highWaterMark();
+            offsetTimeArray[segsArray.size()] = new long[]{segsArray.get(segsArray.size() - 1).getStart() + highWaterMark, SystemTime.INSTANCE.milliseconds()};
         }
 
         // 根据请求的时间点找到起始索引
         int startIndex = -1;
-        switch (request.getTime()) {
-            case OffsetRequest.LatestTime:
+        switch ((int) request.getTime()) {
+            case (int) OffsetRequest.LatestTime:
                 startIndex = offsetTimeArray.length - 1;
                 break;
-            case OffsetRequest.EarliestTime:
+            case (int) OffsetRequest.EarliestTime:
                 startIndex = 0;
                 break;
             default:
                 boolean isFound = false;
-                if (logger.isLoggable(java.util.logging.Level.FINE)) {
+                if (logger.isDebugEnabled()) {
                     StringBuilder debugMessage = new StringBuilder("Offset time array = ");
                     for (long[] o : offsetTimeArray) {
                         debugMessage.append(String.format("%d, %d", o[0], o[1])).append(" ");
                     }
-                    logger.fine(debugMessage.toString());
+                    logger.debug(debugMessage.toString());
                 }
                 startIndex = offsetTimeArray.length - 1;
                 // 从数组末尾向前找到第一个小于等于请求时间的时间戳
@@ -387,6 +397,13 @@ public class Log {
      */
     public long getLastFlushedTime() {
         return lastflushedTime.get();
+    }
+
+    public File getDir() {
+        return dir;
+    }
+    public String getName() {
+        return name;
     }
 }
 

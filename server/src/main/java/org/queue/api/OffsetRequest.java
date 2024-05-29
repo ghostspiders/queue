@@ -80,4 +80,12 @@ public class OffsetRequest {
     public int getPartition() {
         return partition;
     }
+
+    public long getTime() {
+        return time;
+    }
+
+    public int getMaxNumOffsets() {
+        return maxNumOffsets;
+    }
 }

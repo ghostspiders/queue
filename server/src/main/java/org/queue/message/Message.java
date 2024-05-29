@@ -18,19 +18,26 @@ import java.util.Arrays;
 
 public class Message {
     // 消息的头部大小常量，需要根据实际情况定义
-    val MagicVersion1: Byte = 0
-    val MagicVersion2: Byte = 1
     private static final int MagicOffset = 0;
-    private static final int AttributeOffset = 1;
     private static final int CurrentMagicValue = 1; // 假设当前魔数值为1
     private static final int CompressionCodeMask = 0xFF; // 压缩代码掩码
-
+    // 魔术版本号1
+    public static final byte MagicVersion1 = 0;
+    // 魔术版本号2
+    public static final byte MagicVersion2 = 1;
+    // 魔术值的长度，以字节为单位
+    public static final int MagicLength = 1;
+    // 属性在消息中的偏移量，以字节为单位
+    public static final int AttributeOffset = MagicOffset + MagicLength;
+    // 属性的长度，以字节为单位
+    public static final int AttributeLength = 1;
     // ByteBuffer用于存储整个消息的数据
+    public static final int CrcLength = 4;
     private ByteBuffer buffer;
 
     // 私有构造函数，用于创建消息对象
     private Message(long checksum, byte[] bytes, CompressionCodec compressionCodec) {
-        this(ByteBuffer.allocate(headerSize(CurrentMagicValue) + bytes.length));
+        this(ByteBuffer.allocate(headerSize((byte) CurrentMagicValue) + bytes.length));
         buffer.put((byte)CurrentMagicValue); // 写入魔数
         byte attributes = 0;
         if (compressionCodec.getCodec() > 0) {

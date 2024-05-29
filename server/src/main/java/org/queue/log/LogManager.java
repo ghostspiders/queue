@@ -18,6 +18,7 @@ import org.queue.utils.Pool;
 import org.queue.utils.QueueScheduler;
 import org.queue.utils.Time;
 import org.queue.utils.Utils;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
@@ -28,6 +29,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
 /**
@@ -43,11 +45,13 @@ public class LogManager {
     private File logDir;
     private int numPartitions;
     private long maxSize;
-    private long flushInterval;
+    private int flushInterval;
     private Map<String, Integer> topicPartitionsMap;
     private CountDownLatch startupLatch;
-
-    private static final org.slf4j.Logger logger = LoggerFactory.getLogger(LogManager.class);
+    private ScheduledExecutorService logFlusherScheduler;
+    private Map<String, Integer> logFlushIntervalMap;
+    private Map<String, Long> logRetentionMSMap;
+    private static Logger logger = LoggerFactory.getLogger(LogManager.class);
 
     // 使用ConcurrentHashMap保证线程安全
     private ConcurrentHashMap<String, ConcurrentHashMap<Integer, Log>> logs = new ConcurrentHashMap<>();
@@ -72,6 +76,18 @@ public class LogManager {
         }else {
             this.startupLatch = null;
         }
+        logFlusherScheduler = Executors.newScheduledThreadPool(1, runnable -> {
+            Thread thread = new Thread(runnable);
+            thread.setName("queue-logflusher-" + thread.getId());
+            // 根据需要设置为守护线程
+            return thread;
+        });
+
+        // 初始化刷新间隔映射
+        logFlushIntervalMap = new ConcurrentHashMap<>(config.getFlushIntervalMap());
+
+        // 初始化日志保留时间映射
+        logRetentionMSMap = getLogRetentionMSMap(config.getLogRetentionHoursMap());
             // 初始化日志目录
         initLogDir();
         scheduleCleanupTask();
@@ -81,7 +97,7 @@ public class LogManager {
     /**
      * 初始化日志目录
      */
-    private void initLogDir() {
+    private void initLogDir() throws IOException {
         if (!logDir.exists()) {
             logger.info("未找到日志目录，正在创建 '{}'", logDir.getAbsolutePath());
             logDir.mkdirs();
@@ -98,7 +114,7 @@ public class LogManager {
                 } else {
                     logger.info("正在加载日志 '{}'", dir.getName());
                     Log log = new Log(dir, maxSize, flushInterval, needRecovery);
-                    String topicPartion = Utils.getTopicPartition(dir.getName());
+                    Map<String, Integer> topicPartion = Utils.getTopicPartition(dir.getName());
                     logs.computeIfAbsent(topicPartion.split("-")[0], k -> new ConcurrentHashMap<>())
                             .put(Integer.parseInt(topicPartion.split("-")[1]), log);
                 }

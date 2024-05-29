@@ -1,5 +1,6 @@
 package org.queue.log;
 
+import org.queue.message.FileMessageSet;
 import org.queue.utils.Range;
 
 import java.io.File;
@@ -73,5 +74,17 @@ public class LogSegment implements Range {
     @Override
     public String toString() {
         return "(file=" + file + ", start=" + start + ", size=" + size() + ")";
+    }
+
+    public FileMessageSet getMessageSet() {
+        return messageSet;
+    }
+
+    public File getFile() {
+        return file;
+    }
+
+    public long getStart() {
+        return start;
     }
 }

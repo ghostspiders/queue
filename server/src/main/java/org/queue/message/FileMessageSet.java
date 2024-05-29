@@ -120,12 +120,7 @@ public class FileMessageSet extends MessageSet {
         // 计算新的offset和limit，并创建一个新的FileMessageSet实例
         long newOffset = this.offset + readOffset;
         long newLimit = Math.min(newOffset + size, this.highWaterMark());
-        try {
-            return new FileMessageSet(this.channel, newOffset, newLimit, false, new AtomicBoolean(false));
-        } catch (IOException e) {
-            // Handle or throw the IOException depending on your error handling policy
-            return null;
-        }
+        return new FileMessageSet(this.channel, newOffset, newLimit, false, new AtomicBoolean(false));
     }
 
     /**
