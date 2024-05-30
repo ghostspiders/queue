@@ -543,4 +543,13 @@ public class Utils {
         }
         return list;
     }
+    public static List<Message> convert2(Iterator<Message> data) {
+        List<Message> list = new ArrayList<>();
+
+        // 使用Iterable的iterator()方法来遍历元素
+        for (Iterator<Message> it = data.iterator(); it.hasNext(); ) {
+            list.add(it.next());
+        }
+        return list;
+    }
 }

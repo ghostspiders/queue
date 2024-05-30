@@ -49,7 +49,7 @@ public class EmbeddedConsumer {
                                 int partition = logManager.chooseRandomPartition(topic);
                                 long start = SystemTime.getInstance().nanoseconds();
                                 Log log = logManager.getOrCreateLog(topic, partition);
-                                log.append(new ByteBufferMessageSet(new NoCompressionCodec(), message));
+                                log.append(new ByteBufferMessageSet(new NoCompressionCodec(), Utils.convert2(message.iterator())));
                                 stats.recordRequest(RequestKeys.produce, SystemTime.getInstance().nanoseconds() - start);
                             }
                         } catch (Throwable e) {
