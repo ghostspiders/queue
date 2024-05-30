@@ -20,17 +20,16 @@ import org.queue.utils.Time;
 import org.queue.utils.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.event.Level;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.NoSuchElementException;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.stream.Collectors;
 
 /**
  * LogManager类负责创建和分发日志
@@ -48,17 +47,18 @@ public class LogManager {
     private int flushInterval;
     private Map<String, Integer> topicPartitionsMap;
     private CountDownLatch startupLatch;
-    private ScheduledExecutorService logFlusherScheduler;
+    private QueueScheduler logFlusherScheduler;
     private Map<String, Integer> logFlushIntervalMap;
     private Map<String, Long> logRetentionMSMap;
     private static Logger logger = LoggerFactory.getLogger(LogManager.class);
 
     // 使用ConcurrentHashMap保证线程安全
-    private ConcurrentHashMap<String, ConcurrentHashMap<Integer, Log>> logs = new ConcurrentHashMap<>();
+    private Pool<String, Pool<Integer, Log>> logs = new Pool();
     private QueueZooKeeper queueZooKeeper;
     private ScheduledExecutorService cleanupScheduler;
+    private Random random = new Random();
     public LogManager(QueueConfig config, QueueScheduler scheduler, Time time,
-                      long logCleanupIntervalMs, long logCleanupDefaultAgeMs, boolean needRecovery) {
+                      long logCleanupIntervalMs, long logCleanupDefaultAgeMs, boolean needRecovery) throws IOException {
         this.config = config;
         this.scheduler = scheduler;
         this.time = time;
@@ -76,15 +76,11 @@ public class LogManager {
         }else {
             this.startupLatch = null;
         }
-        logFlusherScheduler = Executors.newScheduledThreadPool(1, runnable -> {
-            Thread thread = new Thread(runnable);
-            thread.setName("queue-logflusher-" + thread.getId());
-            // 根据需要设置为守护线程
-            return thread;
-        });
+        logFlusherScheduler = new QueueScheduler(1, "queue-logflusher-",false);
+
 
         // 初始化刷新间隔映射
-        logFlushIntervalMap = new ConcurrentHashMap<>(config.getFlushIntervalMap());
+        logFlushIntervalMap = config.getFlushIntervalMap();
 
         // 初始化日志保留时间映射
         logRetentionMSMap = getLogRetentionMSMap(config.getLogRetentionHoursMap());
@@ -115,8 +111,11 @@ public class LogManager {
                     logger.info("正在加载日志 '{}'", dir.getName());
                     Log log = new Log(dir, maxSize, flushInterval, needRecovery);
                     Map<String, Integer> topicPartion = Utils.getTopicPartition(dir.getName());
-                    logs.computeIfAbsent(topicPartion.split("-")[0], k -> new ConcurrentHashMap<>())
-                            .put(Integer.parseInt(topicPartion.split("-")[1]), log);
+                    topicPartion.forEach((key, value) -> {
+                        logs.putIfNotExists(key, new Pool())
+                                .put(value, log);
+                    });
+
                 }
             }
         }
@@ -185,7 +184,7 @@ public class LogManager {
     }
 
     // 等待启动完成
-    private void awaitStartup() {
+    private void awaitStartup() throws InterruptedException {
         if (config.isEnableZookeeper()) {
             startupLatch.await();
         }
@@ -199,7 +198,7 @@ public class LogManager {
     }
 
     // 为给定的主题和分区创建日志
-    private Log createLog(String topic, int partition) {
+    private Log createLog(String topic, int partition) throws IOException {
         File d = new File(logDir, topic + "-" + partition);
         d.mkdirs();
         return new Log(d, maxSize, flushInterval, false);
@@ -211,7 +210,7 @@ public class LogManager {
     }
 
     // 获取或创建日志
-    public Log getOrCreateLog(String topic, int partition) {
+    public Log getOrCreateLog(String topic, int partition) throws InterruptedException, IOException {
         awaitStartup();
         if (topic.length() <= 0) {
             throw new InvalidTopicException("topic name can't be empty");
@@ -224,7 +223,7 @@ public class LogManager {
         boolean hasNewTopic = false;
         Pool<Integer, Log> parts = logs.get(topic);
         if (parts == null) {
-            Pool<Integer, Log> found = logs.putIfAbsent(topic, new Pool<>());
+            Pool<Integer, Log> found = logs.putIfNotExists(topic, new Pool<>());
             if (found == null) {
                 hasNewTopic = true;
             }
@@ -233,7 +232,7 @@ public class LogManager {
         Log log = parts.get(partition);
         if (log == null) {
             log = createLog(topic, partition);
-            Log foundLog = parts.putIfAbsent(partition, log);
+            Log foundLog = parts.putIfNotExists(partition, log);
             if (foundLog != null) {
                 // 日志已存在
                 log.close();
@@ -255,9 +254,9 @@ public class LogManager {
         int total = 0;
         long startMs = System.currentTimeMillis();
         while (iter.hasNext()) {
-            Log log = iter.next;
+            Log log = iter.next();
             logger.debug("Garbage collecting '" + log.getName() + "'");
-            String topic = Utils.getTopicPartition(log.getDir().getName())._1;
+            String topic = Utils.getTopicPartition(log.getDir().getName()).keySet().stream().findFirst().get();
             long logCleanupThresholdMS = this.logCleanupDefaultAgeMs;
             if (logRetentionMSMap.containsKey(topic)) {
                 logCleanupThresholdMS = logRetentionMSMap.get(topic);
@@ -265,7 +264,6 @@ public class LogManager {
             List<File> toBeDeleted = log.markDeletedWhile(startMs - _.file.lastModified > logCleanupThresholdMS);
             for (File segment : toBeDeleted) {
                 logger.info("Deleting log segment " + segment.getName() + " from " + log.getName());
-                Utils.swallow(Level.ERROR, segment.close());
                 if (!segment.delete()) {
                     logger.warn("Delete failed.");
                 } else {
@@ -286,7 +284,7 @@ public class LogManager {
         }
         if (config.isEnableZookeeper()) {
             zkActor.send(StopActor);
-            queueZookeeper.close();
+            queueZooKeeper.close();
         }
     }
 
@@ -324,7 +322,8 @@ public class LogManager {
         if (logger.isDebugEnabled()) {
             logger.debug("flushing the high watermark of all logs");
         }
-        for (Log log : getLogIterator()) {
+        for (Iterator<Log> it = getLogIterator(); it.hasNext(); ) {
+            Log log = it.next();
             try {
                 long timeSinceLastFlush = System.currentTimeMillis() - log.getLastFlushedTime();
                 long logFlushInterval = config.getDefaultFlushIntervalMs();
@@ -349,8 +348,8 @@ public class LogManager {
     }
 
     // 获取所有主题
-    public Iterator<String> getAllTopics() {
-        return logs.keySet().iterator();
+    public List<String> getAllTopics() {
+        return logs.keys().stream().collect(Collectors.toList());
     }
 
     // 获取主题分区映射

@@ -1,9 +1,13 @@
 package org.queue.consumer;
 
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Logger;
+
+import org.queue.cluster.Partition;
 import org.queue.common.ErrorMapping;
+import org.queue.message.ByteBufferMessageSet;
 
 public class PartitionTopicInfo {
     private final String topic; // 主题名称

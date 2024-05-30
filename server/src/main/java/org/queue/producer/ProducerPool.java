@@ -23,6 +23,7 @@ import org.queue.utils.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -145,7 +146,7 @@ public class ProducerPool<V> {
      * 以将数据发布到指定的代理分区。
      * @param poolDataArray 生产者池请求对象数组
      */
-    public void send(ProducerPoolData<V>[] poolDataArray) {
+    public void send(ProducerPoolData<V>[] poolDataArray) throws IOException {
         // 转换数组为列表以使用Java 8 Stream API
         List<ProducerPoolData<V>> poolDataList = Arrays.asList(poolDataArray);
         List<Integer> distinctBrokers = poolDataList.stream()
@@ -167,9 +168,8 @@ public class ProducerPool<V> {
                                 req.getBidPid().getPartId(),
                                 new ByteBufferMessageSet(
                                         config.getCompressionCodec(),
-                                        req.getData().stream()
-                                                .map(d -> serializer.toMessage(d))
-                                                .toArray()
+                                        Utils.convert(req.getData())
+
                                 )
                         ))
                         .collect(Collectors.toList());

@@ -4,7 +4,6 @@ import org.I0Itec.zkclient.ZkClient;
 import org.queue.api.OffsetRequest;
 import org.queue.cluster.Broker;
 import org.queue.cluster.Partition;
-import org.queue.javaapi.consumer.SimpleConsumer;
 import org.queue.utils.ZKGroupTopicDirs;
 import org.queue.utils.ZkUtils;
 
@@ -35,8 +34,8 @@ public class FetcherRunnable extends Thread {
         this.partitionTopicInfos = partitionTopicInfos;
         // 初始化SimpleConsumer
         this.simpleConsumer = new SimpleConsumer(
-                broker.host(), broker.port(), config.socketTimeoutMs(),
-                config.socketBufferSize()
+                broker.getHost(), broker.getPort(), config.getSocketTimeoutMs(),
+                config.getSocketBufferSize()
         );
     }
 

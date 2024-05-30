@@ -21,8 +21,13 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class ZookeeperConsumerConnector extends ZkConsumerConnector implements ZookeeperConsumerConnectorMBean {
+public class ZookeeperConsumerConnector implements ConsumerConnector{
     private static final Logger logger = LoggerFactory.getLogger(ZookeeperConsumerConnector.class);
+    // 定义最大重试次数的常量
+    public static final int MAX_N_RETRIES = 4;
+
+    // 定义关闭命令的静态实例
+    public static final FetchedDataChunk shutdownCommand = new FetchedDataChunk(null, null, -1L);
     private AtomicBoolean isShuttingDown = new AtomicBoolean(false);
     private Object rebalanceLock = new Object();
     private Fetcher fetcher; // Assuming Fetcher is a class you have implemented
@@ -164,6 +169,17 @@ public class ZookeeperConsumerConnector extends ZkConsumerConnector implements Z
             // 记录异常并继续
             logger.error("exception during autoCommit: ", t);
         }
+    }
+
+    /**
+     * 创建消息流。
+     *
+     * @param topicCountMap 主题到分区数的映射。
+     * @return 按主题分组的消息流列表。
+     */
+    @Override
+    public Map<String, List<QueueMessageStream>> createMessageStreams(Map<String, Integer> topicCountMap) {
+        return null;
     }
 
     // 提交偏移量到ZooKeeper

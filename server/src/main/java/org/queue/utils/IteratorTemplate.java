@@ -39,7 +39,7 @@ public abstract class IteratorTemplate<T> implements Iterator<T> {
     }
 
     // 需要被子类实现，以提供迭代器的下一个元素
-    protected abstract T makeNext();
+    protected abstract T makeNext() throws Throwable;
 
     private boolean maybeComputeNext() {
         state = State.FAILED;

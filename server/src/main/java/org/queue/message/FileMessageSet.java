@@ -25,7 +25,7 @@ public class FileMessageSet extends MessageSet {
     private static final Logger logger = LoggerFactory.getLogger(FileMessageSet.class);
 
     // 构造函数
-    public FileMessageSet(FileChannel channel, long offset, long limit, boolean mutable, AtomicBoolean needRecover) {
+    public FileMessageSet(FileChannel channel, long offset, long limit, boolean mutable, AtomicBoolean needRecover) throws IOException {
         this.channel = channel;
         this.offset = offset;
         this.limit = limit;
@@ -33,12 +33,11 @@ public class FileMessageSet extends MessageSet {
         this.needRecover = needRecover;
         this.setSize = new AtomicLong();
         this.setHighWaterMark = new AtomicLong();
-
         init();
     }
 
     // 初始化方法
-    private void init() {
+    private void init() throws IOException {
         if (mutable) {
             // 如果是可变的消息集
             if (limit < Long.MAX_VALUE || offset > 0) {
@@ -75,7 +74,7 @@ public class FileMessageSet extends MessageSet {
      * @param channel 文件通道。
      * @param mutable 是否可变。
      */
-    public FileMessageSet(FileChannel channel, boolean mutable) {
+    public FileMessageSet(FileChannel channel, boolean mutable) throws IOException {
         this(channel, 0, Long.MAX_VALUE, mutable, new AtomicBoolean(false));
     }
 
@@ -85,7 +84,7 @@ public class FileMessageSet extends MessageSet {
      * @param mutable 是否可变。
      * @throws IOException 如果文件打开失败。
      */
-    public FileMessageSet(File file, boolean mutable){
+    public FileMessageSet(File file, boolean mutable) throws IOException {
         this(Utils.openChannel(file, mutable), mutable);
     }
 
@@ -344,7 +343,7 @@ public class FileMessageSet extends MessageSet {
             return -1;
         }
 
-        ByteBuffer messageBuffer = ByteBuffer.allocate(size);
+        ByteBuffer messageBuffer = ByteBuffer.allocate((int) size);
         long curr = start + 4;
         try {
             while (messageBuffer.hasRemaining()) {

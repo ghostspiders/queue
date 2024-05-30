@@ -7,8 +7,11 @@ package org.queue.message;
  * @datetime 2024年 05月 23日 11:28
  * @version: 1.0
  */
+import org.queue.utils.SnapshotStats;
+import org.queue.utils.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.event.Level;
 
 /**
  * 日志刷新统计类，实现了LogFlushStatsMBean接口。
@@ -20,7 +23,7 @@ public class LogFlushStats implements LogFlushStatsMBean {
 
     // 静态代码块，用于注册MBean
     static {
-        Utils.swallow(Level.ERROR, () -> Utils.registerMBean(stats, LogFlushStatsMBeanName));
+        Utils.registerMBean(stats, LogFlushStatsMBeanName);
     }
 
     /**
@@ -32,16 +35,7 @@ public class LogFlushStats implements LogFlushStatsMBean {
 
         stats.recordFlushRequest(requestMs);
     }
-    private SnapshotStats flushRequestStats = new SnapshotStats(); // 刷新请求统计信息
-
-    /**
-     * 记录刷新请求所需的毫秒数。
-     *
-     * @param requestMs 刷新请求所需的毫秒数。
-     */
-    public void recordFlushRequest(long requestMs) {
-        flushRequestStats.recordRequestMetric(requestMs);
-    }
+    private SnapshotStats flushRequestStats = new SnapshotStats(600); // 刷新请求统计信息
 
     /**
      * 获取每秒刷新次数。

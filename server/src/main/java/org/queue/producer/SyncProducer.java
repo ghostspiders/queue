@@ -107,7 +107,7 @@ public class SyncProducer {
     }
 
     // 发送消息到指定主题和分区
-    public void send(String topic, int partition, ByteBufferMessageSet messages) {
+    public void send(String topic, int partition, ByteBufferMessageSet messages) throws IOException {
         verifyMessageSize(messages); // 验证消息大小
         int setSize = (int) messages.sizeInBytes(); // 设置消息大小
         if (logger.isTraceEnabled()) {
@@ -118,12 +118,12 @@ public class SyncProducer {
     }
 
     // 发送消息到随机分区
-    public void send(String topic, ByteBufferMessageSet messages) {
+    public void send(String topic, ByteBufferMessageSet messages) throws IOException {
         send(topic, ProducerRequest.RandomPartition, messages);
     }
 
     // 批量发送消息
-    public void multiSend(ProducerRequest[] produces) {
+    public void multiSend(ProducerRequest[] produces) throws IOException {
         for (ProducerRequest request : produces) {
             verifyMessageSize(request.getMessages()); // 验证每个请求的消息大小
         }

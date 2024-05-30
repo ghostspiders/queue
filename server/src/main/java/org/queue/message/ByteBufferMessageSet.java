@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * 存储在字节缓冲区中的消息序列。
@@ -42,14 +43,34 @@ public class ByteBufferMessageSet extends MessageSet {
         this.initialOffset = initialOffset;
         this.errorCode = errorCode;
     }
-
-    // 构造函数，从消息列表和压缩编解码器创建
-    public ByteBufferMessageSet(CompressionCodec compressionCodec, Message... messages) {
-        this(compressionCodec, messages, 0L, ErrorMapping.NoError);
+    public ByteBufferMessageSet(ByteBuffer buffer) {
+        this.buffer = buffer;
+        this.initialOffset = 0L;
+        this.errorCode = ErrorMapping.NoError;
+    }
+    public ByteBufferMessageSet(CompressionCodec compressionCodec, List<Message>  messages) {
+        // 根据compressionCodec的类型，初始化buffer
+        ByteBuffer byteBuffer;
+        if (compressionCodec == new NoCompressionCodec()) {
+            // 无压缩情况
+            byteBuffer = ByteBuffer.allocate(MessageSet.messageSetSize(messages));
+            for (Message message : messages) {
+                message.serializeTo(byteBuffer);
+            }
+            byteBuffer.rewind();
+        } else {
+            // 压缩情况
+            Message message = CompressionUtils.compress(messages, compressionCodec);
+            byteBuffer = ByteBuffer.allocate(message.serializedSize());
+            message.serializeTo(byteBuffer);
+            byteBuffer.rewind();
+        }
+        this.initialOffset = 0L;
+        this.errorCode = ErrorMapping.NoError;
     }
 
     // 构造函数，从消息列表创建（不压缩）
-    public ByteBufferMessageSet(Message... messages) {
+    public ByteBufferMessageSet(List<Message> messages) {
         this(new NoCompressionCodec(), messages);
     }
 
@@ -74,24 +95,24 @@ public class ByteBufferMessageSet extends MessageSet {
     }
 
     // 获取有效字节数
-    public long validBytes() {
+    public long validBytes() throws Throwable {
         return deepValidBytes();
     }
 
     // 获取浅层有效字节数
-    public long shallowValidBytes() {
+    public long shallowValidBytes() throws Throwable {
         if (shallowValidByteCount < 0) {
             Iterator<MessageAndOffset> iter = deepIterator();
             while (iter.hasNext()) {
                 MessageAndOffset messageAndOffset = iter.next();
-                shallowValidByteCount = messageAndOffset.offset;
+                shallowValidByteCount = messageAndOffset.getOffset();
             }
         }
         return shallowValidByteCount - initialOffset;
     }
 
     // 获取深层有效字节数
-    public long deepValidBytes() {
+    public long deepValidBytes() throws Throwable {
         if (deepValidByteCount < 0) {
             Iterator<MessageAndOffset> iter = deepIterator();
             while (iter.hasNext())
@@ -109,11 +130,15 @@ public class ByteBufferMessageSet extends MessageSet {
     // 获取迭代器
     @Override
     public Iterator<MessageAndOffset> iterator() {
-        return deepIterator();
+        try {
+            return deepIterator();
+        } catch (Throwable e) {
+            throw new RuntimeException(e);
+        }
     }
 
     // 深层迭代器
-    private Iterator<MessageAndOffset> deepIterator() throws Throwable {
+    protected Iterator<MessageAndOffset> deepIterator() throws Throwable {
         ErrorMapping.maybeThrowException(errorCode);
         return new IteratorTemplate<MessageAndOffset>() {
             ByteBuffer topIter = buffer.slice();
@@ -125,7 +150,7 @@ public class ByteBufferMessageSet extends MessageSet {
                 return innerIter == null || !innerIter.hasNext();
             }
 
-            MessageAndOffset makeNextOuter() {
+            MessageAndOffset makeNextOuter() throws Throwable {
                 if (topIter.remaining() < 4) {
                     deepValidByteCount = currValidBytes;
                     return allDone();
@@ -148,23 +173,21 @@ public class ByteBufferMessageSet extends MessageSet {
                 message.limit(size);
                 topIter.position(topIter.position() + size);
                 Message newMessage = new Message(message);
-                switch (newMessage.compressionCodec()) {
-                    case new NoCompressionCodec():
-                        if (logger.isDebugEnabled())
-                            logger.debug("Message is uncompressed. Valid byte count = " + currValidBytes);
-                        innerIter = null;
-                        currValidBytes += 4 + size;
-                        return new MessageAndOffset(newMessage, currValidBytes);
-                    case _:
-                        if (logger.isDebugEnabled())
-                            logger.debug("Message is compressed. Valid byte count = " + currValidBytes);
-                        innerIter = CompressionUtils.decompress(newMessage).deepIterator();
-                        return makeNext();
+                if (new NoCompressionCodec().equals(newMessage.compressionCodec())) {
+                    if (logger.isDebugEnabled())
+                        logger.debug("Message is uncompressed. Valid byte count = " + currValidBytes);
+                    innerIter = null;
+                    currValidBytes += 4 + size;
+                    return new MessageAndOffset(newMessage, currValidBytes);
                 }
+                if (logger.isDebugEnabled())
+                    logger.debug("Message is compressed. Valid byte count = " + currValidBytes);
+                innerIter = CompressionUtils.decompress(newMessage).deepIterator();
+                return makeNext();
             }
 
             @Override
-            MessageAndOffset makeNext() {
+            public MessageAndOffset makeNext() throws Throwable {
                 if (logger.isDebugEnabled())
                     logger.debug("makeNext() in deepIterator: innerDone = " + innerDone());
                 if (innerDone()) {
@@ -173,7 +196,7 @@ public class ByteBufferMessageSet extends MessageSet {
                     MessageAndOffset messageAndOffset = innerIter.next();
                     if (!innerIter.hasNext())
                         currValidBytes += 4 + lastMessageSize;
-                    return new MessageAndOffset(messageAndOffset.message, currValidBytes);
+                    return new MessageAndOffset(messageAndOffset.getMessage(), currValidBytes);
                 }
             }
         };
@@ -222,6 +245,6 @@ public class ByteBufferMessageSet extends MessageSet {
     // 计算hashCode
     @Override
     public int hashCode() {
-        return 31 + (17 * errorCode) + buffer.hashCode() + initialOffset.hashCode();
+        return (31 + (17 * errorCode) + buffer.hashCode() + (int) initialOffset);
     }
 }

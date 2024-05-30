@@ -8,6 +8,7 @@ package org.queue.message;
  * @version: 1.0
  */
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
 import java.util.Iterator;
@@ -73,7 +74,7 @@ public abstract class MessageSet implements Iterable<MessageAndOffset> {
      * @param maxSize 可以写入的最大字节数。
      * @return 写入的字节数。
      */
-    public abstract long writeTo(WritableByteChannel channel, long offset, long maxSize);
+    public abstract long writeTo(WritableByteChannel channel, long offset, long maxSize) throws IOException;
 
     /**
      * 提供此集合中消息的迭代器。

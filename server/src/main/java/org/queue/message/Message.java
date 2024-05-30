@@ -12,10 +12,6 @@ import org.queue.utils.Utils;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
-// 假设CompressionCodec接口和NoCompressionCodec类已经定义好了
-// import your.package.CompressionCodec;
-// import your.package.NoCompressionCodec;
-
 public class Message {
     // 消息的头部大小常量，需要根据实际情况定义
     private static final int MagicOffset = 0;
@@ -33,6 +29,9 @@ public class Message {
     public static final int AttributeLength = 1;
     // ByteBuffer用于存储整个消息的数据
     public static final int CrcLength = 4;
+
+    public static final int MinHeaderSize = headerSize((byte) 0);
+
     private ByteBuffer buffer;
 
     // 私有构造函数，用于创建消息对象
@@ -60,8 +59,8 @@ public class Message {
     }
 
     // 构造函数重载，用于不指定压缩编解码器时使用默认NoCompressionCodec
-    public Message(byte[] bytes) {
-        this(bytes, new NoCompressionCodec());
+    public Message(ByteBuffer buffer) {
+        this.buffer = buffer;
     }
 
     // 获取整个消息的大小

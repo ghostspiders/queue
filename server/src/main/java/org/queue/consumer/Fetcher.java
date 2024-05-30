@@ -1,5 +1,8 @@
 package org.queue.consumer;
 
+import org.I0Itec.zkclient.ZkClient;
+import org.queue.cluster.Cluster;
+
 import java.util.*;
 import java.util.logging.Logger;
 

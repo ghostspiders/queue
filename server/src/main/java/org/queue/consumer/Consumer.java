@@ -25,7 +25,7 @@ public class Consumer {
      */
     public static ConsumerConnector create(ConsumerConfig config) {
         ConsumerConnector consumerConnect = new ZookeeperConsumerConnector(config);
-        Utils.swallow(Level.TRACE, () -> Utils.registerMBean(consumerConnect, consumerStatsMBeanName));
+        Utils.registerMBean(consumerConnect, consumerStatsMBeanName);
         return consumerConnect;
     }
 }

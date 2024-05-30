@@ -1,5 +1,6 @@
 package org.queue.utils;
 import org.queue.message.CompressionCodec;
+import org.queue.message.Message;
 import org.queue.message.NoCompressionCodec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -372,8 +373,8 @@ public class Utils {
     }
 
     // 从ByteBuffer中读取无符号整数的方法
-    public static long getUnsignedInt(ByteBuffer buffer) {
-        return buffer.getInt() & 0xffffffffL;
+    public static long getUnsignedInt(ByteBuffer buffer,int index) {
+        return buffer.getInt(index) & 0xffffffffL;
     }
 
     // 将无符号整数写入ByteBuffer的方法
@@ -530,5 +531,16 @@ public class Utils {
             // 否则，根据属性值获取相应的压缩编解码器
             return CompressionCodec.getCompressionCodec(Integer.parseInt(codecValueString));
         }
+    }
+
+    public static <V> List<Message> convert(Iterable<V> data) {
+        List<Message> list = new ArrayList<>();
+
+        // 使用Iterable的iterator()方法来遍历元素
+        for (Iterator<V> it = data.iterator(); it.hasNext(); ) {
+            Message element = (Message) it.next();
+            list.add(element);
+        }
+        return list;
     }
 }
