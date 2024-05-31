@@ -1,9 +1,11 @@
 package org.queue.consumer;
 
 import org.I0Itec.zkclient.ZkClient;
+import org.queue.cluster.Broker;
 import org.queue.cluster.Cluster;
 
 import java.util.*;
+import java.util.concurrent.BlockingQueue;
 import java.util.logging.Logger;
 
 public class Fetcher {
@@ -37,17 +39,15 @@ public class Fetcher {
      */
     public void initConnections(Iterable<PartitionTopicInfo> topicInfos, Cluster cluster,
                                 Iterable<BlockingQueue<FetchedDataChunk>> queuesTobeCleared) {
-        shutdown;
 
+        shutdown();
         if (topicInfos == null) {
             return;
         }
-
         // 清空队列
         for (BlockingQueue<FetchedDataChunk> queue : queuesTobeCleared) {
             queue.clear();
         }
-
         // 按代理ID重新排序
         Map<Integer, List<PartitionTopicInfo>> m = new HashMap<>();
         for (PartitionTopicInfo info : topicInfos) {

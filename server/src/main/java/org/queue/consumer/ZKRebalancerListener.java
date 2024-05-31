@@ -9,10 +9,16 @@ package org.queue.consumer;
  */
 import java.util.*;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
+
 import org.I0Itec.zkclient.IZkChildListener;
 import org.I0Itec.zkclient.ZkClient;
-import org.queue.utils.ZKGroupTopicDirs;
-import org.queue.utils.ZkUtils;
+import org.I0Itec.zkclient.exception.ZkNodeExistsException;
+import org.queue.cluster.Cluster;
+import org.queue.cluster.Partition;
+import org.queue.utils.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,12 +36,23 @@ public class ZKRebalancerListener implements IZkChildListener {
     // 旧的每个主题的消费者列表映射
     private Map<String, List<String>> oldConsumersPerTopicMap;
     private ZKGroupDirs dirs;
+    private Object rebalanceLock;
+    private ConsumerConfig config;
+    private Pool<String, Pool<Partition, PartitionTopicInfo>> topicRegistry;
+    private Pool<Map<String, String>, BlockingQueue<FetchedDataChunk>>  queues;
+    private Fetcher fetcher;
     // 构造函数
-    public ZKRebalancerListener(String group, String consumerIdString, ZkClient zkClient) {
+    public ZKRebalancerListener(String group, String consumerIdString, ZkClient zkClient, Object rebalanceLock, ConsumerConfig config, Pool<String, Pool<Partition, PartitionTopicInfo>> topicRegistry,
+                                Pool<Map<String, String>, BlockingQueue<FetchedDataChunk>> queues, Fetcher fetcher) {
         this.group = group;
         dirs = new ZKGroupDirs(group);
         this.consumerIdString = consumerIdString;
+        this.rebalanceLock = rebalanceLock;
         this.zkClient = zkClient;
+        this.config = config;
+        this.topicRegistry = topicRegistry;
+        this.queues = queues;
+        this.fetcher = fetcher;
         this.oldPartitionsPerTopicMap = new HashMap<>();
         this.oldConsumersPerTopicMap = new HashMap<>();
     }
@@ -49,7 +66,7 @@ public class ZKRebalancerListener implements IZkChildListener {
     public void syncedRebalance() {
         // 使用synchronized块确保线程安全
         synchronized (rebalanceLock) {
-            for (int i = 0; i < connector.MAX_N_RETRIES; i++) {
+            for (int i = 0; i < ZookeeperConsumerConnector.MAX_N_RETRIES; i++) {
                 logger.info("begin rebalancing consumer " + consumerIdString + " try #" + i);
                 boolean done = false;
                 try {
@@ -72,7 +89,7 @@ public class ZKRebalancerListener implements IZkChildListener {
                 resetState();
                 try {
                     // 根据配置的同步时间等待
-                    Thread.sleep(config.zkSyncTimeMs);
+                    Thread.sleep(config.getZkSyncTimeMs());
                 } catch (InterruptedException e) {
                     // 线程中断异常处理
                     Thread.currentThread().interrupt();
@@ -81,17 +98,20 @@ public class ZKRebalancerListener implements IZkChildListener {
         }
 
         // 如果经过最大重试次数后仍无法重新平衡，抛出运行时异常
-        throw new RuntimeException(consumerIdString + " can't rebalance after " + connector.MAX_N_RETRIES + " retries");
+        throw new RuntimeException(consumerIdString + " can't rebalance after " + ZookeeperConsumerConnector.MAX_N_RETRIES + " retries");
     }
     // 释放分区所有权
     private void releasePartitionOwnership() {
         // 假设topicRegistry是一个Map<String, Map<String, Set<String>>>类型的实例
-        for (Map.Entry<String, Map<String, Set<String>>> entry : topicRegistry.entrySet()) {
+        Iterator<Map.Entry<String, Pool<Partition, PartitionTopicInfo>>> iterator = topicRegistry.iterator();
+        while (iterator.hasNext()){
+            Map.Entry<String, Pool<Partition, PartitionTopicInfo>> entry = iterator.next();
             String topic = entry.getKey();
-            Map<String, Set<String>> infos = entry.getValue();
+            Pool<Partition, PartitionTopicInfo> infos = entry.getValue();
             ZKGroupTopicDirs topicDirs = new ZKGroupTopicDirs(group, topic);
-            for (String partition : infos.keySet()) {
-                String znode = topicDirs.consumerOwnerDir + "/" + partition;
+
+            for (Partition partition : infos.keys()) {
+                String znode = topicDirs.getConsumerOwnerDir() + "/" + partition;
                 ZkUtils.deletePath(zkClient, znode);
                 if (logger.isDebugEnabled()) {
                     logger.debug("Consumer " + consumerIdString + " releasing " + znode);
@@ -102,7 +122,7 @@ public class ZKRebalancerListener implements IZkChildListener {
 
     // 获取每个主题的消费者列表
     private Map<String, List<String>> getConsumersPerTopic(String group) {
-        List<String> consumers = ZkUtils.getChildrenParentMayNotExist(zkClient, dirs.consumerRegistryDir);
+        List<String> consumers = ZkUtils.getChildrenParentMayNotExist(zkClient, dirs.getConsumerRegistryDir());
         Map<String, List<String>> consumersPerTopicMap = new HashMap<>();
         for (String consumer : consumers) {
             TopicCount topicCount = getTopicCount(consumer);
@@ -141,7 +161,7 @@ public class ZKRebalancerListener implements IZkChildListener {
 
     // 根据消费者ID获取TopicCount对象
     private TopicCount getTopicCount(String consumerId) {
-        String topicCountJson = ZkUtils.readDataMaybeNull(zkClient, dirs.consumerRegistryDir + "/" + consumerId);
+        String topicCountJson = ZkUtils.readDataMaybeNull(zkClient, dirs.getConsumerRegistryDir() + "/" + consumerId);
         return TopicCount.constructTopicCount(consumerId, topicCountJson);
     }
 
@@ -160,9 +180,9 @@ public class ZKRebalancerListener implements IZkChildListener {
         // }
         TopicCount count = getTopicCount(consumerIdString);
         Map<String, Set<String>> myTopicThreadIdsMap = count.getConsumerThreadIdsPerTopic();
-        cluster = zkUtils.getCluster(zkClient);
+        Cluster cluster = ZkUtils.getCluster(zkClient);
         Map<String, List<String>> consumersPerTopicMap = getConsumersPerTopic(group);
-        Map<String, List<String>> partitionsPerTopicMap = zkUtils.getPartitionsForTopics(zkClient, new HashSet<>(myTopicThreadIdsMap.keySet()));
+        Map<String, List<String>> partitionsPerTopicMap = ZkUtils.getPartitionsForTopics(zkClient, myTopicThreadIdsMap.keySet().iterator());
         Map<String, Set<String>> relevantTopicThreadIdsMap = getRelevantTopicMap(
                 myTopicThreadIdsMap, partitionsPerTopicMap, oldPartitionsPerTopicMap, consumersPerTopicMap, oldConsumersPerTopicMap);
         if (relevantTopicThreadIdsMap.isEmpty()) {
@@ -209,7 +229,7 @@ public class ZKRebalancerListener implements IZkChildListener {
                             return false;
                         }
                     }
-                    queuesToBeCleared.add(queues.get(new AbstractMap.SimpleEntry<>(topic, consumerThreadId)));
+                    queuesToBeCleared.add(queues.get(Map.of(topic, consumerThreadId)));
                 }
             }
         }
@@ -217,6 +237,29 @@ public class ZKRebalancerListener implements IZkChildListener {
         oldPartitionsPerTopicMap = partitionsPerTopicMap;
         oldConsumersPerTopicMap = consumersPerTopicMap;
         return true;
+    }
+    public void commitOffsets() {
+        if (zkClient == null) return;
+        Iterator<Map.Entry<String, Pool<Partition, PartitionTopicInfo>>> iterator = topicRegistry.iterator();
+        while (iterator.hasNext()){
+            Map.Entry<String, Pool<Partition, PartitionTopicInfo>> entry = iterator.next();
+            String topic = entry.getKey();
+            Pool<Partition, PartitionTopicInfo> infos = entry.getValue();
+            ZKGroupTopicDirs topicDirs = new ZKGroupTopicDirs(config.getGroupId(), topic);
+            for (PartitionTopicInfo info : infos.values()) {
+                long newOffset = info.getConsumeOffset();
+                try {
+                    ZkUtils.updatePersistentPath(zkClient, topicDirs.getConsumerOffsetDir() + "/" + info.getPartition().getName(),
+                            Long.toString(newOffset));
+                } catch (Throwable t) {
+                    // 记录异常并继续
+                    logger.warn("exception during commitOffsets: " + t + Utils.stackTrace(t));
+                }
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Committed offset " + newOffset + " for topic " + info);
+                }
+            }
+        }
     }
     // 更新获取器的方法
     private void updateFetcher(Cluster cluster, Iterable<BlockingQueue<FetchedDataChunk>> queuesToBeCleared) {
@@ -240,9 +283,9 @@ public class ZKRebalancerListener implements IZkChildListener {
     // 处理分区的方法
     private boolean processPartition(ZKGroupTopicDirs topicDirs, String partition,
                                      String topic, String consumerThreadId) {
-        String partitionOwnerPath = topicDirs.consumerOwnerDir + "/" + partition;
+        String partitionOwnerPath = topicDirs.getConsumerOwnerDir() + "/" + partition;
         try {
-            zkUtils.createEphemeralPathExpectConflict(zkClient, partitionOwnerPath, consumerThreadId);
+            ZkUtils.createEphemeralPathExpectConflict(zkClient, partitionOwnerPath, consumerThreadId);
         } catch (ZkNodeExistsException e) {
             // 如果节点未被原所有者删除，则等待并重试
             logger.info("waiting for the partition ownership to be deleted: " + partition);
@@ -258,12 +301,12 @@ public class ZKRebalancerListener implements IZkChildListener {
     private void addPartitionTopicInfo(ZKGroupTopicDirs topicDirs, String partitionString,
                                        String topic, String consumerThreadId) {
         Partition partition = Partition.parse(partitionString); // 假设存在Partition类和parse方法
-        Map<Partition, PartitionTopicInfo> partTopicInfoMap = topicRegistry.get(topic);
+        Pool<Partition, PartitionTopicInfo> partTopicInfoMap = topicRegistry.get(topic);
 
-        String znode = topicDirs.consumerOffsetDir + "/" + partition.getName();
-        String offsetString = zkUtils.readDataMaybeNull(zkClient, znode);
+        String znode = topicDirs.getConsumerOffsetDir() + "/" + partition.getName();
+        String offsetString = ZkUtils.readDataMaybeNull(zkClient, znode);
         long offset = (offsetString == null) ? Long.MAX_VALUE : Long.parseLong(offsetString);
-        BlockingQueue<FetchedDataChunk> queue = queues.get(new AbstractMap.SimpleEntry<>(topic, consumerThreadId));
+        BlockingQueue<FetchedDataChunk> queue = queues.get(Map.of(topic, consumerThreadId));
         AtomicLong consumedOffset = new AtomicLong(offset);
         AtomicLong fetchedOffset = new AtomicLong(offset);
         PartitionTopicInfo partTopicInfo = new PartitionTopicInfo(
@@ -273,7 +316,7 @@ public class ZKRebalancerListener implements IZkChildListener {
                 queue,
                 consumedOffset,
                 fetchedOffset,
-                new AtomicInteger(config.fetchSize)
+                new AtomicInteger(config.getFetchSize())
         );
         partTopicInfoMap.put(partition, partTopicInfo);
         if (logger.isDebugEnabled()) {

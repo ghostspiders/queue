@@ -6,7 +6,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * 一个泛型池类，实现了Iterable接口，可以存储键值对。
  */
-public class Pool<K, V> implements Iterable<AbstractMap.SimpleEntry<K, V>> {
+public class Pool<K, V> implements Iterable<Map.Entry<K, V>> {
 
     private ConcurrentHashMap<K, V> pool;
 
@@ -109,8 +109,8 @@ public class Pool<K, V> implements Iterable<AbstractMap.SimpleEntry<K, V>> {
      * @return 迭代器
      */
     @Override
-    public Iterator<AbstractMap.SimpleEntry<K, V>> iterator() {
-        return new Iterator<AbstractMap.SimpleEntry<K, V>>() {
+    public Iterator<Map.Entry<K, V>> iterator() {
+        return new Iterator<Map.Entry<K, V>>() {
             private final Iterator<Map.Entry<K, V>> iter = pool.entrySet().iterator();
 
             @Override
@@ -119,9 +119,8 @@ public class Pool<K, V> implements Iterable<AbstractMap.SimpleEntry<K, V>> {
             }
 
             @Override
-            public AbstractMap.SimpleEntry<K, V> next() {
-                Map.Entry<K, V> entry = iter.next();
-                return new AbstractMap.SimpleEntry<>(entry.getKey(), entry.getValue());
+            public Map.Entry<K, V> next() {
+                return iter.next();
             }
         };
     }

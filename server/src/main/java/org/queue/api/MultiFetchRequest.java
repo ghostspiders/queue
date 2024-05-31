@@ -11,7 +11,7 @@ public class MultiFetchRequest extends Request {
     private List<FetchRequest> fetches;
 
     // 私有构造函数，由伴生对象的方法调用
-    private MultiFetchRequest(List<FetchRequest> fetches) {
+    public MultiFetchRequest(List<FetchRequest> fetches) {
         super(RequestKeys.multiFetch);
         this.fetches = fetches;
     }

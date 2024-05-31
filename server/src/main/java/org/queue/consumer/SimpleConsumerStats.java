@@ -1,13 +1,15 @@
 package org.queue.consumer;
 
-public class SimpleConsumerStats implements SimpleConsumerStatsMBean {
-    private SnapshotStats fetchRequestStats = new SnapshotStats(); // 假设SnapshotStats类已在Java中定义
+import org.queue.utils.SnapshotStats;
 
-    public void recordFetchRequest(long requestNs) {
+public class SimpleConsumerStats implements SimpleConsumerStatsMBean {
+    private static SnapshotStats fetchRequestStats = new SnapshotStats();
+
+    public static void recordFetchRequest(long requestNs) {
         fetchRequestStats.recordRequestMetric(requestNs);
     }
 
-    public void recordConsumptionThroughput(long data) {
+    public static void recordConsumptionThroughput(long data) {
         fetchRequestStats.recordThroughputMetric(data);
     }
 

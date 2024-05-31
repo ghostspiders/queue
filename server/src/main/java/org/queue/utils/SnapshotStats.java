@@ -19,6 +19,9 @@ public class SnapshotStats {
         this.current = new AtomicReference<>(new Stats());
         this.numCumulatedRequests = new AtomicLong(0);
     }
+    public SnapshotStats() {
+        this(600);
+    }
 
     // 记录请求指标（纳秒）
     public void recordRequestMetric(long requestNs) {

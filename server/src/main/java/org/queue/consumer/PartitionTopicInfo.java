@@ -70,7 +70,7 @@ public class PartitionTopicInfo {
      * @param fetchOffset 获取偏移量
      * @return 有效字节数
      */
-    public long enqueue(ByteBufferMessageSet messages, long fetchOffset) {
+    public long enqueue(ByteBufferMessageSet messages, long fetchOffset) throws Throwable {
         long size = messages.shallowValidBytes();
         if (size > 0) {
             // 更新获取的偏移量，以压缩数据块大小为准，而非解压缩的消息集合大小
@@ -97,7 +97,7 @@ public class PartitionTopicInfo {
      */
     public void enqueueError(Throwable e, long fetchOffset) {
         ByteBufferMessageSet messages = new ByteBufferMessageSet(
-                ErrorMapping.EmptyByteBuffer,
+                ErrorMapping.EmptyByteBuffer,0L,
                 ErrorMapping.codeFor(e.getClass())
         );
         try {
@@ -112,5 +112,33 @@ public class PartitionTopicInfo {
     public String toString() {
         return topic + ":" + partition + ": fetched offset = " + fetchedOffset.get() +
                 ": consumed offset = " + consumedOffset.get();
+    }
+
+    public String getTopic() {
+        return topic;
+    }
+
+    public int getBrokerId() {
+        return brokerId;
+    }
+
+    public Partition getPartition() {
+        return partition;
+    }
+
+    public BlockingQueue<FetchedDataChunk> getChunkQueue() {
+        return chunkQueue;
+    }
+
+    public AtomicLong getConsumedOffset() {
+        return consumedOffset;
+    }
+
+    public AtomicLong getFetchedOffset() {
+        return fetchedOffset;
+    }
+
+    public AtomicInteger getFetchSize() {
+        return fetchSize;
     }
 }

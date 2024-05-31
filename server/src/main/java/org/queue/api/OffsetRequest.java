@@ -1,8 +1,9 @@
 package org.queue.api;
+import org.queue.network.Request;
 import org.queue.utils.Utils;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
-public class OffsetRequest {
+public class OffsetRequest extends Request {
 
     public static final String SmallestTimeString = "smallest";
     public static final String LargestTimeString = "largest";
@@ -16,6 +17,7 @@ public class OffsetRequest {
 
     // OffsetRequest构造函数
     public OffsetRequest(String topic, int partition, long time, int maxNumOffsets) {
+        super(RequestKeys.offsets);
         this.topic = topic;
         this.partition = partition;
         this.time = time;

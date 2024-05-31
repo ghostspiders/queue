@@ -10,11 +10,14 @@ package org.queue.consumer;
 
 import org.I0Itec.zkclient.ZkClient;
 import org.queue.api.OffsetRequest;
+import org.queue.cluster.Broker;
 import org.queue.cluster.Cluster;
 import org.queue.cluster.Partition;
 import org.queue.utils.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.*;
 import java.util.concurrent.BlockingQueue;
@@ -36,11 +39,15 @@ public class ZookeeperConsumerConnector implements ConsumerConnector{
     private Pool<Map<String, String>, BlockingQueue<FetchedDataChunk>> queues;
     private QueueScheduler scheduler;
     private boolean enableFetcher;
+    private ConsumerConfig config;
 
     public ZookeeperConsumerConnector(ConsumerConfig config, boolean enableFetcher) {
-        super(config);
         this.enableFetcher = enableFetcher;
-        // Initialize resources and start background tasks
+        this.config = config;
+        this.topicRegistry = new Pool();
+        this.queues = new Pool();
+        this.scheduler = new QueueScheduler(1, "queue-consumer-autocommit-", false);
+
         initialize();
     }
 
@@ -51,25 +58,25 @@ public class ZookeeperConsumerConnector implements ConsumerConnector{
     private void initialize() {
         connectZk();
         createFetcher();
-        if (config.autoCommit()) {
+        if (config.isAutoCommit()) {
             startAutoCommitter();
         }
     }
 
     private void connectZk() {
-        logger.info("Connecting to zookeeper instance at " + config.zkConnect());
-        zkClient = new ZkClient(config.zkConnect(), config.zkSessionTimeoutMs(), config.zkConnectionTimeoutMs());
+        logger.info("Connecting to zookeeper instance at " + config.getZkConnect());
+        zkClient = new ZkClient(config.getZkConnect(), config.getZkSessionTimeoutMs(), config.getZkConnectionTimeoutMs());
     }
 
     private void createFetcher() {
         if (enableFetcher) {
-            fetcher = new Fetcher(config, zkClient); // You need to implement Fetcher or use an existing class
+            fetcher = new Fetcher(config, zkClient);
         }
     }
 
     private void startAutoCommitter() {
         scheduler = new QueueScheduler(1, "queue-consumer-autocommit-", false);
-        long autoCommitIntervalMs = config.autoCommitIntervalMs();
+        long autoCommitIntervalMs = config.getAutoCommitIntervalMs();
         logger.info("starting auto committer every " + autoCommitIntervalMs + " ms");
         scheduler.scheduleWithRate(this::autoCommit, autoCommitIntervalMs, autoCommitIntervalMs);
     }
@@ -103,17 +110,17 @@ public class ZookeeperConsumerConnector implements ConsumerConnector{
         if (topicCountMap == null)
             throw new RuntimeException("topicCountMap is null");
 
-        ZKGroupDirs dirs = new ZKGroupDirs(config.groupId());
+        ZKGroupDirs dirs = new ZKGroupDirs(config.getGroupId());
         Map<String, List<QueueMessageStream>> ret = new HashMap<>();
 
         try {
-            String consumerUuid = config.consumerId() != null ? config.consumerId() : InetAddress.getLocalHost().getHostName() + "-" + System.currentTimeMillis();
-            String consumerIdString = config.groupId() + "_" + consumerUuid;
+            String consumerUuid = config.getConsumerId() != null ? config.getConsumerId() : InetAddress.getLocalHost().getHostName() + "-" + System.currentTimeMillis();
+            String consumerIdString = config.getGroupId() + "_" + consumerUuid;
             TopicCount topicCount = new TopicCount(consumerIdString, topicCountMap);
 
-            ZKRebalancerListener loadBalancerListener = new ZKRebalancerListener(config.groupId(), consumerIdString);
+            ZKRebalancerListener loadBalancerListener = new ZKRebalancerListener(config.getGroupId(), consumerIdString,zkClient,rebalanceLock,config,topicRegistry,queues,fetcher);
             registerConsumerInZK(dirs, consumerIdString, topicCount);
-            zkClient.subscribeChildChanges(dirs.consumerRegistryDir(), loadBalancerListener);
+            zkClient.subscribeChildChanges(dirs.getConsumerRegistryDir(), loadBalancerListener);
 
             Map<String, Set<String>> consumerThreadIdsPerTopic = topicCount.getConsumerThreadIdsPerTopic();
             for (Map.Entry<String, Set<String>> entry : consumerThreadIdsPerTopic.entrySet()) {
@@ -122,14 +129,15 @@ public class ZookeeperConsumerConnector implements ConsumerConnector{
                 List<QueueMessageStream> streamList = new ArrayList<>();
                 for (String threadId : threadIdSet) {
                     BlockingQueue<FetchedDataChunk> stream = new LinkedBlockingQueue<>(/* 需要指定容量 */);
-                    queues.put(new HashMap(topic, threadId), stream);
-                    streamList.add(new QueueMessageStream(stream, config.consumerTimeoutMs()));
+                    queues.put(Map.of(topic, threadId), stream);
+                    streamList.add(new QueueMessageStream(stream, config.getConsumerTimeoutMs()));
                 }
                 ret.put(topic, streamList);
                 logger.debug("adding topic " + topic + " and stream to map...");
             }
 
-            zkClient.subscribeStateChanges(new ZKSessionExpireListener(/* 参数 */));
+            zkClient.subscribeStateChanges(
+                    new ZKSessionExpireListenner(dirs, consumerIdString, topicCount, loadBalancerListener));
             loadBalancerListener.syncedRebalance();
 
             return ret;
@@ -141,14 +149,15 @@ public class ZookeeperConsumerConnector implements ConsumerConnector{
     private void registerConsumerInZK(ZKGroupDirs dirs, String consumerIdString, TopicCount topicCount) {
         logger.info("begin registering consumer " + consumerIdString + " in ZK");
         // 创建临时节点并设置其值为topicCount的JSON字符串
-        ZkUtils.createEphemeralPathExpectConflict(zkClient, dirs.consumerRegistryDir() + "/" + consumerIdString, topicCount.toJsonString());
+        ZkUtils.createEphemeralPathExpectConflict(zkClient, dirs.getConsumerRegistryDir() + "/" + consumerIdString, topicCount.toJsonString());
         logger.info("end registering consumer " + consumerIdString + " in ZK");
     }
 
     // 向所有队列发送关闭命令
     private void sendShutdownToAllQueues() {
-        Set<Map.Entry<Map<String, String>, BlockingQueue<FetchedDataChunk>>> entries = queues.entrySet();
-        for (Map.Entry<Map<String, String>, BlockingQueue<FetchedDataChunk>> entry : entries) {
+        Iterator<Map.Entry<Map<String, String>, BlockingQueue<FetchedDataChunk>>> iterator = queues.iterator();
+        while (iterator.hasNext()){
+             Map.Entry<Map<String, String>, BlockingQueue<FetchedDataChunk>> entry = iterator.next();
             BlockingQueue<FetchedDataChunk> queue = entry.getValue();
             logger.debug("Clearing up queue");
             // 清空队列并发送关闭命令
@@ -185,14 +194,16 @@ public class ZookeeperConsumerConnector implements ConsumerConnector{
     // 提交偏移量到ZooKeeper
     public void commitOffsets() {
         if (zkClient == null) return;
-        for (Map.Entry<String, Pool<Partition, PartitionTopicInfo>> entry : topicRegistry.entrySet()) {
+        Iterator<Map.Entry<String, Pool<Partition, PartitionTopicInfo>>> iterator = topicRegistry.iterator();
+        while (iterator.hasNext()){
+            Map.Entry<String, Pool<Partition, PartitionTopicInfo>> entry = iterator.next();
             String topic = entry.getKey();
             Pool<Partition, PartitionTopicInfo> infos = entry.getValue();
-            ZKGroupTopicDirs topicDirs = new ZKGroupTopicDirs(config.groupId(), topic);
+            ZKGroupTopicDirs topicDirs = new ZKGroupTopicDirs(config.getGroupId(), topic);
             for (PartitionTopicInfo info : infos.values()) {
                 long newOffset = info.getConsumeOffset();
                 try {
-                    ZkUtils.updatePersistentPath(zkClient, topicDirs.consumerOffsetDir() + "/" + info.partition().name(),
+                    ZkUtils.updatePersistentPath(zkClient, topicDirs.getConsumerOffsetDir() + "/" + info.getPartition().getName(),
                             Long.toString(newOffset));
                 } catch (Throwable t) {
                     // 记录异常并继续
@@ -208,13 +219,15 @@ public class ZookeeperConsumerConnector implements ConsumerConnector{
     // 为JMX获取分区所有者统计信息
     public String getPartOwnerStats() {
         StringBuilder builder = new StringBuilder();
-        for (Map.Entry<String, Pool<Partition, PartitionTopicInfo>> entry : topicRegistry.entrySet()) {
+        Iterator<Map.Entry<String, Pool<Partition, PartitionTopicInfo>>> iterator = topicRegistry.iterator();
+        while (iterator.hasNext()){
+            Map.Entry<String, Pool<Partition, PartitionTopicInfo>> entry = iterator.next();
             String topic = entry.getKey();
             builder.append("\n" + topic + ": [");
-            ZKGroupTopicDirs topicDirs = new ZKGroupTopicDirs(config.groupId(), topic);
+            ZKGroupTopicDirs topicDirs = new ZKGroupTopicDirs(config.getGroupId(), topic);
             for (PartitionTopicInfo partition : entry.getValue().values()) {
                 builder.append("\n    {");
-                builder.append(partition.partition().name());
+                builder.append(partition.getPartition().getName());
                 builder.append(",fetch offset:" + partition.getFetchOffset());
                 builder.append(",consumer offset:" + partition.getConsumeOffset());
                 builder.append("}");
@@ -226,7 +239,7 @@ public class ZookeeperConsumerConnector implements ConsumerConnector{
 
     // 为JMX获取消费者分组名称
     public String getConsumerGroup() {
-        return config.groupId();
+        return config.getGroupId();
     }
 
     // 计算并获取指定主题、代理ID和分区ID的偏移量滞后情况
@@ -246,8 +259,8 @@ public class ZookeeperConsumerConnector implements ConsumerConnector{
         }
         // 如果没有找到，尝试从ZooKeeper获取
         try {
-            ZKGroupTopicDirs topicDirs = new ZKGroupTopicDirs(config.groupId(), topic);
-            String znode = topicDirs.consumerOffsetDir() + "/" + partition.name();
+            ZKGroupTopicDirs topicDirs = new ZKGroupTopicDirs(config.getGroupId(), topic);
+            String znode = topicDirs.getConsumerOffsetDir() + "/" + partition.getName();
             String offsetString = ZkUtils.readDataMaybeNull(zkClient, znode);
             if (offsetString != null) {
                 return Long.parseLong(offsetString);
@@ -265,13 +278,13 @@ public class ZookeeperConsumerConnector implements ConsumerConnector{
         SimpleConsumer simpleConsumer = null;
         long producedOffset = -1L;
         try {
-            Object cluster = ZkUtils.getCluster(zkClient); // 需要具体实现
-            Object broker = ((Cluster)cluster).getBroker(brokerId); // 需要具体实现
-            simpleConsumer = new SimpleConsumer(broker.host(), broker.port(),
+            Cluster cluster = ZkUtils.getCluster(zkClient); // 需要具体实现
+            Broker broker = cluster.getBroker(brokerId); // 需要具体实现
+            simpleConsumer = new SimpleConsumer(broker.getHost(), broker.getPort(),
                     ConsumerConfig.SocketTimeout, ConsumerConfig.SocketBufferSize);
-            List<Long> latestOffset = simpleConsumer.getOffsetsBefore(topic, partitionId,
+            long[] latestOffset = simpleConsumer.getOffsetsBefore(topic, partitionId,
                     OffsetRequest.LatestTime, 1);
-            producedOffset = latestOffset.get(0);
+            producedOffset = latestOffset[0];
         } catch (Throwable e) {
             logger.error("error in getLatestOffset jmx ", e);
         } finally {

@@ -16,17 +16,17 @@ import java.util.Properties;
 
 public class ConsumerConfig extends ZKConfig {
     // 静态常量，作为默认配置值
-    private static final int SocketTimeout = 30 * 1000;
-    private static final int SocketBufferSize = 64 * 1024;
-    private static final int FetchSize = 300 * 1024;
-    private static final int MaxFetchSize = 10 * FetchSize;
-    private static final int BackoffIncrementMs = 1000;
-    private static final boolean AutoCommit = true;
-    private static final int AutoCommitInterval = 10 * 1000;
-    private static final int MaxQueuedChunks = 100;
-    private static final String AutoOffsetReset = OffsetRequest.SmallestTimeString;
-    private static final int ConsumerTimeoutMs = -1;
-    private static final String EmbeddedConsumerTopics = "";
+    public static final int SocketTimeout = 30 * 1000;
+    public static final int SocketBufferSize = 64 * 1024;
+    public static final int FetchSize = 300 * 1024;
+    public static final int MaxFetchSize = 10 * FetchSize;
+    public static final int BackoffIncrementMs = 1000;
+    public static final boolean AutoCommit = true;
+    public static final int AutoCommitInterval = 10 * 1000;
+    public static final int MaxQueuedChunks = 100;
+    public static final String AutoOffsetReset = OffsetRequest.SmallestTimeString;
+    public static final int ConsumerTimeoutMs = -1;
+    public static final String EmbeddedConsumerTopics = "";
 
     // 实际配置值，从Properties中读取或使用默认值
     private String groupId;

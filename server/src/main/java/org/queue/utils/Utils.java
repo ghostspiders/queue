@@ -538,17 +538,16 @@ public class Utils {
 
         // 使用Iterable的iterator()方法来遍历元素
         for (Iterator<V> it = data.iterator(); it.hasNext(); ) {
-            Message element = (Message) it.next();
-            list.add(element);
+            Message message = (Message) it.next();
+            list.add(message);
         }
         return list;
     }
     public static List<Message> convert2(Iterator<Message> data) {
         List<Message> list = new ArrayList<>();
-
-        // 使用Iterable的iterator()方法来遍历元素
-        for (Iterator<Message> it = data.iterator(); it.hasNext(); ) {
-            list.add(it.next());
+        while (data.hasNext()) {
+            Message message = data.next();
+            list.add(message);
         }
         return list;
     }
