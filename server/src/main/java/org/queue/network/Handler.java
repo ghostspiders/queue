@@ -1,5 +1,6 @@
 package org.queue.network;
 
+import java.io.IOException;
 import java.util.Optional;
 
 /**
@@ -17,7 +18,7 @@ public class Handler {
      */
     public interface HandlerType {
         // 将接收到的请求转换为可选的发送响应
-        Optional<Send> handleRequest(Receive receive);
+        Optional<Send> handleRequest(Receive receive) throws IOException, InterruptedException;
     }
 
     /**

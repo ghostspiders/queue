@@ -3,6 +3,7 @@ package org.queue.consumer;
 import java.util.Iterator;
 import java.util.concurrent.BlockingQueue;
 import org.queue.message.Message;
+
 public class QueueMessageStream implements Iterable<Message> {
     private  BlockingQueue<FetchedDataChunk> queue; // 阻塞队列，用于存储获取的数据块
     private  int consumerTimeoutMs; // 消费者超时时间（毫秒）

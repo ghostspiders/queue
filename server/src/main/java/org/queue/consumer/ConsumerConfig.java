@@ -10,7 +10,6 @@ package org.queue.consumer;
 import org.queue.api.OffsetRequest;
 import org.queue.utils.Utils;
 import org.queue.utils.ZKConfig;
-
 import java.util.Map;
 import java.util.Properties;
 

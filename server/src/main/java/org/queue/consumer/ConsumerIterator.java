@@ -10,15 +10,12 @@ package org.queue.consumer;
 import org.queue.message.Message;
 import org.queue.message.MessageAndOffset;
 import org.queue.utils.IteratorTemplate;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
-import java.util.logging.Logger;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
-
-// 假设存在一个Message类，MessageAndOffset类，以及FetchedDataChunk类
-// 以及PartitionTopicInfo类和ZookeeperConsumerConnector类
 
 /**
  * 一个迭代器，用于从提供的阻塞队列中读取值。
@@ -33,7 +30,7 @@ public class ConsumerIterator extends IteratorTemplate<Message> {
     private long consumedOffset = -1L; // 已消费的偏移量
 
     // 日志记录器
-    private static final Logger logger = Logger.getLogger(ConsumerIterator.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(ConsumerIterator.class.getName());
 
     public ConsumerIterator(BlockingQueue<FetchedDataChunk> channel, int consumerTimeoutMs) {
         this.channel = channel;

@@ -2,7 +2,6 @@ package org.queue.common;
 
 
 import org.queue.message.InvalidMessageException;
-
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;

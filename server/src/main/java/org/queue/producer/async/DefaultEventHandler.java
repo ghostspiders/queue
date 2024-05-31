@@ -7,16 +7,18 @@ package org.queue.producer.async;
  * @datetime 2024年 05月 24日 15:22
  * @version: 1.0
  */
-import org.queue.javaapi.producer.ProducerRequest;
+import org.queue.api.ProducerRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.queue.message.ByteBufferMessageSet;
 import org.queue.message.NoCompressionCodec;
 import org.queue.producer.ProducerConfig;
 import org.queue.producer.SyncProducer;
 import org.queue.serializer.Encoder;
 
+import java.io.IOException;
 import java.util.*;
 import java.nio.ByteBuffer;
-import java.util.logging.Logger;
 
 /**
  * 默认事件处理器实现，用于分发异步生产者队列中的批处理数据。
@@ -25,7 +27,7 @@ public class DefaultEventHandler<T> implements EventHandler<T> {
 
     private final ProducerConfig config;
     private final CallbackHandler<T> cbkHandler;
-    private static final Logger logger = Logger.getLogger(DefaultEventHandler.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(DefaultEventHandler.class.getName());
 
     public DefaultEventHandler(ProducerConfig config, CallbackHandler<T> cbkHandler) {
         this.config = config;
@@ -51,7 +53,7 @@ public class DefaultEventHandler<T> implements EventHandler<T> {
      * @param messagesPerTopic 按主题和分区分组的消息集合
      * @param syncProducer 用于发送消息的同步生产者实例
      */
-    private void send(Map<String, Map<Integer, ByteBufferMessageSet>> messagesPerTopic, SyncProducer syncProducer) {
+    private void send(Map<String, Map<Integer, ByteBufferMessageSet>> messagesPerTopic, SyncProducer syncProducer) throws IOException {
         if (messagesPerTopic != null && !messagesPerTopic.isEmpty()) {
             // 将Map转换为ProducerRequest数组
             ProducerRequest[] requests = messagesPerTopic.entrySet().stream()
@@ -63,8 +65,8 @@ public class DefaultEventHandler<T> implements EventHandler<T> {
             syncProducer.multiSend(requests);
 
             // 如果日志记录器启用了跟踪级别日志，记录发送的主题信息
-            if (logger.isLoggable(java.util.logging.Level.FINER)) {
-                logger.finer("queue producer sent messages for topics " + messagesPerTopic.keySet());
+            if (logger.isDebugEnabled()) {
+                logger.debug("queue producer sent messages for topics " + messagesPerTopic.keySet());
             }
         }
     }

@@ -4,23 +4,21 @@ import org.queue.api.ProducerRequest;
 import org.queue.producer.ProducerConfig;
 import org.queue.producer.SyncProducer;
 import org.queue.serializer.Encoder;
+import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.Properties;
 import java.util.Random;
-import java.util.logging.Logger;
-import javax.management.ObjectName;
-import javax.management.MBeanServer;
-import javax.management.JMException;
+import org.slf4j.Logger;
 
 public class AsyncProducer<T> {
     // 定义一些静态常量
     private static final Object Shutdown = new Object(); // 关闭信号对象
     private static final Random Random = new Random(); // 随机数生成器
     private static final String ProducerMBeanName = "org.queue.producer.Producer:type=AsyncProducerStats"; // MBean 名称
-    private static final Logger logger = Logger.getLogger(AsyncProducer.class.getName()); // 日志记录器
+    private static final Logger logger = LoggerFactory.getLogger(AsyncProducer.class.getName()); // 日志记录器
 
     // 定义类的成员变量
     private final ProducerConfig config; // 异步生产者配置
@@ -83,7 +81,7 @@ public class AsyncProducer<T> {
         }
 
         if (!added) {
-            logger.severe("Event queue is full of unsent messages, could not send event: " + event.toString());
+            logger.info("Event queue is full of unsent messages, could not send event: " + event.toString());
             throw new IllegalStateException("Event queue is full of unsent messages, could not send event: " + event.toString());
         }
     }

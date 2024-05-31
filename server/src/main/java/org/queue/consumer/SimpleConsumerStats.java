@@ -3,6 +3,7 @@ package org.queue.consumer;
 import org.queue.utils.SnapshotStats;
 
 public class SimpleConsumerStats implements SimpleConsumerStatsMBean {
+
     private static SnapshotStats fetchRequestStats = new SnapshotStats();
 
     public static void recordFetchRequest(long requestNs) {

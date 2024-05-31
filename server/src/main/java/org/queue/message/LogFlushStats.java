@@ -11,7 +11,6 @@ import org.queue.utils.SnapshotStats;
 import org.queue.utils.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.event.Level;
 
 /**
  * 日志刷新统计类，实现了LogFlushStatsMBean接口。

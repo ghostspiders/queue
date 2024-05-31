@@ -3,7 +3,6 @@ package org.queue.consumer;
 import org.queue.utils.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.event.Level;
 
 /**
  * @author gaoyvfeng

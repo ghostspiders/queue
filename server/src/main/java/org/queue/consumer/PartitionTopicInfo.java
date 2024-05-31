@@ -3,8 +3,8 @@ package org.queue.consumer;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.logging.Logger;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.queue.cluster.Partition;
 import org.queue.common.ErrorMapping;
 import org.queue.message.ByteBufferMessageSet;
@@ -18,7 +18,7 @@ public class PartitionTopicInfo {
     private final AtomicLong fetchedOffset; // 已获取的偏移量
     private final AtomicInteger fetchSize; // 获取的大小
 
-    private final Logger logger = Logger.getLogger(PartitionTopicInfo.class.getName()); // 日志记录器
+    private final Logger logger = LoggerFactory.getLogger(PartitionTopicInfo.class.getName()); // 日志记录器
 
     // 构造函数
     public PartitionTopicInfo(String topic, int brokerId, Partition partition,
@@ -32,9 +32,9 @@ public class PartitionTopicInfo {
         this.consumedOffset = consumedOffset;
         this.fetchedOffset = fetchedOffset;
         this.fetchSize = fetchSize;
-        if (logger.isLoggable(java.util.logging.Level.FINER)) {
-            logger.finer("initial consumer offset of " + this + " is " + consumedOffset.get());
-            logger.finer("initial fetch offset of " + this + " is " + fetchedOffset.get());
+        if (logger.isDebugEnabled()) {
+            logger.debug("initial consumer offset of " + this + " is " + consumedOffset.get());
+            logger.debug("initial fetch offset of " + this + " is " + fetchedOffset.get());
         }
     }
 
@@ -51,16 +51,16 @@ public class PartitionTopicInfo {
     // 重置已消费的偏移量
     public void resetConsumeOffset(long newConsumeOffset) {
         consumedOffset.set(newConsumeOffset);
-        if (logger.isLoggable(java.util.logging.Level.FINER)) {
-            logger.finer("reset consume offset of " + this + " to " + newConsumeOffset);
+        if (logger.isDebugEnabled()) {
+            logger.debug("reset consume offset of " + this + " to " + newConsumeOffset);
         }
     }
 
     // 重置已获取的偏移量
     public void resetFetchOffset(long newFetchOffset) {
         fetchedOffset.set(newFetchOffset);
-        if (logger.isLoggable(java.util.logging.Level.FINER)) {
-            logger.finer("reset fetch offset of " + this + " to " + newFetchOffset);
+        if (logger.isDebugEnabled()) {
+            logger.debug("reset fetch offset of " + this + " to " + newFetchOffset);
         }
     }
 
@@ -74,12 +74,12 @@ public class PartitionTopicInfo {
         long size = messages.shallowValidBytes();
         if (size > 0) {
             // 更新获取的偏移量，以压缩数据块大小为准，而非解压缩的消息集合大小
-            if (logger.isLoggable(java.util.logging.Level.FINEST)) {
-                logger.finest("Updating fetch offset = " + fetchedOffset.get() + " with size = " + size);
+            if (logger.isDebugEnabled()) {
+                logger.debug("Updating fetch offset = " + fetchedOffset.get() + " with size = " + size);
             }
             long newOffset = fetchedOffset.addAndGet(size);
-            if (logger.isLoggable(java.util.logging.Level.FINER)) {
-                logger.finer("updated fetch offset of " + this + " to " + newOffset);
+            if (logger.isDebugEnabled()) {
+                logger.debug("updated fetch offset of " + this + " to " + newOffset);
             }
             try {
                 chunkQueue.put(new FetchedDataChunk(messages, this, fetchOffset));

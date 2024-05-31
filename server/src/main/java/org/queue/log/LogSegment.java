@@ -2,7 +2,6 @@ package org.queue.log;
 
 import org.queue.message.FileMessageSet;
 import org.queue.utils.Range;
-
 import java.io.File;
 
 /**

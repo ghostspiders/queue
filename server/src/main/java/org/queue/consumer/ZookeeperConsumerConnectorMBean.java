@@ -7,8 +7,6 @@ package org.queue.consumer;
  * @datetime 2024年 05月 24日 10:40
  * @version: 1.0
  */
-import java.util.Map;
-
 public interface ZookeeperConsumerConnectorMBean {
     /**
      * 获取分区所有者统计信息。

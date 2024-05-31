@@ -18,15 +18,14 @@ import org.queue.network.BoundedByteBufferSend;
 import org.queue.network.Receive;
 import org.queue.network.Request;
 import org.queue.utils.SystemTime;
-
+import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
 
 public class SimpleConsumer {
     // 服务器地址
@@ -42,7 +41,7 @@ public class SimpleConsumer {
     // 锁对象，用于同步
     private final Object lock = new Object();
     // 日志记录器
-    private static final Logger logger = Logger.getLogger(SimpleConsumer.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(SimpleConsumer.class);
 
     // 构造函数，初始化消费者
     public SimpleConsumer(String host, int port, int soTimeout, int bufferSize) {
@@ -59,10 +58,9 @@ public class SimpleConsumer {
                 try {
                     channel.close();
                 } catch (IOException e) {
-                    logger.log(Level.WARNING, "关闭套接字通道失败", e);
+                    logger.error( "关闭套接字通道失败", e);
                 }
             }
-
             try {
                 SocketChannel newChannel = SocketChannel.open();
                 newChannel.configureBlocking(true);
@@ -74,7 +72,7 @@ public class SimpleConsumer {
                 channel = newChannel;
                 return channel;
             } catch (IOException e) {
-                logger.log(Level.SEVERE, "连接到 " + host + ":" + port + " 失败", e);
+                logger.error( "连接到 " + host + ":" + port + " 失败", e);
             }
         }
         return null;
@@ -87,7 +85,7 @@ public class SimpleConsumer {
                 try {
                     channel.close();
                 } catch (IOException e) {
-                    logger.log(Level.WARNING, "关闭套接字通道失败", e);
+                    logger.error( "关闭套接字通道失败", e);
                 }
                 channel = null;
             }

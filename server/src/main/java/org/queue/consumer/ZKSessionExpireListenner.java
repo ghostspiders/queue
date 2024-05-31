@@ -2,17 +2,15 @@ package org.queue.consumer;
 import org.I0Itec.zkclient.IZkStateListener;
 import org.apache.zookeeper.Watcher;
 import org.queue.utils.ZKGroupDirs;
-
-import java.util.logging.Logger;
-
-// 假设存在以下类的定义：class ZKGroupDirs, class TopicCount, class ZKRebalancerListener
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ZKSessionExpireListenner implements IZkStateListener {
     private final ZKGroupDirs dirs;
     private final String consumerIdString;
     private final TopicCount topicCount;
     private final ZKRebalancerListener loadBalancerListener;
-    private static final Logger logger = Logger.getLogger(ZKSessionExpireListenner.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(ZKSessionExpireListenner.class.getName());
 
     public ZKSessionExpireListenner(ZKGroupDirs dirs, String consumerIdString, TopicCount topicCount, ZKRebalancerListener loadBalancerListener) {
         this.dirs = dirs;

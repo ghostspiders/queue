@@ -3,17 +3,14 @@ package org.queue.consumer;
 import org.I0Itec.zkclient.ZkClient;
 import org.queue.cluster.Broker;
 import org.queue.cluster.Cluster;
-
 import java.util.*;
 import java.util.concurrent.BlockingQueue;
-import java.util.logging.Logger;
 
 public class Fetcher {
     private final ConsumerConfig config; //
     private final ZkClient zkClient; // Zookeeper客户端
     private static final FetcherRunnable[] EMPTY_FETCHER_THREADS = new FetcherRunnable[0];
     private volatile FetcherRunnable[] fetcherThreads = EMPTY_FETCHER_THREADS; // 获取线程数组
-    private final Logger logger = Logger.getLogger(Fetcher.class.getName()); // 日志记录器
 
     /**
      * 构造函数

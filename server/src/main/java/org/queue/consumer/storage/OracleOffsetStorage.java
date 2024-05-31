@@ -11,7 +11,6 @@ import org.queue.utils.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.event.Level;
-
 import java.sql.*;
 import java.util.NoSuchElementException;
 import java.util.Optional;

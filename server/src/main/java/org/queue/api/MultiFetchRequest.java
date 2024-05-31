@@ -2,7 +2,6 @@ package org.queue.api;
 
 import org.queue.network.Request;
 import org.queue.utils.SingleUtil;
-
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;

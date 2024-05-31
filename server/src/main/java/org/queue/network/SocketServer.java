@@ -2,9 +2,9 @@ package org.queue.network;
 
 import org.queue.utils.SystemTime;
 import org.queue.utils.Utils;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.io.IOException;
-import java.util.logging.Logger;
 
 public class SocketServer {
     private  int port; // 服务器端口
@@ -14,7 +14,7 @@ public class SocketServer {
     private Acceptor acceptor; // 接受器线程
     private SocketServerStats stats; // 服务器统计信息
     private Processor[] processors; // 处理器数组
-    private static final Logger logger = Logger.getLogger(SocketServer.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(SocketServer.class.getName());
 
     public SocketServer(int port, int numProcessorThreads, int monitoringPeriodSecs, Handler.HandlerMapping handlerFactory) throws IOException {
         this.port = port;

@@ -7,7 +7,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Predicate;
-
 import org.queue.api.OffsetRequest;
 import org.queue.common.OffsetOutOfRangeException;
 import org.queue.message.FileMessageSet;
@@ -204,7 +203,7 @@ public class Log {
      * 追加消息集到日志中。
      * @param messages 要追加的消息集。
      */
-    public void append(MessageSet messages) {
+    public void append(MessageSet messages) throws IOException {
         // 验证消息
         int numberOfMessages = 0;
         for (MessageAndOffset messageAndOffset : messages) {
@@ -226,7 +225,7 @@ public class Log {
         }
     }
     // 从日志读取消息集
-    public MessageSet read(long offset, int length) {
+    public MessageSet read(long offset, int length) throws IOException {
         LogSegment segment = findSegment(offset);
         if (segment != null) {
             return segment.getMessageSet().read((int) (offset - segment.getStart()), length);
@@ -243,7 +242,7 @@ public class Log {
         return null;
     }
     // 标记删除满足条件的日志分段
-    public List<LogSegment> markDeletedWhile(Predicate<LogSegment> predicate) {
+    public List<LogSegment> markDeletedWhile(Predicate<LogSegment> predicate) throws IOException {
         synchronized (lock) {
             List<LogSegment> deletableSegments = new ArrayList<>();
             for (LogSegment segment : segments.view()) {
@@ -288,13 +287,13 @@ public class Log {
         FileMessageSet messageSet = lastSegment.getMessageSet();
         return messageSet.highWaterMark();
     }
-    private void maybeRoll(LogSegment segment) {
+    private void maybeRoll(LogSegment segment) throws IOException {
         if (segment.getMessageSet().sizeInBytes() > maxSize) {
             roll();
         }
     }
     // 如果需要则滚动日志，创建新的日志段
-    public void roll() {
+    public void roll() throws IOException {
         synchronized (lock) {
             File newFile = new File(dir, Log.nameFromOffset(nextAppendOffset()));
             FileMessageSet messageSet = new FileMessageSet(newFile, true);

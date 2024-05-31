@@ -8,7 +8,6 @@ package org.queue.message;
  * @version: 1.0
  */
 import org.queue.utils.Utils;
-
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
@@ -52,10 +51,13 @@ public class Message {
     public Message(long checksum, byte[] bytes) {
         this(checksum, bytes, new NoCompressionCodec());
     }
-
     // 构造函数重载，用于指定压缩编解码器
     public Message(byte[] bytes, CompressionCodec compressionCodec) {
         this(Utils.crc32(bytes), bytes, compressionCodec);
+    }
+    // 构造函数重载，用于指定压缩编解码器
+    public Message(byte[] bytes) {
+        this(Utils.crc32(bytes), bytes, new NoCompressionCodec());
     }
 
     // 构造函数重载，用于不指定压缩编解码器时使用默认NoCompressionCodec

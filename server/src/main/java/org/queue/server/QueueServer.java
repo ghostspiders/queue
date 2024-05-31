@@ -80,7 +80,7 @@ public class QueueServer {
             socketServer = new SocketServer(config.getPort(), config.getNumThreads(),
                     config.getMonitoringPeriodSecs(), handlers.getHandler());
             // 注册MBean
-            Utils.swallow(Level.ERROR, () -> Utils.registerMBean(socketServer.getStats(), statsMBeanName));
+            Utils.registerMBean(socketServer.getStats(), statsMBeanName);
             socketServer.startup();
             // 在ZK中注册此代理
             logManager.startup();
@@ -102,7 +102,7 @@ public class QueueServer {
             try {
                 scheduler.shutdown();
                 socketServer.shutdown();
-                Utils.swallow(Level.ERROR, () -> Utils.unregisterMBean(statsMBeanName));
+                Utils.unregisterMBean(statsMBeanName);
                 logManager.close();
                 // 创建干净关闭文件
                 File cleanShutDownFile = new File(new File(config.getLogDir()), CLEAN_SHUTDOWN_FILE);

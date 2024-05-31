@@ -7,15 +7,16 @@ import org.queue.cluster.Broker;
 import org.queue.log.LogManager;
 import org.queue.utils.StringSerializer;
 import org.queue.utils.ZkUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.InetAddress;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.logging.Logger;
 
 public class QueueZooKeeper {
     // 日志记录器
-    private static final Logger logger = Logger.getLogger(QueueZooKeeper.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(QueueZooKeeper.class.getName());
     // Queue配置对象
     private QueueConfig config;
     // 日志管理器
@@ -44,7 +45,7 @@ public class QueueZooKeeper {
             // 注册状态变化监听器
             zkClient.subscribeStateChanges(new SessionExpireListener());
         } catch (Exception e) {
-            logger.severe("Failed to start ZK client: " + e.getMessage());
+            logger.error("Failed to start ZK client: " + e.getMessage());
         }
     }
 
@@ -61,7 +62,7 @@ public class QueueZooKeeper {
             ZkUtils.createEphemeralPathExpectConflict(zkClient, brokerIdPath, broker.getZKString());
             logger.info("Registering broker " + brokerIdPath + " succeeded with " + broker);
         } catch (Exception e) {
-            logger.severe("Failed to register broker in ZK: " + e.getMessage());
+            logger.error("Failed to register broker in ZK: " + e.getMessage());
         }
     }
 
@@ -103,7 +104,7 @@ public class QueueZooKeeper {
                 }
                 logger.info("Done re-registering broker");
             } catch (Exception e) {
-                logger.severe("Failed to re-register broker in ZK: " + e.getMessage());
+                logger.error("Failed to re-register broker in ZK: " + e.getMessage());
             }
         }
 
