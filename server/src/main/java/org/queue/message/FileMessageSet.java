@@ -94,7 +94,7 @@ public class FileMessageSet extends MessageSet {
      * @param mutable 是否可变。
      * @param needRecover 是否需要恢复。
      */
-    public FileMessageSet(FileChannel channel, boolean mutable, AtomicBoolean needRecover) {
+    public FileMessageSet(FileChannel channel, boolean mutable, AtomicBoolean needRecover) throws IOException {
         this(channel, 0, Long.MAX_VALUE, mutable, needRecover);
     }
 
@@ -115,7 +115,7 @@ public class FileMessageSet extends MessageSet {
      * @param size 视图的大小限制。
      * @return 返回一个新的MessageSet，它代表了原始消息集的一个子集。
      */
-    public MessageSet read(long readOffset, long size) {
+    public MessageSet read(long readOffset, long size) throws IOException {
         // 计算新的offset和limit，并创建一个新的FileMessageSet实例
         long newOffset = this.offset + readOffset;
         long newLimit = Math.min(newOffset + size, this.highWaterMark());

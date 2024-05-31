@@ -543,11 +543,10 @@ public class Utils {
         }
         return list;
     }
-    public static List<Message> convert2(Iterator<Message> data) {
+    public static  List<Message> convert2(Iterator<Message> data) {
         List<Message> list = new ArrayList<>();
-        while (data.hasNext()) {
-            Message message = data.next();
-            list.add(message);
+        while (data.hasNext()){
+            list.add(data.next());
         }
         return list;
     }

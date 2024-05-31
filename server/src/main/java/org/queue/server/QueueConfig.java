@@ -12,7 +12,7 @@ import org.queue.utils.ZKConfig;
 
 import java.util.Properties;
 import java.util.Map;
-
+import org.queue.message.Message;
 import static org.queue.utils.Utils.getString;
 
 public class QueueConfig extends ZKConfig {
@@ -69,7 +69,7 @@ public class QueueConfig extends ZKConfig {
         this.monitoringPeriodSecs = Utils.getIntInRange(props, "monitoring.period.secs", 600, new int[]{1, Integer.MAX_VALUE});
         this.numPartitions = Utils.getIntInRange(props, "num.partitions", 1, new int[]{1, Integer.MAX_VALUE});
         this.logDir = getString(props, "log.dir");
-        this.logFileSize = Utils.getIntInRange(props, "log.file.size", 1 * 1024 * 1024 * 1024, new int[]{MessageSingle.min_header_size, Integer.MAX_VALUE});
+        this.logFileSize = Utils.getIntInRange(props, "log.file.size", 1 * 1024 * 1024 * 1024, new int[]{Message.MinHeaderSize, Integer.MAX_VALUE});
         this.flushInterval = Utils.getIntInRange(props, "log.flush.interval", 500, new int[]{1, Integer.MAX_VALUE});
         this.logRetentionHours = Utils.getIntInRange(props, "log.retention.hours", 24 * 7, new int[]{1, Integer.MAX_VALUE});
         this.logRetentionHoursMap = Utils.getTopicRentionHours(getString(props, "topic.log.retention.hours", ""));
