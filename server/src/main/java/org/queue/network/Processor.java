@@ -9,6 +9,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.queue.api.RequestKeys;
+import org.queue.server.QueueRequestHandlers;
 import org.queue.utils.Time;
 import org.queue.utils.Utils;
 import org.slf4j.Logger;
@@ -16,15 +17,15 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.event.Level;
 
 public class Processor extends AbstractServerThread {
-    private final Handler.HandlerMapping handlerMapping; // 处理器映射，用于将请求类型映射到处理器
+    private final QueueRequestHandlers handlerFactory; // 处理器映射，用于将请求类型映射到处理器
     private final Time time; // 时间提供者，用于获取当前时间等
     private final SocketServerStats stats; // 服务器统计信息，用于记录服务器运行时的统计数据
     private final Queue<SocketChannel> newConnections; // 用于存储新连接的队列
     private final Logger requestLogger; // 请求日志记录器，用于记录处理请求的日志
 
-    public Processor(Handler.HandlerMapping handlerMapping, Time time, SocketServerStats stats) throws IOException {
+    public Processor(QueueRequestHandlers handlerFactory, Time time, SocketServerStats stats) throws IOException {
         super();
-        this.handlerMapping = handlerMapping;
+        this.handlerFactory = handlerFactory;
         this.time = time;
         this.stats = stats;
         this.newConnections = new ConcurrentLinkedQueue<>();
@@ -129,7 +130,7 @@ public class Processor extends AbstractServerThread {
      * @param request  接收到的请求对象
      * @return 一个可选的Send对象，表示响应
      */
-    private Optional<Send> handle(SelectionKey key, Receive request) {
+    private Optional<Send> handle(SelectionKey key, Receive request) throws IOException, InterruptedException {
         int requestTypeId = request.getBuffer().getShort();
         if (requestLogger.isTraceEnabled()) {
             switch (requestTypeId) {
@@ -152,20 +153,16 @@ public class Processor extends AbstractServerThread {
                     throw new InvalidRequestException("No mapping found for handler id " + requestTypeId);
             }
         }
-        Handler handler = handlerMapping.getHandler(requestTypeId, request);
-        if (handler == null) {
-            throw new InvalidRequestException("No handler found for request");
-        }
+        Optional<Send> send = handlerFactory.handlerFor(requestTypeId, request);
         long start = time.nanoseconds();
-        Send maybeSend = handler.handle(request);
         stats.recordRequest(requestTypeId, time.nanoseconds() - start);
-        return Optional.ofNullable(maybeSend);
+        return send;
     }
 
     /**
      * 从准备好的套接字中读取数据
      */
-    public void read(SelectionKey key) throws IOException {
+    public void read(SelectionKey key) throws IOException, InterruptedException {
         SocketChannel socketChannel = channelFor(key);
         Receive request = (Receive) key.attachment();
         if (request == null) {
@@ -181,7 +178,6 @@ public class Processor extends AbstractServerThread {
 
         if (read < 0) {
             close(key);
-            return;
         } else if (request.complete()) {
             Optional<Send> maybeResponse = handle(key, request);
             if (maybeResponse.isPresent()) {

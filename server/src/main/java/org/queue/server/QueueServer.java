@@ -78,7 +78,7 @@ public class QueueServer {
             QueueRequestHandlers handlers = new QueueRequestHandlers(logManager);
             // 创建套接字服务器实例
             socketServer = new SocketServer(config.getPort(), config.getNumThreads(),
-                    config.getMonitoringPeriodSecs(), handlers.getHandler());
+                    config.getMonitoringPeriodSecs(), handlers);
             // 注册MBean
             Utils.registerMBean(socketServer.getStats(), statsMBeanName);
             socketServer.startup();

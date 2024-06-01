@@ -12,7 +12,6 @@ import org.queue.common.ErrorMapping;
 import org.queue.log.Log;
 import org.queue.log.LogManager;
 import org.queue.message.MessageSet;
-import org.queue.network.Handler;
 import org.queue.network.Receive;
 import org.queue.network.Send;
 import org.slf4j.Logger;
@@ -22,8 +21,6 @@ import java.io.IOException;
 import java.util.Optional;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.logging.Level;
-import java.util.stream.Collectors;
 
 public class QueueRequestHandlers {
 
@@ -35,18 +32,18 @@ public class QueueRequestHandlers {
         this.logManager = logManager;
     }
 
-    public Handler.HandlerType handlerFor(short requestTypeId, Receive receive) {
+    public Optional<Send> handlerFor(int requestTypeId, Receive receive) throws IOException, InterruptedException {
         switch (requestTypeId) {
             case RequestKeys.produce:
-                return this::handleProducerRequest;
+                return handleProducerRequest(receive);
             case RequestKeys.fetch:
-                return this::handleFetchRequest;
+                return handleFetchRequest(receive);
             case RequestKeys.multiFetch:
-                return this::handleMultiFetchRequest;
+                return handleMultiFetchRequest(receive);
             case RequestKeys.multiProduce:
-                return this::handleMultiProducerRequest;
+                return handleMultiProducerRequest(receive);
             case RequestKeys.offsets:
-                return this::handleOffsetRequest;
+                return handleOffsetRequest(receive);
             default:
                 throw new IllegalStateException("No mapping found for handler id " + requestTypeId);
         }

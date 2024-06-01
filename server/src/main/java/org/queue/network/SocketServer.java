@@ -1,5 +1,6 @@
 package org.queue.network;
 
+import org.queue.server.QueueRequestHandlers;
 import org.queue.utils.SystemTime;
 import org.queue.utils.Utils;
 import org.slf4j.Logger;
@@ -10,13 +11,13 @@ public class SocketServer {
     private  int port; // 服务器端口
     private  int numProcessorThreads; // 处理器线程数量
     private  int monitoringPeriodSecs; // 监控周期（秒）
-    private  Handler.HandlerMapping handlerFactory; // 处理器工厂，用于创建处理器
+    private  QueueRequestHandlers handlerFactory; // 处理器工厂，用于创建处理器
     private Acceptor acceptor; // 接受器线程
     private SocketServerStats stats; // 服务器统计信息
     private Processor[] processors; // 处理器数组
     private static final Logger logger = LoggerFactory.getLogger(SocketServer.class.getName());
 
-    public SocketServer(int port, int numProcessorThreads, int monitoringPeriodSecs, Handler.HandlerMapping handlerFactory) throws IOException {
+    public SocketServer(int port, int numProcessorThreads, int monitoringPeriodSecs, QueueRequestHandlers handlerFactory) throws IOException {
         this.port = port;
         this.numProcessorThreads = numProcessorThreads;
         this.monitoringPeriodSecs = monitoringPeriodSecs;
