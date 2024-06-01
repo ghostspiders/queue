@@ -47,8 +47,8 @@ public class ConsumerIterator extends IteratorTemplate<Message> {
             throw new IllegalStateException("Offset returned by the message set is invalid " + consumedOffset);
         }
         currentTopicInfo.resetConsumeOffset(consumedOffset);
-        if (logger.isLoggable(java.util.logging.Level.FINE)) {
-            logger.fine("Setting consumed offset to " + consumedOffset);
+        if (logger.isDebugEnabled()) {
+            logger.debug("Setting consumed offset to " + consumedOffset);
         }
         return message;
     }
@@ -67,8 +67,8 @@ public class ConsumerIterator extends IteratorTemplate<Message> {
 
             // 如果接收到关闭命令，则记录日志并将命令放回队列
             if (currentDataChunk == ZookeeperConsumerConnector.shutdownCommand) {
-                if (logger.isLoggable(java.util.logging.Level.FINE)) {
-                    logger.fine("Received the shutdown command");
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Received the shutdown command");
                 }
                 channel.offer(currentDataChunk);
                 return allDone();
@@ -76,7 +76,7 @@ public class ConsumerIterator extends IteratorTemplate<Message> {
                 // 更新当前主题信息
                 currentTopicInfo = currentDataChunk.getTopicInfo();
                 if (currentTopicInfo.getConsumeOffset() != currentDataChunk.getFetchOffset()) {
-                    logger.severe("Consumed offset: " + currentTopicInfo.getConsumeOffset() +
+                    logger.info("Consumed offset: " + currentTopicInfo.getConsumeOffset() +
                             " doesn't match fetch offset: " + currentDataChunk.getFetchOffset() +
                             " for " + currentTopicInfo + "; Consumer may lose data");
                     currentTopicInfo.resetConsumeOffset(currentDataChunk.getFetchOffset());

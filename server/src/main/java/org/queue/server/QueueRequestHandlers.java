@@ -23,6 +23,7 @@ import java.util.Optional;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.logging.Level;
+import java.util.stream.Collectors;
 
 public class QueueRequestHandlers {
 
@@ -115,8 +116,11 @@ public class QueueRequestHandlers {
         fetches.forEach(req -> requestLogger.error(req.toString()));
         List<MessageSetSend> responses = new ArrayList<>();
         fetches.forEach(fetch -> responses.add(readMessageSet(fetch)));
-
-        return Optional.of(new MultiMessageSetSend(responses));
+        List<Send> sends = new ArrayList();
+        for (MessageSetSend messageSetSend : responses){
+            sends.add(messageSetSend);
+        }
+        return Optional.of(new MultiMessageSetSend(sends));
     }
 
     private MessageSetSend readMessageSet(FetchRequest fetchRequest) {

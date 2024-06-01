@@ -12,6 +12,6 @@ import org.queue.message.Message;
 class StringEncoder implements Encoder<String> {
     @Override
     public Message toMessage(String event) {
-        return new Message(event.getBytes()); // 创建一个新的Message对象，其负载是字符串的字节数组
+        return new Message(event.getBytes());
     }
 }

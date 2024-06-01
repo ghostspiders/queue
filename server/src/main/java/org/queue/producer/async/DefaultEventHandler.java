@@ -7,7 +7,9 @@ package org.queue.producer.async;
  * @datetime 2024年 05月 24日 15:22
  * @version: 1.0
  */
+import cn.hutool.core.lang.Pair;
 import org.queue.api.ProducerRequest;
+import org.queue.message.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.queue.message.ByteBufferMessageSet;
@@ -19,6 +21,7 @@ import org.queue.serializer.Encoder;
 import java.io.IOException;
 import java.util.*;
 import java.nio.ByteBuffer;
+import java.util.stream.Collectors;
 
 /**
  * 默认事件处理器实现，用于分发异步生产者队列中的批处理数据。
@@ -40,7 +43,7 @@ public class DefaultEventHandler<T> implements EventHandler<T> {
     }
 
     @Override
-    public void handle(List<QueueItem<T>> events, SyncProducer syncProducer, Encoder<T> serializer) {
+    public void handle(List<QueueItem<T>> events, SyncProducer syncProducer, Encoder<T> serializer) throws IOException {
         List<QueueItem<T>> processedEvents = events;
         if (cbkHandler != null) {
             processedEvents = cbkHandler.beforeSendingData(processedEvents);
@@ -53,14 +56,12 @@ public class DefaultEventHandler<T> implements EventHandler<T> {
      * @param messagesPerTopic 按主题和分区分组的消息集合
      * @param syncProducer 用于发送消息的同步生产者实例
      */
-    private void send(Map<String, Map<Integer, ByteBufferMessageSet>> messagesPerTopic, SyncProducer syncProducer) throws IOException {
+    private void send(Map<Pair<String, Integer>, ByteBufferMessageSet> messagesPerTopic, SyncProducer syncProducer) throws IOException {
         if (messagesPerTopic != null && !messagesPerTopic.isEmpty()) {
             // 将Map转换为ProducerRequest数组
-            ProducerRequest[] requests = messagesPerTopic.entrySet().stream()
-                    .flatMap(entry -> entry.getValue().entrySet().stream()
-                            .map(partitionEntry -> new ProducerRequest(entry.getKey(), partitionEntry.getKey(), partitionEntry.getValue())))
-                    .toArray(ProducerRequest[]::new);
 
+            ProducerRequest[] requests = messagesPerTopic.entrySet().stream().map(entry -> new ProducerRequest(entry.getKey().getKey(), entry.getKey().getValue(), entry.getValue()))
+                    .toArray(ProducerRequest[]::new);
             // 使用同步生产者发送请求
             syncProducer.multiSend(requests);
 
@@ -81,17 +82,15 @@ public class DefaultEventHandler<T> implements EventHandler<T> {
      * @param serializer 编码器
      * @return 序列化后的消息集合，按主题和分区分组
      */
-    private Map<String, ByteBufferMessageSet> serialize(Map<String, Map<Integer, List<T>>> eventsPerTopic, Encoder<T> serializer) {
-        Map<String, ByteBufferMessageSet> messages = new HashMap<>();
-        for (Map.Entry<String, Map<Integer, List<T>>> topicEntry : eventsPerTopic.entrySet()) {
-            for (Map.Entry<Integer, List<T>> partitionEntry : topicEntry.getValue().entrySet()) {
-                List<ByteBuffer> messageList = new ArrayList<>();
-                for (T event : partitionEntry.getValue()) {
-                    messageList.add(serializer.toMessage(event));
-                }
-                ByteBufferMessageSet messageSet = createMessageSet(messageList);
-                messages.put(topicEntry.getKey() + "-" + partitionEntry.getKey(), messageSet);
+    private Map<Pair<String, Integer>, ByteBufferMessageSet>  serialize(Map<Pair<String, Integer>, List<T>> eventsPerTopic, Encoder<T> serializer) {
+        Map<Pair<String, Integer>, ByteBufferMessageSet> messages = new HashMap<>();
+        for (Map.Entry<Pair<String, Integer>, List<T>> topicEntry : eventsPerTopic.entrySet()) {
+            List<Message> messageList = new ArrayList<>();
+            for (T event : topicEntry.getValue()) {
+                messageList.add(serializer.toMessage(event));
             }
+            ByteBufferMessageSet messageSet = createMessageSet(messageList);
+            messages.put(topicEntry.getKey(), messageSet);
         }
         return messages;
     }
@@ -101,7 +100,7 @@ public class DefaultEventHandler<T> implements EventHandler<T> {
      * @param messageList 消息列表
      * @return 消息集合对象
      */
-    private ByteBufferMessageSet createMessageSet(List<ByteBuffer> messageList) {
+    private ByteBufferMessageSet createMessageSet(List<Message> messageList) {
         // 根据配置决定是否启用压缩等
         if (config.getCompressionCodec() != null) {
             // 启用压缩
@@ -117,17 +116,25 @@ public class DefaultEventHandler<T> implements EventHandler<T> {
      * @param events 待处理的事件列表
      * @return 按主题和分区聚合的事件Map
      */
-    private Map<String, Map<Integer, List<T>>> collate(List<QueueItem<T>> events) {
-        Map<String, Map<Integer, List<T>>> collatedEvents = new HashMap<>();
+    public  Map<Pair<String, Integer>, List<T>> collate(List<QueueItem<T>> events) {
+        Map<Pair<String, Integer>, List<T>> collatedEvents = new HashMap<>();
+        Set<String> distinctTopics = new HashSet<>();
+        Set<Integer> distinctPartitions = new HashSet<>();
+
+        // 提取不同的主题和分区
         for (QueueItem<T> event : events) {
-            String topic = event.getTopic();
-            int partition = event.getPartition();
-            T data = event.getData();
-            collatedEvents.computeIfAbsent(topic, k -> new HashMap<>())
-                    .computeIfAbsent(partition, k -> new ArrayList<>())
-                    .add(data);
+            distinctTopics.add(event.getTopic());
+            distinctPartitions.add(event.getPartition());
+        }
+        for (String topic : distinctTopics) {
+            for (Integer partition : distinctPartitions) {
+                List<T> topicPartitionEvents = events.stream()
+                        .filter(e -> e.getTopic().equals(topic) && e.getPartition() == partition)
+                        .map(QueueItem::getData)
+                        .collect(Collectors.toList());
+                collatedEvents.put(new Pair<>(topic, partition), topicPartitionEvents);
+            }
         }
         return collatedEvents;
     }
-
 }

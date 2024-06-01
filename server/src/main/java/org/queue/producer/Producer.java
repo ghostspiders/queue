@@ -17,6 +17,8 @@ import org.queue.utils.Utils;
 import org.queue.utils.ZKConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -97,7 +99,7 @@ public class Producer<K, V> {
      * 发送消息，根据键分区到指定主题。
      * @param producerData 包含topic、键和消息数据的ProducerData对象的可变参数。
      */
-    public void send(ProducerData<K, V>... producerData) {
+    public void send(ProducerData<K, V>... producerData) throws IOException {
         List<ProducerPoolData> producerPoolRequests = new ArrayList<>();
         for (ProducerData<K, V> pd : producerData) {
             // 查找该主题注册的代理分区数量

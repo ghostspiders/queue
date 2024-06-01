@@ -8,6 +8,7 @@ package org.queue.producer.async;
  * @version: 1.0
  */
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Properties;
 import org.queue.producer.SyncProducer;
@@ -31,7 +32,7 @@ public interface EventHandler<T> {
      * @param producer 用于发送数据的底层生产者
      * @param encoder 数据编码器，用于将数据转换为可发送的格式
      */
-    void handle(List<QueueItem<T>> events, SyncProducer producer, Encoder<T> encoder);
+    void handle(List<QueueItem<T>> events, SyncProducer producer, Encoder<T> encoder) throws IOException;
 
     /**
      * 清理并关闭事件处理器。
