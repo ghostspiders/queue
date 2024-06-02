@@ -49,7 +49,7 @@ public class SystemTime implements Time {
         return System.currentTimeMillis();
     }
 
-    public static long nanoseconds() {
+    public long nanoseconds() {
         return System.nanoTime();
     }
 

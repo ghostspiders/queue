@@ -113,8 +113,9 @@ public class LogManager {
                     Log log = new Log(dir, maxSize, flushInterval, needRecovery);
                     Map<String, Integer> topicPartion = Utils.getTopicPartition(dir.getName());
                     topicPartion.forEach((key, value) -> {
-                        logs.putIfNotExists(key, new Pool())
-                                .put(value, log);
+                        Pool pool = new Pool();
+                        pool.putIfNotExists(value, log);
+                        logs.putIfNotExists(key,pool );
                     });
 
                 }
@@ -130,7 +131,16 @@ public class LogManager {
             // 日志清理任务每logCleanupIntervalMs毫秒执行一次
             logger.info("Starting log cleaner every {} ms", logCleanupIntervalMs);
             // 使用Akka调度器安排周期性任务
-            scheduler.scheduleWithRate(this::cleanupLogs, 60 * 1000, logCleanupIntervalMs);
+            scheduler.scheduleWithRate(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        cleanupLogs();
+                    } catch (IOException e) {
+                        logger.error("log cleaner",e);
+                    }
+                }
+            }, 60 * 1000, logCleanupIntervalMs);
         }
     }
 

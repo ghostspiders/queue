@@ -9,7 +9,7 @@ import org.queue.api.OffsetRequest;
 import org.queue.cluster.Partition;
 import org.queue.consumer.ConsumerConfig;
 import org.queue.cluster.Cluster;
-import org.queue.javaapi.consumer.SimpleConsumer;
+import org.queue.consumer.SimpleConsumer;
 
 public class UpdateOffsetsInZK {
 
@@ -59,7 +59,7 @@ public class UpdateOffsetsInZK {
             ZkClient zkClient,
             long offsetOption,
             ConsumerConfig config,
-            String topic) {
+            String topic) throws IOException {
         // 获取集群信息
         Cluster cluster = ZkUtils.getCluster(zkClient);
         // 获取指定主题的分区列表

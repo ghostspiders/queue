@@ -105,7 +105,7 @@ public class SimpleConsumer {
         Map<Receive, Integer> response;
 
         synchronized (lock) {
-            startTime = SystemTime.nanoseconds(); // 获取开始时间
+            startTime = SystemTime.getInstance().nanoseconds(); // 获取开始时间
             getOrMakeConnection(); // 确保已经建立连接
             try {
                 sendRequest(request); // 发送请求
@@ -125,7 +125,7 @@ public class SimpleConsumer {
                 throw new RuntimeException("Error during fetch operation", e);
             }
 
-            endTime = SystemTime.nanoseconds(); // 获取结束时间
+            endTime = SystemTime.getInstance().nanoseconds(); // 获取结束时间
             SimpleConsumerStats.recordFetchRequest(endTime - startTime); // 记录请求时间
 
             Map.Entry<Receive, Integer> next = response.entrySet().iterator().next();
@@ -146,7 +146,7 @@ public class SimpleConsumer {
         Map<Receive, Integer> response;
 
         synchronized (lock) {
-            startTime = SystemTime.nanoseconds(); // 获取开始时间
+            startTime = SystemTime.getInstance().nanoseconds(); // 获取开始时间
             getOrMakeConnection(); // 确保已经建立连接
 
             try {
@@ -167,7 +167,7 @@ public class SimpleConsumer {
                 throw new RuntimeException("Error during multifetch operation", e);
             }
 
-            endTime = SystemTime.nanoseconds(); // 获取结束时间
+            endTime = SystemTime.getInstance().nanoseconds(); // 获取结束时间
             SimpleConsumerStats.recordFetchRequest(endTime - startTime); // 记录请求时间
             Map.Entry<Receive, Integer> next = response.entrySet().iterator().next();
 

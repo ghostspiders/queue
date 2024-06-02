@@ -4,11 +4,12 @@ import org.queue.message.FileMessageSet;
 import org.queue.message.MessageAndOffset;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
 public class DumpLogSegments {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         boolean isNoPrint = false;
         // 检查命令行参数，设置是否打印消息内容
         for (String arg : args) {

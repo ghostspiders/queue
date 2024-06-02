@@ -312,15 +312,10 @@ public class Utils {
     }
 
     // ByteBuffer转换为字符串的方法
-    public static String toString(ByteBuffer buffer, String encoding) {
+    public static String toString(ByteBuffer buffer, Charset encoding) {
         byte[] bytes = new byte[buffer.remaining()];
         buffer.duplicate().get(bytes); // 使用duplicate避免改变原始buffer的位置
-        try {
-            return new String(bytes, encoding);
-        } catch (UnsupportedEncodingException e) {
-            logger.error("Unsupported encoding: " + encoding, e);
-            return null;
-        }
+        return new String(bytes, encoding);
     }
 
     // 打印错误消息并退出JVM的方法

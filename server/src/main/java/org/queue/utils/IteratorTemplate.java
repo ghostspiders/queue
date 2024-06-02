@@ -20,7 +20,11 @@ public abstract class IteratorTemplate<T> implements Iterator<T> {
             case READY:
                 return true;
             default:
-                return maybeComputeNext();
+                try {
+                    return maybeComputeNext();
+                } catch (Throwable e) {
+                    throw new RuntimeException(e);
+                }
         }
     }
 
@@ -41,7 +45,7 @@ public abstract class IteratorTemplate<T> implements Iterator<T> {
     // 需要被子类实现，以提供迭代器的下一个元素
     protected abstract T makeNext() throws Throwable;
 
-    private boolean maybeComputeNext() {
+    private boolean maybeComputeNext() throws Throwable {
         state = State.FAILED;
         nextItem = makeNext();
         if (state == State.DONE) {

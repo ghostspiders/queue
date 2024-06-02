@@ -1,6 +1,7 @@
 package org.queue;
 
 import cn.hutool.core.util.ArrayUtil;
+import cn.hutool.core.util.StrUtil;
 import org.queue.consumer.ConsumerConfig;
 import org.queue.server.QueueConfig;
 import org.queue.server.QueueServerStartable;
@@ -16,12 +17,12 @@ public class Queue {
         // Utils.swallow(Level.WARN, () -> Utils.registerMBean(LoggerFactory.getLogger(""), queueLog4jMBeanName));
         boolean embeddedConsumer = false;
         String serverPath = System.getProperty("server.config");
-        if (serverPath == null || serverPath.isBlank()) {
+        if (StrUtil.isBlank(serverPath)) {
             // 如果系统属性中没有配置server.config，则使用默认的配置文件路径
             serverPath = Queue.class.getResource("/server.properties").getPath();
         }
         String consumerPath = System.getProperty("consumer.config");
-        if (consumerPath == null || consumerPath.isBlank()) {
+        if (StrUtil.isBlank(consumerPath)) {
             // 如果系统属性中没有配置consumer.config，则使用默认的配置文件路径
             consumerPath = Queue.class.getResource("/consumer.properties").getPath();
         }
@@ -41,7 +42,11 @@ public class Queue {
             QueueServerStartable finalQueueServerStartable = queueServerStartable;
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
                 finalQueueServerStartable.shutdown();
-                finalQueueServerStartable.awaitShutdown();
+                try {
+                    finalQueueServerStartable.awaitShutdown();
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
             }));
 
             queueServerStartable.startup();

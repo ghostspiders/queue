@@ -3,7 +3,7 @@ package org.queue.log;
 /**
  * 日志统计管理Bean接口，用于提供日志统计信息。
  */
-interface LogStatsMBean {
+public interface LogStatsMBean {
     /**
      * 获取日志名称。
      * @return 日志名称
