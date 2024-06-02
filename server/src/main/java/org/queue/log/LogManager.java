@@ -8,8 +8,12 @@ package org.queue.log;
  * @version: 1.0
  */
 
+import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import akka.actor.Props;
+import akka.actor.typed.javadsl.Behaviors;
+import akka.japi.Creator;
+import org.queue.akka.ZkActor;
 import org.queue.common.InvalidPartitionException;
 import org.queue.common.InvalidTopicException;
 import org.queue.server.QueueConfig;
@@ -53,6 +57,7 @@ public class LogManager {
     private QueueZooKeeper queueZooKeeper;
     private ScheduledExecutorService cleanupScheduler;
     private Random random = new Random();
+    private ActorRef actorRef;
     public LogManager(QueueConfig config, QueueScheduler scheduler, Time time,
                       long logCleanupIntervalMs, long logCleanupDefaultAgeMs, boolean needRecovery) throws IOException {
         this.config = config;
@@ -137,16 +142,8 @@ public class LogManager {
             queueZooKeeper = new QueueZooKeeper(config, this);
             queueZooKeeper.startup();
 
-            // 创建ActorSystem
-            ActorSystem actorSystem = ActorSystem.create();
-            Props props = Props.create(ZkActor.class, new Creator<ZkActor>() {
-                @Override
-                public ZkActor create() throws Exception {
-                    return new ZkActor();
-                }
-            });
-            // 创建并启动ZkActor
-            actorSystem.actorOf(props, "ZkActor");
+            ActorSystem system = ActorSystem.create("QueueSystem");
+            actorRef = system.actorOf(Props.create(ZkActor.class, queueZooKeeper), "zkActor");
         }
     }
 
@@ -189,7 +186,7 @@ public class LogManager {
     // 在ZooKeeper中注册新主题
     public void registerNewTopicInZK(String topic) {
         if (config.isEnableZookeeper()) {
-            zkActor.send(new TopicMsg(topic));
+            actorRef.tell(new ZkActor.TopicMsg(topic), ActorRef.noSender());
         }
     }
 
@@ -244,7 +241,7 @@ public class LogManager {
     }
 
     // 清理日志
-    public void cleanupLogs() {
+    public void cleanupLogs() throws IOException {
         logger.debug("Beginning log cleanup...");
         Iterator<Log> iter = getLogIterator();
         int total = 0;
@@ -253,14 +250,18 @@ public class LogManager {
             Log log = iter.next();
             logger.debug("Garbage collecting '" + log.getName() + "'");
             String topic = Utils.getTopicPartition(log.getDir().getName()).keySet().stream().findFirst().get();
-            long logCleanupThresholdMS = this.logCleanupDefaultAgeMs;
+            long logCleanupThresholdMS;
             if (logRetentionMSMap.containsKey(topic)) {
                 logCleanupThresholdMS = logRetentionMSMap.get(topic);
+            } else {
+                logCleanupThresholdMS = this.logCleanupDefaultAgeMs;
             }
-            List<File> toBeDeleted = log.markDeletedWhile(startMs - _.file.lastModified > logCleanupThresholdMS);
-            for (File segment : toBeDeleted) {
-                logger.info("Deleting log segment " + segment.getName() + " from " + log.getName());
-                if (!segment.delete()) {
+            List<LogSegment> toBeDeleted = log.markDeletedWhile(
+                    (segment) -> (startMs - segment.getFile().lastModified()) > logCleanupThresholdMS);
+            for (LogSegment segment : toBeDeleted) {
+                logger.info("Deleting log segment " + segment.getFile().getName() + " from " + log.getName());
+                 segment.getMessageSet().close();
+                if (!segment.getFile().delete()) {
                     logger.warn("Delete failed.");
                 } else {
                     total++;
@@ -279,7 +280,7 @@ public class LogManager {
             iter.next().close();
         }
         if (config.isEnableZookeeper()) {
-            zkActor.send(StopActor);
+             actorRef.tell(ZkActor.StopActor.INSTANCE, ActorRef.noSender());
             queueZooKeeper.close();
         }
     }
