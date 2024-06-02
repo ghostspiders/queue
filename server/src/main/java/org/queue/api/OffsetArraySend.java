@@ -27,7 +27,7 @@ public class OffsetArraySend extends Send {
     private int calculateSize() {
         int calculatedSize = 4; // 初始大小为4字节
         for (long offset : offsets) { // 遍历偏移量数组
-            calculatedSize += 8; // 每个偏移量占用8字节
+            calculatedSize += 8; // 对于每个元素（实际上我们并不关心元素的值）每个偏移量占用8字节
         }
         return calculatedSize;
     }
